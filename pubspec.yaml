@@ -39,10 +39,28 @@ flutter_launcher_icons:
     
 # إعدادات حزمة شاشة البداية (Flutter Native Splash)
 flutter_native_splash:
-  color: "#FFFFFF"
-  background_image: assets\icons\filo.png
-  android_gravity: center
-  ios_content_mode: center
+  # الصورة التي تريدها كخلفية
+  background_image: "assets/icons/splash_bg.png"
+  
+  # لون الخلفية (احتياطي)
+  color: "#1A1A1A"
+
+  # 1. إخفاء شريط الحالة (الساعة والبطارية) لتصبح الشاشة كاملة
+  fullscreen: true
+
+  # 2. إعدادات أندرويد (لجعل الصورة تمط وتملأ الشاشة)
+  android_gravity: fill
+  
+  # 3. إعدادات آيفون (تغطية كاملة مع قص الزوائد)
+  ios_content_mode: cover
+  
+  # 4. (مهم جداً) إعدادات أندرويد 12 فما فوق
+  # أندرويد 12 يمنع صور الخلفية الكاملة في السبلاش سكرين افتراضياً
+  # هذا يحاول جعلها أقرب ما يمكن، لكنه سيظهر الأيقونة في الوسط
+  android_12:
+    color: "#1A1A1A"
+    # يفضل استخدام أيقونة صغيرة هنا للأندرويد 12، أو تركها تأخذ الافتراضي
+    # image: "assets/icons/app_icon.png"
 
 flutter:
   uses-material-design: true
