@@ -29,9 +29,14 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/Icons/filo.png"
+  image_path: "assets/icons/filo.png"
   min_sdk_android: 21
-
+  web:
+    generate: true
+    image_path: "assets/icons/filo.png"
+    background_color: "#hex_code"
+    theme_color: "#hex_code"
+    
 # إعدادات حزمة شاشة البداية (Flutter Native Splash)
 flutter_native_splash:
   color: "#FFFFFF"
