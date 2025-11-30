@@ -36,6 +36,13 @@ flutter_launcher_icons:
     image_path: "assets/icons/filo.png"
     background_color: "#hex_code"
     theme_color: "#hex_code"
+    
+# إعدادات حزمة شاشة البداية (Flutter Native Splash)
+flutter_native_splash:
+  color: "#FFFFFF"
+  background_image: assets\icons\filo.png
+  android_gravity: center
+  ios_content_mode: center
 
 flutter:
   uses-material-design: true
