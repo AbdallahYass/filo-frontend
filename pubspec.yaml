@@ -1,0 +1,48 @@
+name: filo_menu
+description: "Filo Menu: The Modern Restaurant App."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  mobile_scanner: ^5.1.0  # 👈 أضف هذه
+  qr_flutter: ^4.1.0      # 👈 أضف هذه المكتبة الجديدة
+  # حزمة للتواصل مع السيرفر (لربط API لاحقاً)
+  http: ^1.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+  # حزم تخصيص الهوية البصرية لـ Filo Menu
+  flutter_launcher_icons: "^0.13.1"
+  flutter_native_splash: "^2.3.1"
+
+# إعدادات حزمة الأيقونات (Flutter Launcher Icons)
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/Icons/filo.png"
+  min_sdk_android: 21
+
+# إعدادات حزمة شاشة البداية (Flutter Native Splash)
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets\icons\filo.png
+  android_gravity: center
+  ios_content_mode: center
+
+flutter:
+  uses-material-design: true
+
+  # انتبه: كلمتي assets تحت بعضهما تماماً
+  assets:
+    - assets\icons\filo.png
+    - assets\icons\splash_bg.png
