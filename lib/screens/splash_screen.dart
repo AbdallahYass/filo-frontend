@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'menu_screen.dart';
+//import 'menu_screen.dart';
+import 'auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // التأكد من عدم الانتقال أكثر من مرة
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MenuScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
   }
