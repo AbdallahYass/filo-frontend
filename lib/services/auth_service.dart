@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class AuthService {
@@ -17,11 +18,15 @@ class AuthService {
       if (response.statusCode == 201) {
         return true; // تم الإنشاء بنجاح
       } else {
-        print('Register Error: ${response.body}');
+        if (kDebugMode) {
+          print('Register Error: ${response.body}');
+        }
         return false;
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
       return false;
     }
   }
@@ -39,11 +44,15 @@ class AuthService {
         // هنا المفروض نحفظ التوكن او بيانات المستخدم (لاحقاً)
         return true; // نجح الدخول
       } else {
-        print('Login Error: ${response.body}');
+        if (kDebugMode) {
+          print('Login Error: ${response.body}');
+        }
         return false;
       }
     } catch (e) {
-      print('Error: $e');
+      if (kDebugMode) {
+        print('Error: $e');
+      }
       return false;
     }
   }
