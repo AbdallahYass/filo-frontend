@@ -8,7 +8,7 @@ class AuthService {
   final String _baseUrl = 'https://filo-menu.onrender.com/api/auth';
 
   // 🔐 مفتاح الحماية (نفس الموجود في إعدادات Render)
-  final String _apiKey = 'FiloSecretKey2025';
+  final String _apiKey = 'FiloSecretKey202512341234';
 
   // 1. تسجيل حساب جديد
   Future<bool> register(String name, String email, String password) async {
