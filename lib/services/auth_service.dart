@@ -1,12 +1,14 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  // رابط السيرفر
+  // رابط السيرفر العالمي
   final String _baseUrl = 'https://filo-menu.onrender.com/api/auth';
 
-  // 🔐 مفتاح الحماية (نفس اللي حطيته في Render)
-  final String _apiKey = 'FiloSecretKey202512341234';
+  // 🔐 مفتاح الحماية (نفس الموجود في إعدادات Render)
+  final String _apiKey = 'FiloSecretKey2025';
 
   // 1. تسجيل حساب جديد
   Future<bool> register(String name, String email, String password) async {
@@ -15,20 +17,20 @@ class AuthService {
         Uri.parse('$_baseUrl/register'),
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': _apiKey, // 👈 أضفنا هذا السطر المهم
+          'x-api-key': _apiKey, // 👈 هذا هو السطر المفقود الذي يسبب المشكلة
         },
         body: jsonEncode({'name': name, 'email': email, 'password': password}),
       );
 
       if (response.statusCode == 201) {
+        print("تم التسجيل بنجاح!");
         return true;
       } else {
-        // طباعة سبب الخطأ في الترمينال لنعرفه
-        print('Register Error: ${response.body}');
+        print('خطأ في التسجيل: ${response.body}');
         return false;
       }
     } catch (e) {
-      print('Connection Error: $e');
+      print('خطأ في الاتصال: $e');
       return false;
     }
   }
@@ -46,13 +48,14 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
+        print("تم الدخول بنجاح!");
         return true;
       } else {
-        print('Login Error: ${response.body}');
+        print('خطأ في الدخول: ${response.body}');
         return false;
       }
     } catch (e) {
-      print('Connection Error: $e');
+      print('خطأ في الاتصال: $e');
       return false;
     }
   }
