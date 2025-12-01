@@ -51,6 +51,7 @@ class AuthService {
   }
 
   // 3. تسجيل الدخول
+  // 3. تسجيل الدخول (المعدلة)
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
@@ -60,10 +61,15 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        // هنا يمكنك حفظ بيانات المستخدم إذا أردت
         return null; // نجاح
       } else {
         final body = jsonDecode(response.body);
+
+        // 👇👇👇 التقاط حالة عدم التفعيل
+        if (body['error'] == 'NOT_VERIFIED') {
+          return 'NOT_VERIFIED'; // نرجع هذه الكلمة للشاشة لتتصرف
+        }
+
         return body['error'] ?? 'فشل تسجيل الدخول';
       }
     } catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../menu_screen.dart'; // للانتقال للمنيو
 import 'signup_screen.dart'; // للانتقال للتسجيل
+import 'otp_screen.dart'; // للانتقال للتسجيل
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,30 +29,44 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // 👇👇👇 التعديل هنا: نستقبل رسالة خطأ (String?) وليس (bool)
-    String? errorMessage = await _authService.login(
+    String? result = await _authService.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
 
     setState(() => _isLoading = false);
 
-    if (errorMessage == null) {
-      // null يعني لا يوجد خطأ (نجاح)
+    if (result == null) {
+      // 1. نجاح تام -> المنيو
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MenuScreen()),
         );
       }
-    } else {
-      // يوجد خطأ، نعرضه للمستخدم
+    } else if (result == 'NOT_VERIFIED') {
+      // 2. الحساب غير مفعل -> شاشة الكود
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage), // عرض رسالة السيرفر الحقيقية
-            backgroundColor: Colors.red,
+          const SnackBar(
+            content: Text('حسابك غير مفعل! تم إرسال رمز جديد 📧'),
+            backgroundColor: Colors.orange,
           ),
+        );
+        // الانتقال لشاشة الـ OTP
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                OtpScreen(email: _emailController.text.trim()),
+          ),
+        );
+      }
+    } else {
+      // 3. خطأ آخر (باسوورد غلط، نت مفصول)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result), backgroundColor: Colors.red),
         );
       }
     }
