@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../menu_screen.dart'; // للانتقال للمنيو بعد الدخول
 import '../../services/auth_service.dart';
-import 'signup_screen.dart'; // استدعاء شاشة التسجيل الجديدة
+import '../menu_screen.dart'; // للانتقال للمنيو
+import 'signup_screen.dart'; // للانتقال للتسجيل
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,36 +11,33 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // مفاتيح التحكم بالنصوص
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService(); // خدمة التوثيق
 
-  // حالة التحميل وإظهار كلمة السر
   bool _isLoading = false;
   bool _isObscure = true;
 
-  // الألوان
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFF1A1A1A);
   final Color _fieldColor = const Color(0xFF2C2C2C);
 
-  // دالة الدخول (وهمية حالياً حتى نربطها بالسيرفر)
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    // 👇👇👇 الاتصال الحقيقي بالسيرفر
-    bool success = await _authService.login(
-      _emailController.text,
+    // 👇👇👇 التعديل هنا: نستقبل رسالة خطأ (String?) وليس (bool)
+    String? errorMessage = await _authService.login(
+      _emailController.text.trim(),
       _passwordController.text,
     );
 
     setState(() => _isLoading = false);
 
-    if (success) {
+    if (errorMessage == null) {
+      // null يعني لا يوجد خطأ (نجاح)
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -48,10 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
+      // يوجد خطأ، نعرضه للمستخدم
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid Email or Password ❌'),
+          SnackBar(
+            content: Text(errorMessage), // عرض رسالة السيرفر الحقيقية
             backgroundColor: Colors.red,
           ),
         );
@@ -71,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 1. الشعار أو الأيقونة
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -102,26 +99,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 40),
 
-                // 2. حقل البريد الإلكتروني
+                // حقل الإيميل
                 TextFormField(
                   controller: _emailController,
                   style: const TextStyle(color: Colors.white),
                   keyboardType: TextInputType.emailAddress,
                   decoration: _inputDecoration("Email", Icons.email_outlined),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter email';
-                    }
-                    return null;
-                  },
+                  validator: (val) => val!.isEmpty ? 'Required' : null,
                 ),
 
                 const SizedBox(height: 20),
 
-                // 3. حقل كلمة المرور
+                // حقل كلمة المرور
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: _isObscure, // إخفاء النص
+                  obscureText: _isObscure,
                   style: const TextStyle(color: Colors.white),
                   decoration: _inputDecoration("Password", Icons.lock_outline)
                       .copyWith(
@@ -132,24 +124,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 : Icons.visibility,
                             color: Colors.grey,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
+                          onPressed: () =>
+                              setState(() => _isObscure = !_isObscure),
                         ),
                       ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter password';
-                    }
-                    return null;
-                  },
+                  validator: (val) => val!.isEmpty ? 'Required' : null,
                 ),
 
                 const SizedBox(height: 10),
 
-                // زر "نسيت كلمة المرور"
+                // زر "نسيت كلمة المرور" (شكل فقط حالياً)
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -163,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 30),
 
-                // 4. زر الدخول
+                // زر الدخول
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -190,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                // رابط التسجيل
+                // رابط الانتقال للتسجيل
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -200,7 +184,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // 👇 الانتقال لشاشة التسجيل
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -226,7 +209,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // دالة مساعدة لتصميم الحقول (لتجنب تكرار الكود)
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,

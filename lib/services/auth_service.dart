@@ -11,7 +11,6 @@ class AuthService {
   final String _apiKey = 'FiloSecretKey202512341234';
 
   // 1. تسجيل حساب جديد
-  // 1. تسجيل حساب جديد (معدلة لترجع رسالة الخطأ)
   Future<String?> register(String name, String email, String password) async {
     try {
       final response = await http.post(
@@ -21,39 +20,54 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
-        return null; // null يعني العملية نجحت بدون أخطاء
+        return null; // null تعني نجاح (لا يوجد خطأ)
       } else {
-        // فك تشفير رسالة الخطأ القادمة من السيرفر
         final body = jsonDecode(response.body);
-        return body['error'] ?? 'فشل التسجيل لسبب غير معروف';
+        return body['error'] ?? 'فشل التسجيل';
       }
     } catch (e) {
       return 'خطأ في الاتصال بالإنترنت';
     }
   }
 
-  // 2. تسجيل الدخول
-  Future<bool> login(String email, String password) async {
+  // 2. التحقق من الرمز (Verify OTP)
+  Future<String?> verifyOTP(String email, String otp) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/verify'),
+        headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      if (response.statusCode == 200) {
+        return null; // نجاح
+      } else {
+        final body = jsonDecode(response.body);
+        return body['error'] ?? 'رمز التفعيل غير صحيح';
+      }
+    } catch (e) {
+      return 'خطأ في الاتصال';
+    }
+  }
+
+  // 3. تسجيل الدخول
+  Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/login'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': _apiKey, // 👈 وأضفناه هنا أيضاً
-        },
+        headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
         body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
-        print("تم الدخول بنجاح!");
-        return true;
+        // هنا يمكنك حفظ بيانات المستخدم إذا أردت
+        return null; // نجاح
       } else {
-        print('خطأ في الدخول: ${response.body}');
-        return false;
+        final body = jsonDecode(response.body);
+        return body['error'] ?? 'فشل تسجيل الدخول';
       }
     } catch (e) {
-      print('خطأ في الاتصال: $e');
-      return false;
+      return 'خطأ في الاتصال';
     }
   }
 }
