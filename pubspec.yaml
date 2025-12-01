@@ -15,7 +15,8 @@ dependencies:
   qr_flutter: ^4.1.0      # 👈 أضف هذه المكتبة الجديدة
   # حزمة للتواصل مع السيرفر (لربط API لاحقاً)
   http: ^1.2.1
-
+  video_player: ^2.8.1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -69,3 +70,4 @@ flutter:
   assets:
     - assets\icons\filo.png
     - assets\icons\splash_bg.png
+    - assets\videos\intro.mp4
