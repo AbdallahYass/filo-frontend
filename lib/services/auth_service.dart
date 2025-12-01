@@ -11,27 +11,24 @@ class AuthService {
   final String _apiKey = 'FiloSecretKey202512341234';
 
   // 1. تسجيل حساب جديد
-  Future<bool> register(String name, String email, String password) async {
+  // 1. تسجيل حساب جديد (معدلة لترجع رسالة الخطأ)
+  Future<String?> register(String name, String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/register'),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': _apiKey, // 👈 هذا هو السطر المفقود الذي يسبب المشكلة
-        },
+        headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
         body: jsonEncode({'name': name, 'email': email, 'password': password}),
       );
 
       if (response.statusCode == 201) {
-        print("تم التسجيل بنجاح!");
-        return true;
+        return null; // null يعني العملية نجحت بدون أخطاء
       } else {
-        print('خطأ في التسجيل: ${response.body}');
-        return false;
+        // فك تشفير رسالة الخطأ القادمة من السيرفر
+        final body = jsonDecode(response.body);
+        return body['error'] ?? 'فشل التسجيل لسبب غير معروف';
       }
     } catch (e) {
-      print('خطأ في الاتصال: $e');
-      return false;
+      return 'خطأ في الاتصال بالإنترنت';
     }
   }
 
