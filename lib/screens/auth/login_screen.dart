@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../menu_screen.dart'; // للانتقال للمنيو بعد الدخول
+import '../../services/auth_service.dart';
+import 'signup_screen.dart'; // استدعاء شاشة التسجيل الجديدة
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final AuthService _authService = AuthService();
 
   // حالة التحميل وإظهار كلمة السر
   bool _isLoading = false;
@@ -29,17 +32,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    // محاكاة الاتصال بالسيرفر (سنتستبدلها لاحقاً بـ API حقيقي)
-    await Future.delayed(const Duration(seconds: 2));
+    // 👇👇👇 الاتصال الحقيقي بالسيرفر
+    bool success = await _authService.login(
+      _emailController.text,
+      _passwordController.text,
+    );
 
     setState(() => _isLoading = false);
 
-    // الانتقال للشاشة الرئيسية
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MenuScreen()),
-      );
+    if (success) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MenuScreen()),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid Email or Password ❌'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -93,8 +109,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: _inputDecoration("Email", Icons.email_outlined),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Please enter email';
+                    }
                     return null;
                   },
                 ),
@@ -123,8 +140,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                   validator: (value) {
-                    if (value == null || value.isEmpty)
+                    if (value == null || value.isEmpty) {
                       return 'Please enter password';
+                    }
                     return null;
                   },
                 ),
@@ -182,7 +200,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // الانتقال لصفحة التسجيل (سنبنيها لاحقاً)
+                        // 👇 الانتقال لشاشة التسجيل
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignupScreen(),
+                          ),
+                        );
                       },
                       child: Text(
                         "Sign Up",
