@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-//import 'menu_screen.dart';
 import 'auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -18,31 +17,26 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // 1. تحديد مسار الفيديو
     _controller = VideoPlayerController.asset('assets/videos/intro.mp4')
       ..initialize().then((_) {
-        // 2. عند انتهاء التحميل، ابدأ التشغيل
         setState(() {
           _isInitialized = true;
         });
-        _controller.setVolume(
-          0.0,
-        ); // كتم الصوت (اختياري، لضمان التشغيل التلقائي)
+        _controller.setVolume(0.0);
         _controller.play();
       });
 
-    // 3. مراقبة الفيديو لمعرفة متى ينتهي
     _controller.addListener(() {
-      // إذا وصل الفيديو للنهاية
       if (_controller.value.position >= _controller.value.duration) {
         _navigateToHome();
       }
     });
   }
 
-  // دالة الانتقال للمنيو (تضمن عدم التكرار)
   void _navigateToHome() {
-    // التأكد من عدم الانتقال أكثر من مرة
+    // إيقاف الفيديو قبل الانتقال لضمان عدم استمرار الصوت أو العمل في الخلفية
+    _controller.pause();
+
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -52,7 +46,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void dispose() {
-    // تنظيف الذاكرة وإغلاق الفيديو عند الخروج
     _controller.dispose();
     super.dispose();
   }
@@ -60,21 +53,68 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // لون خلفية أثناء تحميل الفيديو
-      body: Center(
-        child: _isInitialized
-            ? SizedBox.expand(
-                child: FittedBox(
-                  // هذا يجعل الفيديو يملأ الشاشة بالكامل (Full Screen)
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: _controller.value.size.width,
-                    height: _controller.value.size.height,
-                    child: VideoPlayer(_controller),
+      backgroundColor: Colors.black,
+      // 👇👇👇 استخدمنا Stack لوضع العناصر فوق بعضها
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. طبقة الفيديو (في الخلفية)
+          Center(
+            child: _isInitialized
+                ? SizedBox.expand(
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _controller.value.size.width,
+                        height: _controller.value.size.height,
+                        child: VideoPlayer(_controller),
+                      ),
+                    ),
+                  )
+                : Container(), // شاشة سوداء حتى يجهز
+          ),
+
+          // 2. طبقة زر التخطي (في الأمام)
+          // يظهر فقط عندما يبدأ الفيديو بالعمل
+          if (_isInitialized)
+            Positioned(
+              top: 50, // مسافة من الأعلى
+              right: 20, // مسافة من اليمين
+              child: GestureDetector(
+                onTap: _navigateToHome, // عند الضغط، نفذ نفس دالة الانتقال
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5), // خلفية شفافة
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.5)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        "Skip",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(width: 5),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                    ],
                   ),
                 ),
-              )
-            : Container(), // شاشة سوداء حتى يجهز الفيديو
+              ),
+            ),
+        ],
       ),
     );
   }
