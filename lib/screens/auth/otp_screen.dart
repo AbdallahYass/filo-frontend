@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import 'phone_verification_screen.dart'; // استيراد شاشة الكود
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -27,12 +28,18 @@ class _OtpScreenState extends State<OtpScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تم التفعيل بنجاح! ✅'),
+            content: Text('تم تفعيل الإيميل! الآن دور الهاتف 📱'),
             backgroundColor: Colors.green,
           ),
         );
-        // العودة لشاشة تسجيل الدخول (نحذف كل الشاشات السابقة ونرجع للأولى)
-        Navigator.of(context).popUntil((route) => route.isFirst);
+
+        // 👇👇👇 الانتقال لشاشة الهاتف
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PhoneVerificationScreen(email: widget.email),
+          ),
+        );
       }
     } else {
       if (mounted) {

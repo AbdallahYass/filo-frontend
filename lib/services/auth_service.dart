@@ -76,4 +76,32 @@ class AuthService {
       return 'خطأ في الاتصال';
     }
   }
+
+  // طلب رمز الهاتف
+  Future<bool> sendPhoneOtp(String email, String phone) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/phone/send'),
+        headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
+        body: jsonEncode({'email': email, 'phone': phone}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // تفعيل الهاتف
+  Future<bool> verifyPhoneOtp(String email, String code) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/phone/verify'),
+        headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
+        body: jsonEncode({'email': email, 'code': code}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
 }
