@@ -100,9 +100,14 @@ class CartService {
     try {
       print('Sending order to: $_baseUrl');
 
+      // داخل دالة placeOrder في http.post
       final response = await http.post(
         Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key':
+              'FiloSecretKey2025', // 👈 أضف هذا السطر (نفس الكلمة اللي في السيرفر)
+        },
         body: jsonEncode(orderData),
       );
 
