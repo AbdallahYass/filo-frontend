@@ -44,22 +44,41 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
 
   void _verifyCode() async {
     setState(() => _isLoading = true);
+
+    // استدعاء دالة التفعيل في السيرفر
     bool success = await _authService.verifyPhoneOtp(
-      widget.email,
-      _codeController.text,
+      widget.email, // نستخدم الإيميل الذي مررناه للشاشة
+      _codeController.text.trim(),
     );
+
     setState(() => _isLoading = false);
 
     if (success) {
-      // 🚀 النجاح النهائي: الذهاب للمنيو
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const MenuScreen()),
-        (route) => false,
-      );
+      if (mounted) {
+        // 1. رسالة نجاح
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("تم تفعيل حسابك بالكامل! أهلاً بك في Filo 🎉"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // 2. الانتقال للمنيو (وحذف كل الشاشات السابقة من الذاكرة)
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const MenuScreen()),
+          (route) => false, // هذا يمنع المستخدم من الرجوع لصفحة التسجيل
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("الرمز خطأ"), backgroundColor: Colors.red),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("الرمز خطأ أو منتهي الصلاحية ❌"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -80,6 +99,8 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         child: Column(
           children: [
             if (!_isCodeSent) ...[
+              Icon(Icons.phone_iphone, size: 80, color: _goldColor),
+              const SizedBox(height: 30),
               const Text(
                 "أدخل رقم هاتفك",
                 style: TextStyle(color: Colors.white, fontSize: 18),
