@@ -68,6 +68,10 @@ class AuthService {
         // 👇👇👇 التقاط حالة عدم التفعيل
         if (body['error'] == 'NOT_VERIFIED') {
           return 'NOT_VERIFIED'; // نرجع هذه الكلمة للشاشة لتتصرف
+        } else {
+          if (body['error'] == 'PHONE_NOT_VERIFIED') {
+            return 'PHONE_NOT_VERIFIED'; // نرجع هذه الكلمة للشاشة لتتصرف
+          }
         }
 
         return body['error'] ?? 'فشل تسجيل الدخول';

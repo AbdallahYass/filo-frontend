@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'auth/login_screen.dart';

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
-import '../menu_screen.dart'; // للانتقال للمنيو
-import 'signup_screen.dart'; // للانتقال للتسجيل
-import 'otp_screen.dart'; // للانتقال للتسجيل
+import '../menu_screen.dart';
+import 'signup_screen.dart';
+import 'otp_screen.dart';
+import 'phone_verification_screen.dart'; // 👈 استيراد شاشة تفعيل الهاتف
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final AuthService _authService = AuthService(); // خدمة التوثيق
+  final AuthService _authService = AuthService();
 
   bool _isLoading = false;
   bool _isObscure = true;
@@ -44,16 +45,17 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const MenuScreen()),
         );
       }
-    } else if (result == 'NOT_VERIFIED') {
-      // 2. الحساب غير مفعل -> شاشة الكود
+    }
+    // 2. حالة الإيميل غير مفعل
+    else if (result == 'NOT_VERIFIED') {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('حسابك غير مفعل! تم إرسال رمز جديد 📧'),
+            content: Text('الإيميل غير مفعل! تم إرسال رمز جديد 📧'),
             backgroundColor: Colors.orange,
           ),
         );
-        // الانتقال لشاشة الـ OTP
+        // الانتقال لشاشة تفعيل الإيميل
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -62,8 +64,28 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
-    } else {
-      // 3. خطأ آخر (باسوورد غلط، نت مفصول)
+    }
+    // 3. حالة الهاتف غير مفعل (الجديد) 👇👇👇
+    else if (result == 'PHONE_NOT_VERIFIED') {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('رقم الهاتف غير مفعل! يرجى استكماله 📱'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        // الانتقال لشاشة تفعيل الهاتف
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                PhoneVerificationScreen(email: _emailController.text.trim()),
+          ),
+        );
+      }
+    }
+    // 4. خطأ آخر (باسوورد غلط، نت مفصول)
+    else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result), backgroundColor: Colors.red),
@@ -96,9 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: _goldColor,
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
                 const Text(
                   "Welcome Back!",
                   style: TextStyle(
@@ -111,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   "Sign in to continue",
                   style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
-
                 const SizedBox(height: 40),
 
                 // حقل الإيميل
@@ -122,7 +141,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: _inputDecoration("Email", Icons.email_outlined),
                   validator: (val) => val!.isEmpty ? 'Required' : null,
                 ),
-
                 const SizedBox(height: 20),
 
                 // حقل كلمة المرور
@@ -145,10 +163,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                   validator: (val) => val!.isEmpty ? 'Required' : null,
                 ),
-
                 const SizedBox(height: 10),
 
-                // زر "نسيت كلمة المرور" (شكل فقط حالياً)
+                // زر نسيت كلمة المرور
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -159,7 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
 
                 // زر الدخول
@@ -186,10 +202,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
 
-                // رابط الانتقال للتسجيل
+                // رابط التسجيل
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
