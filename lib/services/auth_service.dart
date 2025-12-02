@@ -7,7 +7,7 @@ class AuthService {
   // رابط السيرفر العالمي
   final String _baseUrl = 'https://filo-menu.onrender.com/api/auth';
 
-  // 🔐 مفتاح الحماية (نفس الموجود في إعدادات Render)
+  // 🔐 مفتاح الحماية
   final String _apiKey = 'FiloSecretKey202512341234';
 
   // 1. تسجيل حساب جديد
@@ -20,7 +20,7 @@ class AuthService {
       );
 
       if (response.statusCode == 201) {
-        return null; // null تعني نجاح (لا يوجد خطأ)
+        return null; // نجاح
       } else {
         final body = jsonDecode(response.body);
         return body['error'] ?? 'فشل التسجيل';
@@ -30,7 +30,7 @@ class AuthService {
     }
   }
 
-  // 2. التحقق من الرمز (Verify OTP)
+  // 2. التحقق من رمز الإيميل (Verify Email OTP)
   Future<String?> verifyOTP(String email, String otp) async {
     try {
       final response = await http.post(
@@ -51,7 +51,6 @@ class AuthService {
   }
 
   // 3. تسجيل الدخول
-  // 3. تسجيل الدخول (المعدلة)
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
@@ -65,13 +64,11 @@ class AuthService {
       } else {
         final body = jsonDecode(response.body);
 
-        // 👇👇👇 التقاط حالة عدم التفعيل
+        // 👇 معالجة الحالات الخاصة
         if (body['error'] == 'NOT_VERIFIED') {
-          return 'NOT_VERIFIED'; // نرجع هذه الكلمة للشاشة لتتصرف
-        } else {
-          if (body['error'] == 'PHONE_NOT_VERIFIED') {
-            return 'PHONE_NOT_VERIFIED'; // نرجع هذه الكلمة للشاشة لتتصرف
-          }
+          return 'NOT_VERIFIED';
+        } else if (body['error'] == 'PHONE_NOT_VERIFIED') {
+          return 'PHONE_NOT_VERIFIED';
         }
 
         return body['error'] ?? 'فشل تسجيل الدخول';
@@ -81,7 +78,7 @@ class AuthService {
     }
   }
 
-  // طلب رمز الهاتف
+  // 4. طلب رمز الهاتف
   Future<bool> sendPhoneOtp(String email, String phone) async {
     try {
       final response = await http.post(
@@ -95,13 +92,14 @@ class AuthService {
     }
   }
 
-  // تفعيل الهاتف
+  // 5. تفعيل الهاتف
   Future<bool> verifyPhoneOtp(String email, String code) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/phone/verify'),
         headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
-        body: jsonEncode({'email': email, 'code': code}),
+        // 👇👇👇 التعديل هنا: غيرنا كلمة 'code' إلى 'otp' لتطابق السيرفر
+        body: jsonEncode({'email': email, 'otp': code}),
       );
       return response.statusCode == 200;
     } catch (e) {

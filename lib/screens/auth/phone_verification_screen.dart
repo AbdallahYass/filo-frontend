@@ -130,6 +130,8 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 ),
               ),
             ] else ...[
+              Icon(Icons.phone_iphone, size: 80, color: _goldColor),
+              const SizedBox(height: 30),
               const Text(
                 "أدخل الرمز الذي وصلك",
                 style: TextStyle(color: Colors.white, fontSize: 18),
