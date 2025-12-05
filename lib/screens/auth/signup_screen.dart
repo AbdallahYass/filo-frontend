@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'otp_screen.dart'; // استيراد شاشة الكود
@@ -22,7 +23,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _register() async {
     if (!_formKey.currentState!.validate()) return;
-
+    if (kDebugMode) {
+      print("TEST BUTTON CLICKED");
+    }
     setState(() => _isLoading = true);
 
     String? error = await _authService.register(
