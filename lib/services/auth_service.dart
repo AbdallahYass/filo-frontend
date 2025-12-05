@@ -16,23 +16,38 @@ class AuthService {
   final _storage = const FlutterSecureStorage();
   //
   // 1. تسجيل حساب جديد
+  // 1. تسجيل حساب جديد (نسخة التشخيص)
   Future<String?> register(String name, String email, String password) async {
+    print("🚀 1. بدأت محاولة الاتصال بالسيرفر...");
+    print("📍 الرابط المستخدم: $_baseUrl/register");
+
     try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/register'),
-        headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
-        body: jsonEncode({'name': name, 'email': email, 'password': password}),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/register'),
+            headers: {'Content-Type': 'application/json', 'x-api-key': _apiKey},
+            body: jsonEncode({
+              'name': name,
+              'email': email,
+              'password': password,
+            }),
+          )
+          .timeout(const Duration(seconds: 20)); // ⏰ أضفنا مهلة 20 ثانية
+
+      print("📡 2. وصل رد من السيرفر! كود الحالة: ${response.statusCode}");
+      print("📄 محتوى الرد: ${response.body}");
 
       if (response.statusCode == 201) {
+        print("✅ 3. تم التسجيل بنجاح!");
         return null; // نجاح
       } else {
         final body = jsonDecode(response.body);
-        print("📥 رد السيرفر الكامل: $body");
-        return body['error'] ?? 'فشل التسجيل1';
+        return body['error'] ?? 'فشل التسجيل';
       }
     } catch (e) {
-      return 'خطأ في الاتصال بالإنترنت';
+      // 🚨 هنا المشكلة كانت مخفية!
+      print("☠️ 4. حدث خطأ أثناء الاتصال (CATCH): $e");
+      return 'خطأ في الاتصال: $e';
     }
   }
 
