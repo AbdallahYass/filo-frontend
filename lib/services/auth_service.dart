@@ -28,6 +28,7 @@ class AuthService {
         return null; // نجاح
       } else {
         final body = jsonDecode(response.body);
+        print("📥 رد السيرفر الكامل: $body");
         return body['error'] ?? 'فشل التسجيل1';
       }
     } catch (e) {
