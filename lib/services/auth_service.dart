@@ -2,6 +2,8 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+// 👇 1. إضافة مكتبة التخزين الآمن (تأكد أنك أضفتها في pubspec.yaml)
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   // رابط السيرفر العالمي
@@ -10,6 +12,9 @@ class AuthService {
   // 🔐 مفتاح الحماية
   final String _apiKey = 'FiloSecretKey202512341234';
 
+  // 👇 2. إنشاء كائن التخزين
+  final _storage = const FlutterSecureStorage();
+  //
   // 1. تسجيل حساب جديد
   Future<String?> register(String name, String email, String password) async {
     try {
@@ -23,7 +28,7 @@ class AuthService {
         return null; // نجاح
       } else {
         final body = jsonDecode(response.body);
-        return body['error'] ?? 'فشل التسجيل';
+        return body['error'] ?? 'فشل التسجيل1';
       }
     } catch (e) {
       return 'خطأ في الاتصال بالإنترنت';
@@ -60,6 +65,16 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
+        // 👇 التعديل هنا: استخراج التوكن وحفظه
+        final body = jsonDecode(response.body);
+        String token = body['token'];
+
+        // حفظ التوكن في الخزنة الآمنة
+        await _storage.write(key: 'auth_token', value: token);
+
+        // (اختياري) حفظ بيانات المستخدم إذا احتجتها
+        // await _storage.write(key: 'user_data', value: jsonEncode(body['user']));
+
         return null; // نجاح
       } else {
         final body = jsonDecode(response.body);
@@ -105,5 +120,26 @@ class AuthService {
     } catch (e) {
       return false;
     }
+  }
+
+  // ==========================================
+  // 👇 دوال إضافية مساعدة (مهمة جداً لإدارة الجلسة)
+  // ==========================================
+
+  // 6. تسجيل الخروج (حذف التوكن)
+  Future<void> logout() async {
+    await _storage.delete(key: 'auth_token');
+    // await _storage.delete(key: 'user_data');
+  }
+
+  // 7. جلب التوكن الحالي (للاستخدام في الطلبات الأخرى)
+  Future<String?> getToken() async {
+    return await _storage.read(key: 'auth_token');
+  }
+
+  // 8. التأكد هل المستخدم مسجل دخول أم لا
+  Future<bool> isLoggedIn() async {
+    String? token = await getToken();
+    return token != null;
   }
 }
