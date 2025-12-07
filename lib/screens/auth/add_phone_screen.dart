@@ -27,7 +27,9 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
 
     // 🔴 استخدم رابطك (localhost أو السيرفر)
     // للمحاكي: http://10.0.2.2:3000
-    final url = Uri.parse('https://www.filomenu.com/api/user/update-phone');
+    final url = Uri.parse(
+      'https://filo-menu.onrender.com/api/user/update-phone',
+    );
 
     try {
       final response = await http.post(
