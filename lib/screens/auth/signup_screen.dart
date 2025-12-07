@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../services/auth_service.dart';
 import 'otp_screen.dart';
 // 1. استيراد مكتبة جوجل باسم مستعار لتجنب المشاكل
@@ -22,7 +23,13 @@ class _SignupScreenState extends State<SignupScreen> {
   final AuthService _authService = AuthService();
 
   // 2. تعريف كائن جوجل هنا
-  final auth.GoogleSignIn _googleSignIn = auth.GoogleSignIn();
+  final auth.GoogleSignIn _googleSignIn = kIsWeb
+      ? auth.GoogleSignIn(
+          // 👇 انسخ الكود الطويل من الصورة وضعه هنا بدلاً من النص الموجود
+          clientId:
+              "998803872990-sta5bagomnjk4h1hd4c0ra2tjldtsj5u.apps.googleusercontent.com",
+        )
+      : auth.GoogleSignIn();
 
   bool _isLoading = false;
   final Color _goldColor = const Color(0xFFC5A028);
@@ -37,7 +44,6 @@ class _SignupScreenState extends State<SignupScreen> {
       final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        // المستخدم ألغى العملية
         setState(() => _isLoading = false);
         return;
       }
