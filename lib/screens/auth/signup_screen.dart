@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // للويب
+import 'package:intl_phone_field/intl_phone_field.dart'; // 👈 استيراد المكتبة
 import '../../services/auth_service.dart';
 import 'otp_screen.dart';
-// 1. مكتبات الاتصال الجديدة (مهمة جداً)
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart' as auth;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../menu_screen.dart';
+import 'add_phone_screen.dart'; // تأكد من استيراد الشاشات اللازمة
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -18,13 +21,16 @@ class _SignupScreenState extends State<SignupScreen> {
   // Controllers
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  // حذفنا _phoneController لأن المكتبة تدير النص بنفسها
 
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
-  // تعريف كائن جوجل (حسب كودك الصحيح)
+  // 🔥 متغير لحفظ الرقم الكامل (مع الكود الدولي)
+  String _completePhoneNumber = '';
+
+  // تعريف كائن جوجل
   final auth.GoogleSignIn _googleSignIn = kIsWeb
       ? auth.GoogleSignIn(
           clientId:
@@ -36,15 +42,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFF1A1A1A);
 
-  // 🔥 الدالة المعدلة بالكامل لربط السيرفر
+  // --- دوال جوجل (كما هي) ---
   Future<void> _handleGoogleSignIn() async {
     try {
       setState(() => _isLoading = true);
-
-      // 1. تنظيف الجلسة القديمة
       await _googleSignIn.signOut();
-
-      // 2. طلب الدخول
       final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -52,85 +54,84 @@ class _SignupScreenState extends State<SignupScreen> {
         return;
       }
 
-      // 3. استخراج التوكن
       final auth.GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
-      // ✅ هنا نستخدم الـ Access Token لأنه هو اللي اشتغل معك
       String? tokenToSend = googleAuth.accessToken;
 
-      print("🚀 Token ready to send: $tokenToSend");
-
       if (tokenToSend != null) {
-        // 4. إرسال التوكن إلى سيرفرك (Node.js)
         final response = await http.post(
-          Uri.parse(
-            'https://filo-menu.onrender.com/api/auth/google',
-          ), // رابط السيرفر
+          Uri.parse('https://filo-menu.onrender.com/api/auth/google'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'accessToken': tokenToSend, // نرسل الـ Access Token
-          }),
+          body: jsonEncode({'accessToken': tokenToSend}),
         );
 
         if (response.statusCode == 200) {
-          // 🎉 نجاح! السيرفر رد علينا
           final data = jsonDecode(response.body);
-          print("✅ Server Response: $data");
 
-          // هنا المفروض تخزن التوكن القادم من السيرفر (data['token'])
-          // وتنتقل للصفحة الرئيسية
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', data['token']);
+          if (data['user'] != null) {
+            await prefs.setString('user', jsonEncode(data['user']));
+          }
+
+          // فحص هل الرقم موجود
+          String? savedPhone = data['user']['phone'];
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                  "Login Success! Welcome ${googleUser.displayName}",
-                ),
+                content: Text("Welcome ${googleUser.displayName}"),
                 backgroundColor: Colors.green,
               ),
             );
-            // Navigator.pushReplacementNamed(context, '/home'); // مثال للانتقال
+
+            // التوجيه الذكي
+            if (savedPhone == null || savedPhone.isEmpty) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AddPhoneScreen()),
+              );
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MenuScreen()),
+              );
+            }
           }
         } else {
-          // خطأ من السيرفر
           print("❌ Server Error: ${response.body}");
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Server Error: ${response.statusCode}"),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
         }
       }
-
       setState(() => _isLoading = false);
     } catch (error) {
       print(error);
       setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Google Sign In Failed: $error"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     }
   }
 
+  // --- دالة التسجيل المعدلة ---
   void _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // التحقق من أن الرقم تم إدخاله
+    if (_completePhoneNumber.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter a valid phone number"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
+    // إرسال البيانات (نرسل الرقم الكامل _completePhoneNumber)
     String? error = await _authService.register(
       _nameController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text,
-      _phoneController.text.trim(),
+      _completePhoneNumber, // ✅ الرقم الكامل هنا
     );
 
     setState(() => _isLoading = false);
@@ -170,19 +171,6 @@ class _SignupScreenState extends State<SignupScreen> {
             key: _formKey,
             child: Column(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _goldColor, width: 2),
-                  ),
-                  child: Icon(
-                    Icons.restaurant_menu,
-                    size: 60,
-                    color: _goldColor,
-                  ),
-                ),
-                const SizedBox(height: 30),
                 const Text(
                   "Create Account",
                   style: TextStyle(
@@ -204,12 +192,35 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                _buildTextField(
-                  _phoneController,
-                  "Phone Number",
-                  Icons.phone,
-                  inputType: TextInputType.phone,
+                // 🔥🔥 حقل الهاتف الجديد (IntlPhoneField) 🔥🔥
+                IntlPhoneField(
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    filled: true,
+                    fillColor: const Color(0xFF2C2C2C),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: _goldColor),
+                    ),
+                    counterText: "", // إخفاء العداد
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  dropdownTextStyle: const TextStyle(color: Colors.white),
+                  dropdownIcon: Icon(Icons.arrow_drop_down, color: _goldColor),
+                  initialCountryCode: 'JO', // الدولة الافتراضية
+                  disableLengthCheck: false, // تفعيل التحقق من الطول
+                  onChanged: (phone) {
+                    // حفظ الرقم الكامل عند التغيير
+                    _completePhoneNumber = phone.completeNumber;
+                  },
+                  languageCode: "en",
                 ),
+
                 const SizedBox(height: 20),
 
                 _buildTextField(
@@ -321,9 +332,6 @@ class _SignupScreenState extends State<SignupScreen> {
         if (val == null || val.isEmpty) return "Required";
         if (inputType == TextInputType.emailAddress && !val.contains('@')) {
           return "Invalid Email";
-        }
-        if (inputType == TextInputType.phone && val.length < 9) {
-          return "Invalid Phone";
         }
         return null;
       },

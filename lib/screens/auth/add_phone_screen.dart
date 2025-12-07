@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../menu_screen.dart'; // تأكد من المسار
+import 'package:intl_phone_field/intl_phone_field.dart'; // 👈 استيراد المكتبة
+import '../menu_screen.dart';
 
 class AddPhoneScreen extends StatefulWidget {
   const AddPhoneScreen({super.key});
@@ -12,7 +13,8 @@ class AddPhoneScreen extends StatefulWidget {
 }
 
 class _AddPhoneScreenState extends State<AddPhoneScreen> {
-  final _phoneController = TextEditingController();
+  // متغير لحفظ الرقم الكامل مع الكود الدولي
+  String fullPhoneNumber = '';
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
 
@@ -21,12 +23,10 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
 
     setState(() => _isLoading = true);
 
-    // جلب التوكن المحفوظ
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
 
-    // 🔴 استخدم رابطك (localhost أو السيرفر)
-    // للمحاكي: http://10.0.2.2:3000
+    // 🔴 عدل الرابط حسب سيرفرك (localhost أو Live)
     final url = Uri.parse(
       'https://filo-menu.onrender.com/api/user/update-phone',
     );
@@ -36,13 +36,12 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // التوكن ضروري عشان نعرف مين اليوزر
+          'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'phone': _phoneController.text.trim()}),
+        body: jsonEncode({'phone': fullPhoneNumber}), // نرسل الرقم الكامل
       );
 
       if (response.statusCode == 200) {
-        // نجح الحفظ -> ع المنيو
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -68,12 +67,16 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // تعريف الألوان
+    final Color goldColor = const Color(0xFFC5A028);
+    final Color darkFieldColor = const Color(0xFF2C2C2C);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
         title: const Text("Complete Profile"),
         backgroundColor: Colors.transparent,
-        foregroundColor: const Color(0xFFC5A028),
+        foregroundColor: goldColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -92,32 +95,48 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "We need your phone number to contact you for orders.",
+                "Select your country and enter phone number.",
                 style: TextStyle(color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
 
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                style: const TextStyle(color: Colors.white),
+              // 🔥🔥 حقل الهاتف الذكي الجديد 🔥🔥
+              IntlPhoneField(
                 decoration: InputDecoration(
-                  labelText: "Phone Number",
+                  labelText: 'Phone Number',
                   labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
-                  fillColor: const Color(0xFF2C2C2C),
+                  fillColor: darkFieldColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Color(0xFFC5A028)),
                     borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: goldColor),
                   ),
-                  prefixIcon: const Icon(Icons.phone, color: Color(0xFFC5A028)),
+                  counterText: "", // لإخفاء عداد الأحرف أسفل الحقل
                 ),
-                validator: (val) => val!.length < 9 ? "Invalid Phone" : null,
+                style: const TextStyle(color: Colors.white), // لون الرقم
+                dropdownTextStyle: const TextStyle(
+                  color: Colors.white,
+                ), // لون القائمة
+                dropdownIcon: Icon(Icons.arrow_drop_down, color: goldColor),
+
+                initialCountryCode: 'JO', // الدولة الافتراضية (الأردن مثلاً)
+
+                onChanged: (phone) {
+                  // هنا يتم حفظ الرقم كاملاً (مثال: +962791234567)
+                  fullPhoneNumber = phone.completeNumber;
+                },
+
+                // هذه الخاصية تمنع الإدخال إذا كان الرقم غير صالح للدولة المختارة
+                disableLengthCheck: false,
+                showCountryFlag: true,
+                languageCode: "en", // لغة أسماء الدول
               ),
+
               const SizedBox(height: 30),
 
               SizedBox(
@@ -125,9 +144,7 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _savePhone,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC5A028),
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: goldColor),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
                       : const Text(
