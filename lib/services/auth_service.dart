@@ -32,7 +32,7 @@ class AuthService {
               'password': password,
             }),
           )
-          .timeout(const Duration(seconds: 20)); // ⏰ أضفنا مهلة 20 ثانية
+          .timeout(const Duration(seconds: 90)); // ⏰ أضفنا مهلة 20 ثانية
 
       print("📡 2. وصل رد من السيرفر! كود الحالة: ${response.statusCode}");
       print("📄 محتوى الرد: ${response.body}");
