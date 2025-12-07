@@ -14,7 +14,7 @@ class AuthService {
 
   // 👇 2. إنشاء كائن التخزين
   final _storage = const FlutterSecureStorage();
-  //
+
   // 1. تسجيل حساب جديد
   // 1. تسجيل حساب جديد (نسخة التشخيص)
   Future<String?> register(String name, String email, String password) async {
