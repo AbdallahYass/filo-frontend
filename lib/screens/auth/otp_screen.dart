@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import 'login_screen.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -24,12 +25,20 @@ class _OtpScreenState extends State<OtpScreen> {
     setState(() => _isLoading = false);
 
     if (error == null) {
+      // ✅ نجاح التفعيل
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تم تفعيل الإيميل بنجاح!'),
+            content: Text("تم تفعيل الحساب بنجاح! قم بتسجيل الدخول الآن ✅"),
             backgroundColor: Colors.green,
           ),
+        );
+
+        // 🚀 الانتقال لصفحة تسجيل الدخول وحذف الصفحات السابقة من الذاكرة
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (route) => false, // هذا يمنع المستخدم من الرجوع للخلف بزر الـ Back
         );
       }
     } else {

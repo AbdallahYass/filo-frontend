@@ -110,11 +110,9 @@ class AuthService {
         return null; // نجاح
       } else {
         // التحقق من الحالات الخاصة
-        if (body['error'] == 'NOT_VERIFIED')
+        if (body['error'] == 'NOT_VERIFIED') {
           return 'NOT_VERIFIED'; // الإيميل غير مفعل
-        if (body['error'] == 'PHONE_NOT_VERIFIED')
-          return 'PHONE_NOT_VERIFIED'; // الهاتف غير مفعل
-
+        }
         return body['error'] ?? 'فشل تسجيل الدخول';
       }
     } catch (e) {
