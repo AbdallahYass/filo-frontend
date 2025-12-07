@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
-import 'otp_screen.dart'; // استيراد شاشة الكود
+import 'otp_screen.dart';
+// 1. استيراد مكتبة جوجل باسم مستعار لتجنب المشاكل
+import 'package:google_sign_in/google_sign_in.dart' as auth;
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -13,34 +15,81 @@ class _SignupScreenState extends State<SignupScreen> {
   // Controllers
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController(); // 📱 1. كنترولر الهاتف
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
+  // 2. تعريف كائن جوجل هنا
+  final auth.GoogleSignIn _googleSignIn = auth.GoogleSignIn();
+
   bool _isLoading = false;
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFF1A1A1A);
+
+  // 3. دالة التعامل مع جوجل (تفتح النافذة)
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      setState(() => _isLoading = true);
+
+      // فتح نافذة جوجل
+      final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // المستخدم ألغى العملية
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // استخراج التوكن
+      final auth.GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      print("Google Token: ${googleAuth.idToken}");
+
+      // ملاحظة: هنا لاحقاً سنرسل التوكن للسيرفر (Node.js)
+      // حالياً سنظهر رسالة نجاح فقط
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Welcome ${googleUser.displayName}!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      setState(() => _isLoading = false);
+    } catch (error) {
+      print(error);
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Google Sign In Failed: $error"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   void _register() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    // 🚀 2. إرسال الهاتف مع البيانات
     String? error = await _authService.register(
       _nameController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text,
-      _phoneController.text.trim(), // إرسال الهاتف
+      _phoneController.text.trim(),
     );
 
     setState(() => _isLoading = false);
 
     if (error == null) {
       if (mounted) {
-        // نجاح! انتقل لشاشة تفعيل الإيميل
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -97,7 +146,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // 📱 3. حقل الهاتف الجديد
+                // الهاتف
                 _buildTextField(
                   _phoneController,
                   "Phone Number",
@@ -115,7 +164,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // زر التسجيل
+                // زر التسجيل العادي
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -139,6 +188,55 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // ------------ فاصل (OR) ------------
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey[700])),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text("OR", style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey[700])),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // ------------ زر جوجل الجديد ------------
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _handleGoogleSignIn,
+                    icon: _isLoading
+                        ? const SizedBox() // إخفاء الأيقونة عند التحميل
+                        : const Icon(
+                            Icons.login,
+                            color: Colors.black,
+                          ), // أيقونة مؤقتة
+                    label: Text(
+                      _isLoading ? "Processing..." : "Continue with Google",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          Colors.white, // خلفية بيضاء كلاسيكية لجوجل
+                      foregroundColor: Colors.black,
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+                // ----------------------------------------
               ],
             ),
           ),
@@ -147,18 +245,17 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // دالة بناء الحقول المحسنة
   Widget _buildTextField(
     TextEditingController controller,
     String label,
     IconData icon, {
     bool isPassword = false,
-    TextInputType inputType = TextInputType.text, // إضافة نوع الإدخال
+    TextInputType inputType = TextInputType.text,
   }) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
-      keyboardType: inputType, // تحديد نوع الكيبورد (أرقام، إيميل، نص)
+      keyboardType: inputType,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
