@@ -9,7 +9,8 @@ import 'item_detail_screen.dart';
 import 'cart_screen.dart';
 import 'all_items_screen.dart';
 import 'qr_scanner_screen.dart'; // استيراد الماسح الضوئي
-import 'qr_generator_screen.dart'; // استيراد المولد
+import 'qr_generator_screen.dart';
+import 'settings_screen.dart'; // استيراد المولد
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -96,6 +97,18 @@ class _MenuScreenState extends State<MenuScreen> {
                 MaterialPageRoute(
                   builder: (context) => const QRGeneratorScreen(),
                 ),
+              );
+            },
+          ),
+
+          IconButton(
+            icon: const Icon(Icons.settings),
+            color: const Color(0xFFC5A028), // لون الذهب
+            onPressed: () {
+              // عند الضغط، انتقل إلى شاشة الإعدادات
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
             },
           ),

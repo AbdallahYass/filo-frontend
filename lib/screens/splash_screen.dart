@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'auth/login_screen.dart';
+import '../../services/auth_service.dart';
+import 'menu_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,6 +16,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  final AuthService _authService = AuthService(); // تعريف خدمة التحقق
 
   @override
   void initState() {
@@ -28,20 +31,33 @@ class _SplashScreenState extends State<SplashScreen> {
         _controller.play();
       });
 
+    // عند انتهاء الفيديو، نفذ دالة التحقق والانتقال
     _controller.addListener(() {
       if (_controller.value.position >= _controller.value.duration) {
-        _navigateToHome();
+        _checkAuthAndNavigate(); // 👈 استدعاء الدالة الجديدة
       }
     });
   }
 
-  void _navigateToHome() {
-    // إيقاف الفيديو قبل الانتقال لضمان عدم استمرار الصوت أو العمل في الخلفية
+  // 🔥🔥🔥 الدالة المعدلة التي تتحقق من التوكن وتحدد الوجهة 🔥🔥🔥
+  Future<void> _checkAuthAndNavigate() async {
+    // نوقف الفيديو أولاً لمنع استمراره في الخلفية
     _controller.pause();
+
+    // للتأكد من عدم تنفيذ الدالة أكثر من مرة عند انتهاء الفيديو والضغط على تخطي في نفس الوقت
+    if (ModalRoute.of(context)?.isCurrent == false) return;
+
+    // 1. فحص حالة التوكن
+    bool isLoggedIn = await _authService.isLoggedIn();
+
+    // 2. تحديد الوجهة بناءً على حالة تسجيل الدخول
+    Widget nextScreen = isLoggedIn ? const MenuScreen() : const LoginScreen();
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (context) => nextScreen,
+        ), // 👈 الانتقال الذكي
       );
     }
   }
@@ -56,7 +72,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      // 👇👇👇 استخدمنا Stack لوضع العناصر فوق بعضها
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -77,20 +92,19 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
 
           // 2. طبقة زر التخطي (في الأمام)
-          // يظهر فقط عندما يبدأ الفيديو بالعمل
           if (_isInitialized)
             Positioned(
-              top: 50, // مسافة من الأعلى
-              right: 20, // مسافة من اليمين
+              top: 50,
+              right: 20,
               child: GestureDetector(
-                onTap: _navigateToHome, // عند الضغط، نفذ نفس دالة الانتقال
+                onTap: _checkAuthAndNavigate, // 👈 عند الضغط، نفذ دالة التحقق
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 15,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5), // خلفية شفافة
+                    color: Colors.black.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.white.withOpacity(0.5)),
                   ),
