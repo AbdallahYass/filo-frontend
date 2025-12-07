@@ -25,7 +25,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       // 🔴 استخدم الرابط المناسب (localhost أو السيرفر)
       final url = Uri.parse(
-        'https://www.filomenu.com/api/auth/forgot-password',
+        'https://filo-menu.onrender.com/api/auth/forgot-password',
       );
 
       final response = await http.post(

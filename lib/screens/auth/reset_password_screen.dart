@@ -24,7 +24,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final url = Uri.parse('https://www.filomenu.com/api/auth/reset-password');
+      final url = Uri.parse(
+        'https://filo-menu.onrender.com/api/auth/reset-password',
+      );
 
       final response = await http.post(
         url,
