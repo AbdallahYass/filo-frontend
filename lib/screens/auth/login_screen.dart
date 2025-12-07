@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // للويب
 import '../../services/auth_service.dart';
 import '../menu_screen.dart';
 import 'signup_screen.dart';
 import 'otp_screen.dart';
-import 'phone_verification_screen.dart'; // 👈 استيراد شاشة تفعيل الهاتف
+import 'phone_verification_screen.dart';
+
+// 1. استيراد المكتبات اللازمة
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:google_sign_in/google_sign_in.dart' as auth;
+import 'package:shared_preferences/shared_preferences.dart'; // لتخزين التوكن
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,6 +32,93 @@ class _LoginScreenState extends State<LoginScreen> {
   final Color _darkBackground = const Color(0xFF1A1A1A);
   final Color _fieldColor = const Color(0xFF2C2C2C);
 
+  // 2. إعداد Google Sign In
+  final auth.GoogleSignIn _googleSignIn = kIsWeb
+      ? auth.GoogleSignIn(
+          clientId:
+              "998803872990-sta5bagomnjk4h1hd4c0ra2tjldtsj5u.apps.googleusercontent.com",
+        )
+      : auth.GoogleSignIn();
+
+  // 3. دالة الدخول بجوجل
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      setState(() => _isLoading = true);
+
+      // تنظيف الجلسة لضمان اختيار الحساب
+      await _googleSignIn.signOut();
+
+      // بدء عملية الدخول
+      final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return; // المستخدم ألغى العملية
+      }
+
+      // الحصول على التوكن
+      final auth.GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      String? tokenToSend = googleAuth.accessToken;
+
+      if (tokenToSend != null) {
+        // إرسال التوكن للسيرفر
+        final response = await http.post(
+          Uri.parse('https://www.filomenu.com/api/auth/google'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'accessToken': tokenToSend}),
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+
+          // 🔥 حفظ التوكن في الجهاز
+          // مهم جداً: عشان التطبيق يعرف إنك مسجل دخول المرة الجاية
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', data['token']);
+          if (data['user'] != null) {
+            await prefs.setString('user', jsonEncode(data['user']));
+          }
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Welcome ${googleUser.displayName}! 🚀"),
+                backgroundColor: Colors.green,
+              ),
+            );
+
+            // الانتقال للمنيو مباشرة
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const MenuScreen()),
+            );
+          }
+        } else {
+          print("Server Error: ${response.body}");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Google Login Failed: ${response.statusCode}"),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      }
+      setState(() => _isLoading = false);
+    } catch (error) {
+      print("Google Error: $error");
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $error"), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  // دالة الدخول العادي (الإيميل والباسوورد)
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -38,16 +132,13 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result == null) {
-      // 1. نجاح تام -> المنيو
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MenuScreen()),
         );
       }
-    }
-    // 2. حالة الإيميل غير مفعل
-    else if (result == 'NOT_VERIFIED') {
+    } else if (result == 'NOT_VERIFIED') {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -55,7 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
             backgroundColor: Colors.orange,
           ),
         );
-        // الانتقال لشاشة تفعيل الإيميل
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -64,9 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
-    }
-    // 3. حالة الهاتف غير مفعل (الجديد) 👇👇👇
-    else if (result == 'PHONE_NOT_VERIFIED') {
+    } else if (result == 'PHONE_NOT_VERIFIED') {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -74,7 +162,6 @@ class _LoginScreenState extends State<LoginScreen> {
             backgroundColor: Colors.orange,
           ),
         );
-        // الانتقال لشاشة تفعيل الهاتف
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -83,9 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
-    }
-    // 4. خطأ آخر (باسوورد غلط، نت مفصول)
-    else {
+    } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result), backgroundColor: Colors.red),
@@ -165,7 +250,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // زر نسيت كلمة المرور
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -178,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // زر الدخول
+                // زر الدخول العادي
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -202,9 +286,52 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                 ),
+
+                const SizedBox(height: 30),
+
+                // --- 4. فاصل وزر جوجل ---
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey[700])),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text("OR", style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey[700])),
+                  ],
+                ),
                 const SizedBox(height: 20),
 
-                // رابط التسجيل
+                // زر قوقل
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _handleGoogleSignIn,
+                    icon: _isLoading
+                        ? const SizedBox()
+                        : const Icon(Icons.login, color: Colors.black),
+                    label: Text(
+                      _isLoading ? "Processing..." : "Continue with Google",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // -----------------------
+                const SizedBox(height: 30),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
