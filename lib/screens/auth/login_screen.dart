@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // للويب
 import '../../services/auth_service.dart';
 import '../menu_screen.dart';
+import 'add_phone_screen.dart';
 import 'signup_screen.dart';
 import 'otp_screen.dart';
-import 'phone_verification_screen.dart';
 import 'forgot_password_screen.dart';
 // 1. استيراد المكتبات اللازمة
 import 'package:http/http.dart' as http;
@@ -71,28 +71,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-
-          // 🔥 حفظ التوكن في الجهاز
-          // مهم جداً: عشان التطبيق يعرف إنك مسجل دخول المرة الجاية
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', data['token']);
           if (data['user'] != null) {
             await prefs.setString('user', jsonEncode(data['user']));
           }
+          String? savedPhone = data['user']['phone'];
 
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Welcome ${googleUser.displayName}! 🚀"),
-                backgroundColor: Colors.green,
-              ),
-            );
-
-            // الانتقال للمنيو مباشرة
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const MenuScreen()),
-            );
+            if (savedPhone == null || savedPhone.isEmpty) {
+              // 1. إذا ما عنده رقم -> وديه شاشة إضافة الرقم
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const AddPhoneScreen()),
+              );
+            } else {
+              // 2. إذا عنده رقم -> وديه المنيو فوراً
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const MenuScreen()),
+              );
+            }
           }
         } else {
           print("Server Error: ${response.body}");
@@ -151,22 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(
             builder: (context) =>
                 OtpScreen(email: _emailController.text.trim()),
-          ),
-        );
-      }
-    } else if (result == 'PHONE_NOT_VERIFIED') {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('رقم الهاتف غير مفعل! يرجى استكماله 📱'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                PhoneVerificationScreen(email: _emailController.text.trim()),
           ),
         );
       }
