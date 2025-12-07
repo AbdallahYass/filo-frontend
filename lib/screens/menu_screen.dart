@@ -1,16 +1,16 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:flutter/foundation.dart'; // للتحقق من المنصة (ويب/موبايل)
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/menu_item.dart';
 import '../services/menu_service.dart';
-import '../services/cart_service.dart'; // لا تنس استيراد خدمة السلة
+import '../services/cart_service.dart';
 import 'item_detail_screen.dart';
 import 'cart_screen.dart';
 import 'all_items_screen.dart';
-import 'qr_scanner_screen.dart'; // استيراد الماسح الضوئي
+import 'qr_scanner_screen.dart';
 import 'qr_generator_screen.dart';
-import 'settings_screen.dart'; // استيراد المولد
+import 'settings_screen.dart'; // استيراد شاشة الإعدادات
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -20,6 +20,9 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  // 🔥🔥🔥 حالة التنقل السفلية 🔥🔥🔥
+  int _currentIndex = 0;
+
   late Future<List<MenuItem>> _menuItemsFuture;
   final MenuService _menuService = MenuService();
 
@@ -28,27 +31,49 @@ class _MenuScreenState extends State<MenuScreen> {
 
   String _selectedCategory = 'All';
 
+  // قائمة المحتويات للألسنة السفلية
+  late final List<Widget> _pages;
+
   @override
   void initState() {
     super.initState();
     _menuItemsFuture = _menuService.fetchMenu();
 
-    // 👇 كود خاص بالويب: قراءة رقم الطاولة من الرابط
+    // تعريف محتويات الألسنة
+    _pages = [
+      _buildMenuContentWrapper(), // Index 0: المحتوى الرئيسي (Menu/Home)
+      _buildPlaceholderScreen('Search'), // Index 1: البحث
+      _buildPlaceholderScreen('Cart'), // Index 2: السلة (مؤقتاً)
+      const SettingsScreen(), // Index 3: الإعدادات (الشخص)
+    ];
+
+    // كود خاص بالويب (Web initialization)
     if (kIsWeb) {
-      // نستخدم Uri.base لقراءة الرابط الحالي في المتصفح
       final uri = Uri.base;
-      // هل الرابط يحتوي على '?table=5' مثلاً؟
       if (uri.queryParameters.containsKey('table')) {
         final tableNum = uri.queryParameters['table'];
         if (tableNum != null) {
-          // نحفظ الرقم في خدمة السلة ليتم إرساله مع الطلب لاحقاً
           CartService().setTableNumber(tableNum);
-          if (kDebugMode) {
-            print("Web: Customer is on Table $tableNum");
-          }
         }
       }
     }
+  }
+
+  // دالة تغيير التبويب
+  void _onItemTapped(int index) {
+    if (index == 2) {
+      // إذا ضغط على أيقونة السلة (Index 2) نفتح شاشة منفصلة
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const CartScreen()),
+      );
+      return;
+    }
+
+    // إذا كان التبويب Home, Search, أو Settings
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
   Future<void> _refreshData() async {
@@ -57,8 +82,22 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  // دالة لإنشاء شاشة Placeholder (للبحث والسلة المؤقتة)
+  Widget _buildPlaceholderScreen(String title) {
+    return Scaffold(
+      backgroundColor: _darkColor,
+      appBar: AppBar(
+        title: Text(title, style: TextStyle(color: _goldColor)),
+        backgroundColor: _darkColor,
+      ),
+      body: Center(
+        child: Text("$title Screen", style: TextStyle(color: Colors.white)),
+      ),
+    );
+  }
+
+  // دالة تحتوي على كل محتوى الشاشة الرئيسية القديم (المنيو)
+  Widget _buildMenuContentWrapper() {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
@@ -101,18 +140,9 @@ class _MenuScreenState extends State<MenuScreen> {
             },
           ),
 
-          IconButton(
-            icon: const Icon(Icons.settings),
-            color: const Color(0xFFC5A028), // لون الذهب
-            onPressed: () {
-              // عند الضغط، انتقل إلى شاشة الإعدادات
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
+          // 🔥🔥 تم حذف زر الإعدادات من هنا 🔥🔥
 
+          // أيقونة السلة (تبقى هنا كـ Button لفتح شاشة السلة مباشرة)
           Stack(
             alignment: Alignment.center,
             children: [
@@ -146,6 +176,7 @@ class _MenuScreenState extends State<MenuScreen> {
         ],
       ),
 
+      // ... محتوى الـ Body القديم (يحتوي على الـ RefreshIndicator والـ FutureBuilder) ...
       body: RefreshIndicator(
         onRefresh: _refreshData,
         color: _goldColor,
@@ -155,7 +186,6 @@ class _MenuScreenState extends State<MenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 👇 بانر تحميل التطبيق (يظهر فقط في الويب)
               if (kIsWeb)
                 Container(
                   width: double.infinity,
@@ -180,8 +210,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // هنا تضع رابط المتجر
-                          // html.window.open('LINK_TO_APP_STORE', '_blank');
+                          // رابط المتجر
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _goldColor,
@@ -190,7 +219,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             horizontal: 15,
                             vertical: 5,
                           ),
-                          minimumSize: const Size(0, 30), // زر صغير
+                          minimumSize: const Size(0, 30),
                         ),
                         child: const Text(
                           "حمل الآن",
@@ -203,9 +232,6 @@ class _MenuScreenState extends State<MenuScreen> {
                     ],
                   ),
                 ),
-              // 👆 نهاية البانر
-
-              // شريط البحث
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(
@@ -223,10 +249,8 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
                 child: _buildSearchBar(),
               ),
-
               const SizedBox(height: 20),
 
-              // المحتوى
               FutureBuilder<List<MenuItem>>(
                 future: _menuItemsFuture,
                 builder: (context, snapshot) {
@@ -254,9 +278,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildCategoryList(categories.toList()),
-
                         const SizedBox(height: 20),
-
                         if (filteredItems.isEmpty)
                           const Center(child: Text("No items found"))
                         else
@@ -269,9 +291,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                 ),
                                 child: _buildFeaturedCard(filteredItems.first),
                               ),
-
                               const SizedBox(height: 25),
-
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 20.0,
@@ -316,9 +336,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                   ],
                                 ),
                               ),
-
                               const SizedBox(height: 15),
-
                               SizedBox(
                                 height: 220,
                                 child: ListView.builder(
@@ -358,20 +376,40 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: _goldColor,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag_outlined),
-            label: '',
+      // نهاية الـ Body القديم
+    );
+  }
+
+  // --- دوال بناء الواجهة المساعدة (تبقى كما هي) ---
+  Widget _buildSearchBar() {
+    /* ... */
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 15),
+          const Expanded(
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Search",
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
+              ),
+            ),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: _goldColor,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(Icons.search, color: Colors.black),
+          ),
         ],
       ),
     );
@@ -424,39 +462,6 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 15),
-          const Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Search",
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-              ),
-            ),
-          ),
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: _goldColor,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Icon(Icons.search, color: Colors.black),
-          ),
-        ],
       ),
     );
   }
@@ -607,6 +612,48 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _darkColor,
+
+      // 🔥 الجسم الرئيسي يستخدم IndexedStack لعرض المحتوى بناءً على التبويب
+      body: IndexedStack(index: _currentIndex, children: _pages),
+
+      // 🔥 شريط التنقل السفلي المعدل
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF1A1A1A), // خلفية الشريط
+        selectedItemColor: _goldColor,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _currentIndex,
+        onTap: _onItemTapped,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        type: BottomNavigationBarType.fixed,
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled),
+            label: '',
+          ), // Home/Menu
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '',
+          ), // Search
+          // نترك أيقونة الحقيبة هنا، وعند الضغط عليها نستخدم دالة push (شرحنا ذلك في _onItemTapped)
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag_outlined),
+            label: '',
+          ), // Cart
+          // 🔥 استبدال أيقونة الشخص بالإعدادات 🔥
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: '',
+          ), // Settings
+        ],
       ),
     );
   }
