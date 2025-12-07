@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart'; // للويب
 import '../../services/auth_service.dart';
 import 'otp_screen.dart';
-// 1. استيراد مكتبة جوجل باسم مستعار لتجنب المشاكل
+// 1. مكتبات الاتصال الجديدة (مهمة جداً)
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart' as auth;
 
 class SignupScreen extends StatefulWidget {
@@ -22,10 +24,9 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
-  // 2. تعريف كائن جوجل هنا
+  // تعريف كائن جوجل (حسب كودك الصحيح)
   final auth.GoogleSignIn _googleSignIn = kIsWeb
       ? auth.GoogleSignIn(
-          // 👇 انسخ الكود الطويل من الصورة وضعه هنا بدلاً من النص الموجود
           clientId:
               "998803872990-sta5bagomnjk4h1hd4c0ra2tjldtsj5u.apps.googleusercontent.com",
         )
@@ -35,15 +36,15 @@ class _SignupScreenState extends State<SignupScreen> {
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFF1A1A1A);
 
-  // 3. دالة التعامل مع جوجل (تفتح النافذة)
+  // 🔥 الدالة المعدلة بالكامل لربط السيرفر
   Future<void> _handleGoogleSignIn() async {
     try {
       setState(() => _isLoading = true);
 
-      // 👇 1. أضف هذا السطر المهم جداً (يجبر المتصفح على نسيان الجلسة القديمة)
+      // 1. تنظيف الجلسة القديمة
       await _googleSignIn.signOut();
 
-      // 2. الآن نطلب الدخول من جديد (على نظافة)
+      // 2. طلب الدخول
       final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -55,25 +56,52 @@ class _SignupScreenState extends State<SignupScreen> {
       final auth.GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // طباعة التوكن للتأكد
-      print("========================================");
-      print("✅ GOOGLE ID TOKEN: ${googleAuth.idToken}"); // هذا للباك اند
-      print(
-        "✅ ACCESS TOKEN: ${googleAuth.accessToken}",
-      ); // هذا أحياناً يكون البديل
-      print("========================================");
+      // ✅ هنا نستخدم الـ Access Token لأنه هو اللي اشتغل معك
+      String? tokenToSend = googleAuth.accessToken;
 
-      // ... باقي الكود الخاص بإرسال التوكن للسيرفر
+      print("🚀 Token ready to send: $tokenToSend");
 
-      // ملاحظة: هنا لاحقاً سنرسل التوكن للسيرفر (Node.js)
-      // حالياً سنظهر رسالة نجاح فقط
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Welcome ${googleUser.displayName}!"),
-            backgroundColor: Colors.green,
-          ),
+      if (tokenToSend != null) {
+        // 4. إرسال التوكن إلى سيرفرك (Node.js)
+        final response = await http.post(
+          Uri.parse('https://www.filomenu.com/api/auth/google'), // رابط السيرفر
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'accessToken': tokenToSend, // نرسل الـ Access Token
+          }),
         );
+
+        if (response.statusCode == 200) {
+          // 🎉 نجاح! السيرفر رد علينا
+          final data = jsonDecode(response.body);
+          print("✅ Server Response: $data");
+
+          // هنا المفروض تخزن التوكن القادم من السيرفر (data['token'])
+          // وتنتقل للصفحة الرئيسية
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Login Success! Welcome ${googleUser.displayName}",
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Navigator.pushReplacementNamed(context, '/home'); // مثال للانتقال
+          }
+        } else {
+          // خطأ من السيرفر
+          print("❌ Server Error: ${response.body}");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Server Error: ${response.statusCode}"),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
       }
 
       setState(() => _isLoading = false);
@@ -150,11 +178,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // الاسم
                 _buildTextField(_nameController, "Full Name", Icons.person),
                 const SizedBox(height: 20),
 
-                // الإيميل
                 _buildTextField(
                   _emailController,
                   "Email",
@@ -163,7 +189,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // الهاتف
                 _buildTextField(
                   _phoneController,
                   "Phone Number",
@@ -172,7 +197,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // كلمة المرور
                 _buildTextField(
                   _passwordController,
                   "Password",
@@ -181,7 +205,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // زر التسجيل العادي
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -208,7 +231,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 const SizedBox(height: 20),
 
-                // ------------ فاصل (OR) ------------
                 Row(
                   children: [
                     Expanded(child: Divider(color: Colors.grey[700])),
@@ -222,18 +244,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 const SizedBox(height: 20),
 
-                // ------------ زر جوجل الجديد ------------
                 SizedBox(
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _handleGoogleSignIn,
                     icon: _isLoading
-                        ? const SizedBox() // إخفاء الأيقونة عند التحميل
-                        : const Icon(
-                            Icons.login,
-                            color: Colors.black,
-                          ), // أيقونة مؤقتة
+                        ? const SizedBox()
+                        : const Icon(Icons.login, color: Colors.black),
                     label: Text(
                       _isLoading ? "Processing..." : "Continue with Google",
                       style: const TextStyle(
@@ -243,8 +261,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.white, // خلفية بيضاء كلاسيكية لجوجل
+                      backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
                       elevation: 2,
                       shape: RoundedRectangleBorder(
@@ -253,7 +270,6 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                 ),
-                // ----------------------------------------
               ],
             ),
           ),
@@ -288,10 +304,12 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       validator: (val) {
         if (val == null || val.isEmpty) return "Required";
-        if (inputType == TextInputType.emailAddress && !val.contains('@'))
+        if (inputType == TextInputType.emailAddress && !val.contains('@')) {
           return "Invalid Email";
-        if (inputType == TextInputType.phone && val.length < 9)
+        }
+        if (inputType == TextInputType.phone && val.length < 9) {
           return "Invalid Phone";
+        }
         return null;
       },
     );
