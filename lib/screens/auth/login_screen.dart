@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (tokenToSend != null) {
         // إرسال التوكن للسيرفر
         final response = await http.post(
-          Uri.parse('https://www.filomenu.com/api/auth/google'),
+          Uri.parse('https://filo-menu.onrender.com/api/auth/google'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'accessToken': tokenToSend}),
         );

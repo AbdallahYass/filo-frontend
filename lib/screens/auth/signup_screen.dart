@@ -64,7 +64,9 @@ class _SignupScreenState extends State<SignupScreen> {
       if (tokenToSend != null) {
         // 4. إرسال التوكن إلى سيرفرك (Node.js)
         final response = await http.post(
-          Uri.parse('https://www.filomenu.com/api/auth/google'), // رابط السيرفر
+          Uri.parse(
+            'https://filo-menu.onrender.com/api/auth/google',
+          ), // رابط السيرفر
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'accessToken': tokenToSend, // نرسل الـ Access Token
