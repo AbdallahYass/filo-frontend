@@ -170,6 +170,19 @@ class _SignupScreenState extends State<SignupScreen> {
             key: _formKey,
             child: Column(
               children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _goldColor, width: 2),
+                  ),
+                  child: Icon(
+                    Icons.restaurant_menu,
+                    size: 60,
+                    color: _goldColor,
+                  ),
+                ),
+                const SizedBox(height: 30),
                 const Text(
                   "Create Account",
                   style: TextStyle(

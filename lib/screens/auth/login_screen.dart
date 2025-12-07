@@ -5,7 +5,7 @@ import '../menu_screen.dart';
 import 'signup_screen.dart';
 import 'otp_screen.dart';
 import 'phone_verification_screen.dart';
-
+import 'forgot_password_screen.dart';
 // 1. استيراد المكتبات اللازمة
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -253,7 +253,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen(),
+                        ),
+                      );
+                    },
                     child: Text(
                       "Forgot Password?",
                       style: TextStyle(color: _goldColor),
