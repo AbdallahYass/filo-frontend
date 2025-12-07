@@ -40,7 +40,10 @@ class _SignupScreenState extends State<SignupScreen> {
     try {
       setState(() => _isLoading = true);
 
-      // فتح نافذة جوجل
+      // 👇 1. أضف هذا السطر المهم جداً (يجبر المتصفح على نسيان الجلسة القديمة)
+      await _googleSignIn.signOut();
+
+      // 2. الآن نطلب الدخول من جديد (على نظافة)
       final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -48,11 +51,19 @@ class _SignupScreenState extends State<SignupScreen> {
         return;
       }
 
-      // استخراج التوكن
+      // 3. استخراج التوكن
       final auth.GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      print("Google Token: ${googleAuth.idToken}");
+      // طباعة التوكن للتأكد
+      print("========================================");
+      print("✅ GOOGLE ID TOKEN: ${googleAuth.idToken}"); // هذا للباك اند
+      print(
+        "✅ ACCESS TOKEN: ${googleAuth.accessToken}",
+      ); // هذا أحياناً يكون البديل
+      print("========================================");
+
+      // ... باقي الكود الخاص بإرسال التوكن للسيرفر
 
       // ملاحظة: هنا لاحقاً سنرسل التوكن للسيرفر (Node.js)
       // حالياً سنظهر رسالة نجاح فقط
