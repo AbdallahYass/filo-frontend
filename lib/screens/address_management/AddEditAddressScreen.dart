@@ -1,6 +1,4 @@
-// lib/screens/address_management/add_edit_address_screen.dart
-
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: file_names, use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';

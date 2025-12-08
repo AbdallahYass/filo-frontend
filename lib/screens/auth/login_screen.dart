@@ -85,7 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
             }
           }
         } else {
-          print("Server Error: ${response.body}");
+          if (kDebugMode) {
+            print("Server Error: ${response.body}");
+          }
           if (mounted) {
             final localizations = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
@@ -101,7 +103,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       setState(() => _isLoading = false);
     } catch (error) {
-      print("Google Error: $error");
+      if (kDebugMode) {
+        print("Google Error: $error");
+      }
       setState(() => _isLoading = false);
       if (mounted) {
         final localizations = AppLocalizations.of(context)!;

@@ -107,12 +107,16 @@ class _SignupScreenState extends State<SignupScreen> {
             }
           }
         } else {
-          print("❌ Server Error: ${response.body}");
+          if (kDebugMode) {
+            print("❌ Server Error: ${response.body}");
+          }
         }
       }
       setState(() => _isLoading = false);
     } catch (error) {
-      print(error);
+      if (kDebugMode) {
+        print(error);
+      }
       setState(() => _isLoading = false);
     }
   }
@@ -192,10 +196,12 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
       validator: (val) {
-        if (val == null || val.isEmpty)
+        if (val == null || val.isEmpty) {
           return localizations.requiredField; // 👈 نص مترجم
-        if (isPassword && val.length < 6)
+        }
+        if (isPassword && val.length < 6) {
           return localizations.tooShort; // 👈 نص مترجم
+        }
         if (inputType == TextInputType.emailAddress && !val.contains('@')) {
           return localizations.invalidEmail; // 👈 نص مترجم
         }

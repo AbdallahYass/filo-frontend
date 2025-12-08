@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -49,7 +50,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -110,7 +113,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         );
       }
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
     setState(() => _isLoading = false);
   }

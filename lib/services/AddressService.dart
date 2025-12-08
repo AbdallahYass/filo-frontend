@@ -1,8 +1,7 @@
-// lib/services/address_service.dart
-
-// ignore_for_file: avoid_print
+// ignore_for_file: file_names
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/address_model.dart';
@@ -39,11 +38,15 @@ class AddressService {
         List<dynamic> body = jsonDecode(response.body);
         return body.map((json) => AddressModel.fromJson(json)).toList();
       } else {
-        print("Address Fetch Error: ${response.statusCode}");
+        if (kDebugMode) {
+          print("Address Fetch Error: ${response.statusCode}");
+        }
         return [];
       }
     } catch (e) {
-      print("Connection Error during address fetch: $e");
+      if (kDebugMode) {
+        print("Connection Error during address fetch: $e");
+      }
       return [];
     }
   }

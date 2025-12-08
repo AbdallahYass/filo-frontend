@@ -1,5 +1,7 @@
 // lib/screens/address_management/address_list_screen.dart
 
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';
 import '../../../models/address_model.dart';
