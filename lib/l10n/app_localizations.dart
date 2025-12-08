@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @connectionError.
   ///
   /// In en, this message translates to:
-  /// **'Connection error occurred'**
+  /// **'Server connection error.'**
   String get connectionError;
 
   /// No description provided for @retry.
@@ -739,6 +739,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Address added successfully!'**
   String get addressAddedSuccess;
+
+  /// No description provided for @logoutConfirmationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Logout'**
+  String get logoutConfirmationTitle;
+
+  /// No description provided for @logoutConfirmationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get logoutConfirmationMessage;
+
+  /// No description provided for @cancelButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelButton;
 
   /// No description provided for @registrationFailed.
   ///

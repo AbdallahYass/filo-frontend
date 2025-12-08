@@ -247,7 +247,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeAll => 'See All';
 
   @override
-  String get connectionError => 'Connection error occurred';
+  String get connectionError => 'Server connection error.';
 
   @override
   String get retry => 'Retry';
@@ -343,6 +343,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addressAddedSuccess => 'Address added successfully!';
+
+  @override
+  String get logoutConfirmationTitle => 'Confirm Logout';
+
+  @override
+  String get logoutConfirmationMessage => 'Are you sure you want to log out?';
+
+  @override
+  String get cancelButton => 'Cancel';
 
   @override
   String get registrationFailed => 'Registration failed.';

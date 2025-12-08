@@ -343,6 +343,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addressAddedSuccess => 'تم إضافة العنوان بنجاح!';
 
   @override
+  String get logoutConfirmationTitle => 'تأكيد تسجيل الخروج';
+
+  @override
+  String get logoutConfirmationMessage => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get cancelButton => 'إلغاء';
+
+  @override
   String get registrationFailed => 'فشل عملية التسجيل.';
 
   @override

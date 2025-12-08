@@ -141,6 +141,10 @@
   "addressUpdatedSuccess": "تم تحديث العنوان بنجاح!",
   "addressAddedSuccess": "تم إضافة العنوان بنجاح!",
 
+  "logoutConfirmationTitle": "تأكيد تسجيل الخروج",
+  "logoutConfirmationMessage": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+  "cancelButton": "إلغاء",
+
   "registrationFailed": "فشل عملية التسجيل.",
   "connectionError": "خطأ في الاتصال بالسيرفر.",
   "invalidOtp": "رمز التفعيل غير صحيح.",
@@ -153,6 +157,7 @@
   "userNotFound": "المستخدم غير موجود.",
   "invalidOtpOrExpired": "رمز التفعيل غير صحيح أو منتهي الصلاحية.",
   "wrongCredentials": "بيانات الاعتماد غير صحيحة.",
-  "addressUpdateFailed": "فشل تحديث العنوان.",
+    "addressUpdateFailed": "فشل تحديث العنوان.",
   "serverError": "حدث خطأ في الخادم."
 }
+

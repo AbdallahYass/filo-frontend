@@ -11,7 +11,6 @@ import '../l10n/locale_provider.dart';
 import 'auth/login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
-// 🔥🔥 استيراد شاشة العناوين (افترض المسار: lib/screens/address_management/address_list_screen.dart) 🔥🔥
 import 'address_management/address_list_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -22,7 +21,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // قيم افتراضية لضمان عدم ظهور "null"
   String userName = "Guest";
   String userEmail = "Login Required";
   final Color _goldColor = const Color(0xFFC5A028);
@@ -31,21 +29,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    // 💡 نستخدم addPostFrameCallback لضمان أن الـ context جاهز وأننا نتابع البيانات
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadUserData();
     });
   }
 
-  // 🔥🔥 دالة تحميل البيانات الأكثر موثوقية 🔥🔥
   Future<void> _loadUserData() async {
-    // 1. استخدام المفتاح الموحد 'user'
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString('user');
 
     if (userData != null) {
       var userMap = jsonDecode(userData);
-      // 2. استخدام setState بشكل آمن
       if (mounted) {
         setState(() {
           userName = userMap['name'] ?? "User";
@@ -53,7 +47,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         });
       }
     } else {
-      // 3. مسح الحالة إذا لم يكن المستخدم مسجلاً
       if (mounted) {
         setState(() {
           userName = "Guest";
@@ -76,10 +69,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showLanguageDialog(BuildContext context) {
-    // الوصول إلى نصوص الترجمة من جديد داخل الدالة
-    final localizations = AppLocalizations.of(context)!;
+  // 🔥🔥 الدالة الجديدة: عرض ديالوج التأكيد 🔥🔥
+  void _showLogoutConfirmationDialog(AppLocalizations localizations) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: Text(
+          localizations.logoutConfirmationTitle, // نص مترجم: تأكيد تسجيل الخروج
+          style: TextStyle(color: _goldColor, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          localizations.logoutConfirmationMessage, // نص مترجم: هل أنت متأكد؟
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          // زر الإلغاء (Cancel)
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              localizations.cancelButton, // نص مترجم: إلغاء
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ),
+          // زر التأكيد (Logout)
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // إغلاق الديالوج
+              _logout(); // تنفيذ عملية تسجيل الخروج الفعلية
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(
+              localizations.logout, // نص مترجم: تسجيل الخروج
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  void _showLanguageDialog(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final provider = Provider.of<LocaleProvider>(context, listen: false);
     final currentLang = provider.locale.languageCode;
 
@@ -87,10 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2C2C),
-        title: Text(
-          localizations.appName, // استخدام نص مترجم
-          style: TextStyle(color: _goldColor),
-        ),
+        title: Text(localizations.appName, style: TextStyle(color: _goldColor)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -126,12 +157,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // 💡 إبقاء didChangeDependencies فارغاً والاعتماد على _loadUserData بعد pop
-  // @override
-  // void didChangeDependencies() {
-  //   super.didChangeDependencies();
-  // }
-
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
@@ -145,10 +170,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        // 🔥 WillPopScope يستخدم هنا فقط للـ Back Button في الـ Android/iOS
         child: WillPopScope(
           onWillPop: () async {
-            // إعادة تحميل البيانات لمرة واحدة عند الخروج من الشاشة (لتحديث الاسم/الإيميل)
             _loadUserData();
             return true;
           },
@@ -203,16 +226,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 30),
 
               // 2. قائمة الخيارات
-
-              // 🔥🔥 خيار إدارة العناوين الجديد 🔥🔥
               _buildSettingsItem(
                 Icons.location_on_outlined,
-                localizations.addressesTitle, // عنوان العناوين المترجم
+                localizations.addressesTitle,
                 () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      // التوجيه إلى شاشة العناوين
                       builder: (context) => const AddressListScreen(),
                     ),
                   );
@@ -223,14 +243,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Icons.person_outline,
                 localizations.editProfile,
                 () async {
-                  // استخدام async
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const EditProfileScreen(),
                     ),
                   );
-                  _loadUserData(); // إعادة تحميل البيانات بعد العودة من التعديل
+                  _loadUserData();
                 },
               ),
 
@@ -268,7 +287,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsItem(
                 Icons.logout,
                 localizations.logout,
-                _logout,
+                // 🔥🔥 ربط زر الخروج بدالة التأكيد 🔥🔥
+                () => _showLogoutConfirmationDialog(localizations),
                 isDestructive: true,
               ),
             ],
