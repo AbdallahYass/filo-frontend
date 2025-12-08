@@ -1,0 +1,15 @@
+{
+  "@@locale": "ar",
+  "@@textDirection": "rtl",
+  "appName": "قائمة فيلو",
+  "settings": "الإعدادات",
+  "editProfile": "تعديل الملف الشخصي",
+  "changePassword": "تغيير كلمة المرور",
+  "changeLanguage": "تغيير اللغة",
+  "notifications": "الإشعارات",
+  "logout": "تسجيل الخروج",
+  "welcomeMessage": "أهلاً بك مجدداً!",
+  "noInternetConnection": "لا يوجد اتصال بالإنترنت",
+  "checkNetworkMessage": "يرجى التحقق من الشبكة والمحاولة مرة أخرى.",
+  "skip": "تخطي"
+}

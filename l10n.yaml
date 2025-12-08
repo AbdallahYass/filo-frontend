@@ -1,0 +1,4 @@
+# l10n.yaml (في المجلد الرئيسي للمشروع)
+arb-dir: lib/l10n
+template-arb-file: app_en.arb  # 👈 يجب أن يتطابق هذا الاسم تماماً مع الملف الذي أنشأته
+output-localization-file: app_localizations.dart

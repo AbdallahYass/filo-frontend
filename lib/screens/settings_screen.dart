@@ -1,10 +1,11 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/locale_provider.dart';
 import 'auth/login_screen.dart';
-import 'edit_profile_screen.dart'; // سننشئها بالخطوة التالية
+import 'edit_profile_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -25,12 +26,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadUserData();
   }
 
-  // تحميل البيانات من الذاكرة المحلية
   Future<void> _loadUserData() async {
+    // هذه الدالة ستظل بالإنجليزية لضمان عملها بشكل مستقل
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userData = prefs.getString(
-      'user',
-    ); // تأكد أنك خزنت الـ user object عند اللوجن
+    String? userData = prefs.getString('user');
 
     if (userData != null) {
       var userMap = jsonDecode(userData);
@@ -43,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // مسح التوكن والبيانات
+    await prefs.clear();
 
     if (mounted) {
       Navigator.pushAndRemoveUntil(
@@ -54,12 +53,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  // 🔥🔥🔥 الدالة الجديدة لتغيير اللغة 🔥🔥🔥
+  void _showLanguageDialog(BuildContext context) {
+    // 1. الوصول إلى LocaleProvider
+    final provider = Provider.of<LocaleProvider>(context, listen: false);
+    final currentLang = provider.locale.languageCode;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: Text(
+          AppLocalizations.of(context)!.appName, // مثال لاستخدام نص مترجم
+          style: TextStyle(color: _goldColor),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 2. خيار الإنجليزية
+            ListTile(
+              title: const Text(
+                "English",
+                style: TextStyle(color: Colors.white),
+              ),
+              trailing: currentLang == 'en'
+                  ? Icon(Icons.check, color: _goldColor)
+                  : null,
+              onTap: () {
+                provider.setLocale(const Locale('en', ''));
+                Navigator.pop(context);
+              },
+            ),
+            // 3. خيار العربية
+            ListTile(
+              title: const Text(
+                "العربية",
+                style: TextStyle(color: Colors.white),
+              ),
+              trailing: currentLang == 'ar'
+                  ? Icon(Icons.check, color: _goldColor)
+                  : null,
+              onTap: () {
+                provider.setLocale(const Locale('ar', ''));
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // الوصول إلى نصوص الترجمة
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: Text(localizations.settings), // استخدام نص مترجم لعنوان الشاشة
         backgroundColor: Colors.transparent,
         foregroundColor: _goldColor,
         elevation: 0,
@@ -82,7 +135,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: _goldColor,
-                    child: Icon(Icons.person, size: 35, color: Colors.black),
+                    child: const Icon(
+                      Icons.person,
+                      size: 35,
+                      color: Colors.black,
+                    ),
                   ),
                   const SizedBox(width: 15),
                   Column(
@@ -109,22 +166,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 30),
 
             // 2. قائمة الخيارات
-            _buildSettingsItem(Icons.person_outline, "Edit Profile", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EditProfileScreen(),
-                ),
-              );
-            }),
+            _buildSettingsItem(
+              Icons.person_outline,
+              localizations.editProfile, // نص مترجم
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfileScreen(),
+                  ),
+                );
+              },
+            ),
 
-            _buildSettingsItem(Icons.lock_outline, "Change Password", () {}),
+            _buildSettingsItem(
+              Icons.lock_outline,
+              localizations.changePassword, // نص مترجم
+              () {
+                /*Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChangePasswordScreen(),
+                  ),
+                );*/
+              },
+            ),
 
-            _buildSettingsItem(Icons.language, "Language", () {}),
+            // 🔥🔥 ربط زر اللغة بالدالة الجديدة 🔥🔥
+            _buildSettingsItem(
+              Icons.language,
+              localizations.changeLanguage, // نص مترجم
+              () => _showLanguageDialog(context),
+            ),
 
             _buildSettingsItem(
               Icons.notifications_outlined,
-              "Notifications",
+              localizations.notifications,
               () {
                 // Toggle Switch
               },
@@ -136,10 +213,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _buildSettingsItem(
               Icons.logout,
-              "Logout",
+              localizations.logout,
               _logout,
               isDestructive: true,
-            ),
+            ), // نص مترجم
           ],
         ),
       ),
@@ -152,6 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     VoidCallback onTap, {
     bool isDestructive = false,
   }) {
+    // هذه الدالة تم استخدامها سابقاً
     return ListTile(
       onTap: onTap,
       leading: Container(

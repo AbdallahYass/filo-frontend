@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "appName": "Filo Menu",
+  "settings": "Settings",
+  "editProfile": "Edit Profile",
+  "changePassword": "Change Password",
+  "changeLanguage": "Change Language",
+  "notifications": "Notifications",
+  "logout": "Logout",
+  "welcomeMessage": "Welcome Back!",
+  "noInternetConnection": "No Internet Connection",
+  "checkNetworkMessage": "Please check your network and try again.",
+  "skip": "Skip"
+}
