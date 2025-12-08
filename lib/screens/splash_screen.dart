@@ -1,13 +1,15 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, unnecessary_cast
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart'; // مكتبة التحقق من الاتصال
-
+import 'package:geolocator/geolocator.dart';
 import '../../services/auth_service.dart';
 import 'menu_screen.dart';
 import 'auth/login_screen.dart';
+import 'location_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   final AuthService _authService = AuthService();
-
+  final LocationService _locationService = LocationService();
   // 🔥 التعديل: إزالة القائمة (List) من التعريف 🔥
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   bool _isWaitingForConnection = false;
@@ -93,25 +95,39 @@ class _SplashScreenState extends State<SplashScreen> {
   // 🔥 الدالة المعدلة: تبدأ بالتحقق من الاتصال قبل التوكن 🔥
   Future<void> _checkAuthAndNavigate() async {
     _controller.pause();
-    if (ModalRoute.of(context)?.isCurrent == false || _isWaitingForConnection)
+    if (ModalRoute.of(context)?.isCurrent == false || _isWaitingForConnection) {
       return;
+    }
 
-    // 1. التحقق النهائي من الاتصال (الآن ترجع قيمة مفردة)
+    // 1. التحقق النهائي من الاتصال
     final connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
       setState(() => _isWaitingForConnection = true);
-      return; // توقف وانتظر
+      return;
     }
 
-    // --- إذا كان الاتصال موجوداً، أكمل عملية التحقق من التوكن ---
+    // 🔥 2. جلب الموقع الجغرافي للمستخدم 🔥
+    Position? userPosition = await _locationService.getCurrentPositionSafe();
 
-    // 2. فحص حالة التوكن
+    // (ملاحظة: يمكنك هنا تخزين الـ userPosition في Provider أو State Management)
+    if (userPosition == null) {
+      if (kDebugMode) {
+        print("Could not determine user location, proceeding...");
+      }
+    } else {
+      if (kDebugMode) {
+        print(
+          "User is at: ${userPosition.latitude}, ${userPosition.longitude}",
+        );
+      }
+    }
+
+    // 3. فحص حالة التوكن
     bool isLoggedIn = await _authService.isLoggedIn();
 
-    // 3. تحديد الوجهة
+    // 4. تحديد الوجهة والانتقال
     Widget nextScreen = isLoggedIn ? const MenuScreen() : const LoginScreen();
 
-    // 4. الانتقال للشاشة
     if (mounted) {
       Navigator.of(
         context,
