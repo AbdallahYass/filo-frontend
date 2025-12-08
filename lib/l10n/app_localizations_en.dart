@@ -247,7 +247,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeAll => 'See All';
 
   @override
-  String get connectionError => 'Server connection error.';
+  String get connectionError => 'Connection error occurred';
 
   @override
   String get retry => 'Retry';
@@ -300,6 +300,51 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get addressesTitle => 'My Addresses';
+
+  @override
+  String get noAddressesFound => 'No addresses saved yet.';
+
+  @override
+  String get addAddressTitle => 'Add New Address';
+
+  @override
+  String get addressDeletedSuccess => 'Address deleted successfully.';
+
+  @override
+  String get addressDeleteFailed => 'Failed to delete address.';
+
+  @override
+  String get editAddressTitle => 'Edit Address';
+
+  @override
+  String get selectLocationRequired => 'Please select a location on the map.';
+
+  @override
+  String get selectLocationButton => 'Select Location on Map';
+
+  @override
+  String get locationSelected => 'Location Selected';
+
+  @override
+  String get locationPickedSuccess => 'Location successfully picked from GPS.';
+
+  @override
+  String get locationPermissionError => 'Location permission denied or error.';
+
+  @override
+  String get addressTitlePlaceholder => 'Address Title (e.g., Home, Work)';
+
+  @override
+  String get addressDetailsPlaceholder => 'Street Name, Building Number';
+
+  @override
+  String get addressUpdatedSuccess => 'Address updated successfully!';
+
+  @override
+  String get addressAddedSuccess => 'Address added successfully!';
+
+  @override
   String get registrationFailed => 'Registration failed.';
 
   @override
@@ -307,4 +352,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roleNotAllowed => 'Account role not allowed here.';
+
+  @override
+  String get serverError => 'Server error occurred.';
+
+  @override
+  String get addressAddFailed => 'Failed to add address.';
+
+  @override
+  String get loginRequired => 'Login is required to perform this action.';
+
+  @override
+  String get emailNotFound => 'Email not found.';
+
+  @override
+  String get userNotFound => 'User not found.';
+
+  @override
+  String get invalidOtpOrExpired => 'Invalid or expired OTP.';
+
+  @override
+  String get wrongCredentials => 'Wrong credentials.';
+
+  @override
+  String get addressUpdateFailed => 'Address update failed.';
 }

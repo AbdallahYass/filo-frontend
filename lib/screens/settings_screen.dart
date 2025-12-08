@@ -1,4 +1,6 @@
-// ignore_for_file: deprecated_member_use
+// lib/screens/settings_screen.dart
+
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +10,9 @@ import '/l10n/app_localizations.dart';
 import '../l10n/locale_provider.dart';
 import 'auth/login_screen.dart';
 import 'edit_profile_screen.dart';
-import 'change_password_screen.dart'; // 👈 تأكد من استيراد هذه الشاشة
+import 'change_password_screen.dart';
+// 🔥🔥 استيراد شاشة العناوين (افترض المسار: lib/screens/address_management/address_list_screen.dart) 🔥🔥
+import 'address_management/address_list_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,27 +22,44 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  String userName = "Loading...";
-  String userEmail = "Loading...";
+  // قيم افتراضية لضمان عدم ظهور "null"
+  String userName = "Guest";
+  String userEmail = "Login Required";
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFF1A1A1A);
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    // 💡 نستخدم addPostFrameCallback لضمان أن الـ context جاهز وأننا نتابع البيانات
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserData();
+    });
   }
 
+  // 🔥🔥 دالة تحميل البيانات الأكثر موثوقية 🔥🔥
   Future<void> _loadUserData() async {
+    // 1. استخدام المفتاح الموحد 'user'
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString('user');
 
     if (userData != null) {
       var userMap = jsonDecode(userData);
-      setState(() {
-        userName = userMap['name'] ?? "User";
-        userEmail = userMap['email'] ?? "No Email";
-      });
+      // 2. استخدام setState بشكل آمن
+      if (mounted) {
+        setState(() {
+          userName = userMap['name'] ?? "User";
+          userEmail = userMap['email'] ?? "No Email";
+        });
+      }
+    } else {
+      // 3. مسح الحالة إذا لم يكن المستخدم مسجلاً
+      if (mounted) {
+        setState(() {
+          userName = "Guest";
+          userEmail = "Login Required";
+        });
+      }
     }
   }
 
@@ -55,8 +76,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // 🔥🔥🔥 الدالة الجديدة لتغيير اللغة 🔥🔥🔥
   void _showLanguageDialog(BuildContext context) {
+    // الوصول إلى نصوص الترجمة من جديد داخل الدالة
+    final localizations = AppLocalizations.of(context)!;
+
     final provider = Provider.of<LocaleProvider>(context, listen: false);
     final currentLang = provider.locale.languageCode;
 
@@ -65,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2C2C),
         title: Text(
-          AppLocalizations.of(context)!.appName,
+          localizations.appName, // استخدام نص مترجم
           style: TextStyle(color: _goldColor),
         ),
         content: Column(
@@ -103,133 +126,165 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // 💡 إبقاء didChangeDependencies فارغاً والاعتماد على _loadUserData بعد pop
+  // @override
+  // void didChangeDependencies() {
+  //   super.didChangeDependencies();
+  // }
+
   @override
   Widget build(BuildContext context) {
-    // الوصول إلى نصوص الترجمة
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
-        title: Text(localizations.settings), // استخدام نص مترجم لعنوان الشاشة
+        title: Text(localizations.settings),
         backgroundColor: Colors.transparent,
         foregroundColor: _goldColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            // 1. كارت المعلومات الشخصية
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2C),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _goldColor.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: _goldColor,
-                    child: const Icon(
-                      Icons.person,
-                      size: 35,
-                      color: Colors.black,
+        // 🔥 WillPopScope يستخدم هنا فقط للـ Back Button في الـ Android/iOS
+        child: WillPopScope(
+          onWillPop: () async {
+            // إعادة تحميل البيانات لمرة واحدة عند الخروج من الشاشة (لتحديث الاسم/الإيميل)
+            _loadUserData();
+            return true;
+          },
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              // 1. كارت المعلومات الشخصية
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2C2C),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _goldColor.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: _goldColor,
+                      child: const Icon(
+                        Icons.person,
+                        size: 35,
+                        color: Colors.black,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 15),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        userName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                    const SizedBox(width: 15),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(
-                        userEmail,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ],
+                        Text(
+                          userEmail,
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-            // 2. قائمة الخيارات
-            _buildSettingsItem(
-              Icons.person_outline,
-              localizations.editProfile, // نص مترجم
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const EditProfileScreen(),
-                  ),
-                );
-              },
-            ),
+              // 2. قائمة الخيارات
 
-            _buildSettingsItem(
-              Icons.lock_outline,
-              localizations.changePassword, // نص مترجم
-              () {
-                // 🔥🔥 التعديل: تفعيل التوجيه إلى شاشة تغيير كلمة المرور 🔥🔥
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChangePasswordScreen(),
-                  ),
-                );
-              },
-            ),
+              // 🔥🔥 خيار إدارة العناوين الجديد 🔥🔥
+              _buildSettingsItem(
+                Icons.location_on_outlined,
+                localizations.addressesTitle, // عنوان العناوين المترجم
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      // التوجيه إلى شاشة العناوين
+                      builder: (context) => const AddressListScreen(),
+                    ),
+                  );
+                },
+              ),
 
-            // 🔥🔥 ربط زر اللغة بالدالة الجديدة 🔥🔥
-            _buildSettingsItem(
-              Icons.language,
-              localizations.changeLanguage, // نص مترجم
-              () => _showLanguageDialog(context),
-            ),
+              _buildSettingsItem(
+                Icons.person_outline,
+                localizations.editProfile,
+                () async {
+                  // استخدام async
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const EditProfileScreen(),
+                    ),
+                  );
+                  _loadUserData(); // إعادة تحميل البيانات بعد العودة من التعديل
+                },
+              ),
 
-            _buildSettingsItem(
-              Icons.notifications_outlined,
-              localizations.notifications,
-              () {
-                // Toggle Switch
-              },
-            ),
+              _buildSettingsItem(
+                Icons.lock_outline,
+                localizations.changePassword,
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChangePasswordScreen(),
+                    ),
+                  );
+                },
+              ),
 
-            const SizedBox(height: 20),
-            Divider(color: Colors.grey[800]),
-            const SizedBox(height: 20),
+              _buildSettingsItem(
+                Icons.language,
+                localizations.changeLanguage,
+                () => _showLanguageDialog(context),
+              ),
 
-            _buildSettingsItem(
-              Icons.logout,
-              localizations.logout,
-              _logout,
-              isDestructive: true,
-            ), // نص مترجم
-          ],
+              _buildSettingsItem(
+                Icons.notifications_outlined,
+                localizations.notifications,
+                () {
+                  // Toggle Switch Placeholder
+                },
+              ),
+
+              const SizedBox(height: 20),
+              Divider(color: Colors.grey[800]),
+              const SizedBox(height: 20),
+
+              _buildSettingsItem(
+                Icons.logout,
+                localizations.logout,
+                _logout,
+                isDestructive: true,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // دالة مساعدة
   Widget _buildSettingsItem(
     IconData icon,
     String title,
     VoidCallback onTap, {
     bool isDestructive = false,
   }) {
-    // هذه الدالة تم استخدامها سابقاً
     return ListTile(
       onTap: onTap,
       leading: Container(

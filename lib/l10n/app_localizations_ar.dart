@@ -298,6 +298,51 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get addressesTitle => 'عناويني';
+
+  @override
+  String get noAddressesFound => 'لم يتم حفظ أي عناوين بعد.';
+
+  @override
+  String get addAddressTitle => 'إضافة عنوان جديد';
+
+  @override
+  String get addressDeletedSuccess => 'تم حذف العنوان بنجاح.';
+
+  @override
+  String get addressDeleteFailed => 'فشل حذف العنوان.';
+
+  @override
+  String get editAddressTitle => 'تعديل العنوان';
+
+  @override
+  String get selectLocationRequired => 'يرجى تحديد الموقع على الخريطة.';
+
+  @override
+  String get selectLocationButton => 'حدد الموقع على الخريطة';
+
+  @override
+  String get locationSelected => 'تم تحديد الموقع';
+
+  @override
+  String get locationPickedSuccess => 'تم التقاط الموقع بنجاح من GPS.';
+
+  @override
+  String get locationPermissionError => 'فشل الحصول على الموقع أو رفض الإذن.';
+
+  @override
+  String get addressTitlePlaceholder => 'عنوان الموقع (مثل: المنزل، العمل)';
+
+  @override
+  String get addressDetailsPlaceholder => 'اسم الشارع، رقم المبنى';
+
+  @override
+  String get addressUpdatedSuccess => 'تم تحديث العنوان بنجاح!';
+
+  @override
+  String get addressAddedSuccess => 'تم إضافة العنوان بنجاح!';
+
+  @override
   String get registrationFailed => 'فشل عملية التسجيل.';
 
   @override
@@ -305,4 +350,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get roleNotAllowed => 'هذا الحساب غير مخصص لتطبيق الزبائن.';
+
+  @override
+  String get serverError => 'حدث خطأ في الخادم.';
+
+  @override
+  String get addressAddFailed => 'فشل إضافة العنوان.';
+
+  @override
+  String get loginRequired => 'يجب تسجيل الدخول لإجراء هذه العملية.';
+
+  @override
+  String get emailNotFound => 'البريد الإلكتروني غير موجود.';
+
+  @override
+  String get userNotFound => 'المستخدم غير موجود.';
+
+  @override
+  String get invalidOtpOrExpired => 'رمز التفعيل غير صحيح أو منتهي الصلاحية.';
+
+  @override
+  String get wrongCredentials => 'بيانات الاعتماد غير صحيحة.';
+
+  @override
+  String get addressUpdateFailed => 'فشل تحديث العنوان.';
 }

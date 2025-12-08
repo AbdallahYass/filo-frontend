@@ -29,7 +29,7 @@
   "signUp": "Sign Up",
   "requiredField": "Required",
   "emailNotVerified": "Email not verified! New code sent 📧",
-  "loginFailed": "Login Failed",
+  "loginFailed": "Login failed.",
   "email": "Email",
   "password": "Password",
   
@@ -123,10 +123,34 @@
       "tableNumber": {}
     }
   },
-
+  
+  "addressesTitle": "My Addresses",
+  "noAddressesFound": "No addresses saved yet.",
+  "addAddressTitle": "Add New Address",
+  "addressDeletedSuccess": "Address deleted successfully.",
+  "addressDeleteFailed": "Failed to delete address.",
+  "editAddressTitle": "Edit Address",
+  "selectLocationRequired": "Please select a location on the map.",
+  "selectLocationButton": "Select Location on Map",
+  "locationSelected": "Location Selected",
+  "locationPickedSuccess": "Location successfully picked from GPS.",
+  "locationPermissionError": "Location permission denied or error.",
+  "addressTitlePlaceholder": "Address Title (e.g., Home, Work)",
+  "addressDetailsPlaceholder": "Street Name, Building Number",
+  "addressUpdatedSuccess": "Address updated successfully!",
+  "addressAddedSuccess": "Address added successfully!",
+  
   "registrationFailed": "Registration failed.",
-  "connectionError": "Server connection error.",
   "invalidOtp": "Invalid activation code.",
   "roleNotAllowed": "Account role not allowed here.",
-  "loginFailed": "Login failed."
+  "serverError": "Server error occurred.",
+  "addressAddFailed": "Failed to add address.",
+  "loginRequired": "Login is required to perform this action.",
+  
+  "emailNotFound": "Email not found.",
+  "userNotFound": "User not found.",
+  "invalidOtpOrExpired": "Invalid or expired OTP.",
+  "wrongCredentials": "Wrong credentials.",
+  "addressUpdateFailed": "Address update failed.",
+  "serverError": "Server error occurred."
 }

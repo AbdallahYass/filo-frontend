@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @connectionError.
   ///
   /// In en, this message translates to:
-  /// **'Server connection error.'**
+  /// **'Connection error occurred'**
   String get connectionError;
 
   /// No description provided for @retry.
@@ -650,6 +650,96 @@ abstract class AppLocalizations {
   /// **'Table {tableNumber} set successfully! ✅'**
   String tableSetSuccess(Object tableNumber);
 
+  /// No description provided for @addressesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My Addresses'**
+  String get addressesTitle;
+
+  /// No description provided for @noAddressesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No addresses saved yet.'**
+  String get noAddressesFound;
+
+  /// No description provided for @addAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Address'**
+  String get addAddressTitle;
+
+  /// No description provided for @addressDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Address deleted successfully.'**
+  String get addressDeletedSuccess;
+
+  /// No description provided for @addressDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete address.'**
+  String get addressDeleteFailed;
+
+  /// No description provided for @editAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Address'**
+  String get editAddressTitle;
+
+  /// No description provided for @selectLocationRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a location on the map.'**
+  String get selectLocationRequired;
+
+  /// No description provided for @selectLocationButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Location on Map'**
+  String get selectLocationButton;
+
+  /// No description provided for @locationSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Selected'**
+  String get locationSelected;
+
+  /// No description provided for @locationPickedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Location successfully picked from GPS.'**
+  String get locationPickedSuccess;
+
+  /// No description provided for @locationPermissionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied or error.'**
+  String get locationPermissionError;
+
+  /// No description provided for @addressTitlePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Title (e.g., Home, Work)'**
+  String get addressTitlePlaceholder;
+
+  /// No description provided for @addressDetailsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Street Name, Building Number'**
+  String get addressDetailsPlaceholder;
+
+  /// No description provided for @addressUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Address updated successfully!'**
+  String get addressUpdatedSuccess;
+
+  /// No description provided for @addressAddedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Address added successfully!'**
+  String get addressAddedSuccess;
+
   /// No description provided for @registrationFailed.
   ///
   /// In en, this message translates to:
@@ -667,6 +757,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account role not allowed here.'**
   String get roleNotAllowed;
+
+  /// No description provided for @serverError.
+  ///
+  /// In en, this message translates to:
+  /// **'Server error occurred.'**
+  String get serverError;
+
+  /// No description provided for @addressAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add address.'**
+  String get addressAddFailed;
+
+  /// No description provided for @loginRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Login is required to perform this action.'**
+  String get loginRequired;
+
+  /// No description provided for @emailNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Email not found.'**
+  String get emailNotFound;
+
+  /// No description provided for @userNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User not found.'**
+  String get userNotFound;
+
+  /// No description provided for @invalidOtpOrExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired OTP.'**
+  String get invalidOtpOrExpired;
+
+  /// No description provided for @wrongCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong credentials.'**
+  String get wrongCredentials;
+
+  /// No description provided for @addressUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Address update failed.'**
+  String get addressUpdateFailed;
 }
 
 class _AppLocalizationsDelegate
