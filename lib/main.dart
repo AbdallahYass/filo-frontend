@@ -44,7 +44,7 @@ class FiloMenuApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         primaryColor: Colors.black,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(),
     );
   }
 }
