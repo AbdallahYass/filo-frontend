@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'reset_password_screen.dart'; // سننشئها في الخطوة التالية
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
+import 'reset_password_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -20,7 +21,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _sendCode() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
+
+    final localizations = AppLocalizations.of(context)!;
 
     try {
       // 🔴 استخدم الرابط المناسب (localhost أو السيرفر)
@@ -37,8 +41,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (response.statusCode == 200) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Code sent! Check your email 📧"),
+            SnackBar(
+              content: Text(
+                localizations.codeSentSuccess,
+              ), // 👈 نص مترجم (نجاح)
               backgroundColor: Colors.green,
             ),
           );
@@ -53,7 +59,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         }
       } else {
         if (mounted) {
-          final errorMsg = jsonDecode(response.body)['error'] ?? "Error";
+          final errorMsg =
+              jsonDecode(response.body)['error'] ?? localizations.error;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
           );
@@ -61,8 +68,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("${localizations.error}: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -71,13 +82,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: IconThemeData(color: _goldColor),
-        title: Text("Reset Password", style: TextStyle(color: _goldColor)),
+        title: Text(
+          localizations.resetPassword,
+          style: TextStyle(color: _goldColor),
+        ), // 👈 نص مترجم
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -86,26 +103,28 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Forgot Password?",
-                style: TextStyle(
+              Text(
+                localizations.forgotPassword, // 👈 نص مترجم
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                "Enter your email address to receive a verification code.",
-                style: TextStyle(color: Colors.grey, fontSize: 16),
+              Text(
+                localizations.forgotPasswordInstructions, // 👈 نص مترجم
+                style: const TextStyle(color: Colors.grey, fontSize: 16),
               ),
               const SizedBox(height: 30),
+
+              // حقل الإيميل
               TextFormField(
                 controller: _emailController,
                 style: const TextStyle(color: Colors.white),
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: "Email",
+                  labelText: localizations.email, // 👈 نص مترجم
                   labelStyle: const TextStyle(color: Colors.grey),
                   prefixIcon: Icon(Icons.email, color: _goldColor),
                   filled: true,
@@ -118,9 +137,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     borderSide: BorderSide(color: _goldColor),
                   ),
                 ),
-                validator: (val) => val!.isEmpty ? "Required" : null,
+                validator: (val) => val!.isEmpty
+                    ? localizations.requiredField
+                    : null, // 👈 نص مترجم
               ),
               const SizedBox(height: 30),
+
+              // زر إرسال الكود
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -134,9 +157,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          "SEND CODE",
-                          style: TextStyle(
+                      : Text(
+                          localizations.sendCode, // 👈 نص مترجم
+                          style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

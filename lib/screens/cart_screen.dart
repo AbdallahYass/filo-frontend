@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../models/cart_item.dart';
 import '../services/cart_service.dart';
 import 'item_detail_screen.dart';
@@ -26,15 +27,21 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     final items = _cartService.items;
     final totalPrice = _cartService.totalPrice;
 
     return Scaffold(
       backgroundColor: _darkBackground, // خلفية سوداء
       appBar: AppBar(
-        title: const Text(
-          'My Cart',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          localizations.myCart, // 👈 نص مترجم
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.black, // شريط أسود
         centerTitle: true,
@@ -53,7 +60,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Your cart is empty',
+                    localizations.cartEmpty, // 👈 نص مترجم (السلة فارغة)
                     style: TextStyle(color: Colors.grey[400], fontSize: 18),
                   ),
                 ],
@@ -70,17 +77,23 @@ class _CartScreenState extends State<CartScreen> {
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
-                      return _buildCartItemCard(item);
+                      return _buildCartItemCard(
+                        item,
+                        localizations,
+                      ); // تمرير localizations
                     },
                   ),
                 ),
-                _buildCheckoutBar(totalPrice),
+                _buildCheckoutBar(
+                  totalPrice,
+                  localizations,
+                ), // تمرير localizations
               ],
             ),
     );
   }
 
-  Widget _buildCartItemCard(CartItem cartItem) {
+  Widget _buildCartItemCard(CartItem cartItem, AppLocalizations localizations) {
     return GestureDetector(
       onTap: () async {
         await Navigator.push(
@@ -179,10 +192,10 @@ class _CartScreenState extends State<CartScreen> {
                     _cartService.removeItem(cartItem.item.id);
                     _updateScreen();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text(
-                          'Item removed',
-                          style: TextStyle(color: Colors.white),
+                          localizations.itemRemoved, // 👈 نص مترجم
+                          style: const TextStyle(color: Colors.white),
                         ),
                         backgroundColor: Colors.black,
                       ),
@@ -197,7 +210,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCheckoutBar(double total) {
+  Widget _buildCheckoutBar(double total, AppLocalizations localizations) {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
@@ -220,9 +233,9 @@ class _CartScreenState extends State<CartScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Total:',
-                style: TextStyle(
+              Text(
+                localizations.total, // 👈 نص مترجم
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -243,7 +256,6 @@ class _CartScreenState extends State<CartScreen> {
             width: double.infinity,
             height: 55,
             child: ElevatedButton(
-              // 👇👇👇 هنا التعديل الكبير: ربط الزر بالسيرفر
               onPressed: total > 0
                   ? () async {
                       // 1. إظهار مؤشر تحميل
@@ -269,19 +281,20 @@ class _CartScreenState extends State<CartScreen> {
                           builder: (ctx) => AlertDialog(
                             backgroundColor:
                                 Colors.grey[900], // خلفية غامقة للرسالة
-                            title: const Text(
-                              'Order Placed! 🎉',
-                              style: TextStyle(color: Colors.white),
+                            title: Text(
+                              localizations.orderPlacedTitle, // 👈 نص مترجم
+                              style: const TextStyle(color: Colors.white),
                             ),
-                            content: const Text(
-                              'Your order has been sent to the kitchen.',
-                              style: TextStyle(color: Colors.grey),
+                            content: Text(
+                              localizations
+                                  .orderPlacedSuccessMsg, // 👈 نص مترجم
+                              style: const TextStyle(color: Colors.grey),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(ctx).pop(),
                                 child: Text(
-                                  'OK',
+                                  localizations.ok, // 👈 نص مترجم
                                   style: TextStyle(color: _goldColor),
                                 ),
                               ),
@@ -291,10 +304,10 @@ class _CartScreenState extends State<CartScreen> {
                       } else {
                         // 5. إذا فشل: إظهار رسالة خطأ
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              'Failed to place order. Check connection.',
-                              style: TextStyle(color: Colors.white),
+                              localizations.orderFailed, // 👈 نص مترجم
+                              style: const TextStyle(color: Colors.white),
                             ),
                             backgroundColor: Colors.red,
                           ),
@@ -309,9 +322,9 @@ class _CartScreenState extends State<CartScreen> {
                 ),
                 elevation: 5,
               ),
-              child: const Text(
-                'Checkout',
-                style: TextStyle(
+              child: Text(
+                localizations.checkout, // 👈 نص مترجم
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,

@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../models/menu_item.dart';
 import '../services/cart_service.dart';
 
@@ -17,6 +18,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   int _quantity = 1;
   final CartService _cartService = CartService();
   bool _isEditing = false; // لمعرفة هل نحن نعدل طلب موجود أم نطلب جديد
+
+  final Color _goldColor = const Color(0xFFC5A028);
 
   @override
   void initState() {
@@ -51,12 +54,15 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   }
 
   void _handleOrder() {
+    final localizations = AppLocalizations.of(context)!;
+
     // نستخدم updateQuantity بدلاً من add لضمان أن الرقم الذي اخترناه هو الذي سيُعتمد
     _cartService.updateQuantity(widget.item, _quantity);
 
+    // 🔥 استخدام الدوال المولدة لرسائل الـ SnackBar 🔥
     String message = _isEditing
-        ? 'تم تحديث الكمية إلى $_quantity'
-        : 'تم إضافة $_quantity من ${widget.item.title} للسلة';
+        ? localizations.quantityUpdated(_quantity)
+        : localizations.itemAddedToCart(_quantity, widget.item.title);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -70,6 +76,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -127,25 +135,29 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
                   const SizedBox(height: 8),
                   Text(
                     '${widget.item.price.toStringAsFixed(2)} \$',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
-                      color: Color(0xFFC5A028),
+                      color: _goldColor,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const Divider(height: 30, color: Colors.grey),
-                  const Text(
-                    'الوصف:',
-                    style: TextStyle(
+                  Text(
+                    localizations.descriptionHeader, // 👈 نص مترجم
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    widget.item.description,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Text(
+                        widget.item.description,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -153,20 +165,22 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
           ),
 
           // شريط التحكم بالكمية والإضافة
-          _buildBottomOrderBar(),
+          _buildBottomOrderBar(localizations),
         ],
       ),
     );
   }
 
-  Widget _buildBottomOrderBar() {
+  Widget _buildBottomOrderBar(AppLocalizations localizations) {
+    final Color goldColor = const Color(0xFFC5A028);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.black,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFC5A028).withOpacity(0.1),
+            color: goldColor.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -213,7 +227,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
             child: ElevatedButton(
               onPressed: _handleOrder,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFC5A028),
+                backgroundColor: goldColor,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -222,8 +236,8 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
               child: Text(
                 // تغيير نص الزر حسب الحالة (إضافة أو تحديث)
                 _isEditing
-                    ? 'تحديث الطلب | ${_calculateTotalPrice().toStringAsFixed(2)} \$'
-                    : 'أضف للسلة | ${_calculateTotalPrice().toStringAsFixed(2)} \$',
+                    ? '${localizations.updateOrderButton} | ${_calculateTotalPrice().toStringAsFixed(2)} \$' // 👈 نص مترجم
+                    : '${localizations.addToCartButton} | ${_calculateTotalPrice().toStringAsFixed(2)} \$', // 👈 نص مترجم
                 style: const TextStyle(
                   fontSize: 18,
                   color: Colors.black,

@@ -1,5 +1,8 @@
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart'; // تأكد أنك أضفت مكتبة mobile_scanner في pubspec.yaml
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../services/cart_service.dart';
 
 class QRScannerScreen extends StatefulWidget {
@@ -11,18 +14,22 @@ class QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
   bool isScanned = false; // لمنع المسح المتكرر
+  final Color _goldColor = const Color(0xFFC5A028);
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Scan Table QR',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          localizations.scanQrTitle, // 👈 نص مترجم
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Color(0xFFC5A028)), // ذهبي
+        iconTheme: IconThemeData(color: _goldColor), // ذهبي
       ),
       body: MobileScanner(
         onDetect: (capture) {
@@ -38,7 +45,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 String tableNumber = rawValue;
 
                 // إذا كان الكود عبارة عن رابط (مثل الويب)، نستخرج رقم الطاولة منه
-                // مثال الرابط: http://192.168.1.5:8080/?table=5
                 if (rawValue.contains('table=')) {
                   final uri = Uri.parse(rawValue);
                   if (uri.queryParameters.containsKey('table')) {
@@ -52,7 +58,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 // 2. إظهار رسالة نجاح
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Table $tableNumber set successfully! ✅'),
+                    content: Text(
+                      // 🔥 استخدام دالة الترجمة مع المعامل 🔥
+                      localizations.tableSetSuccess(tableNumber),
+                    ),
                     backgroundColor: Colors.green,
                   ),
                 );

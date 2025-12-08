@@ -1,11 +1,14 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
-import '../l10n/app_localizations.dart';
+import '/l10n/app_localizations.dart';
 import '../l10n/locale_provider.dart';
 import 'auth/login_screen.dart';
 import 'edit_profile_screen.dart';
+import 'change_password_screen.dart'; // 👈 تأكد من استيراد هذه الشاشة
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -27,7 +30,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUserData() async {
-    // هذه الدالة ستظل بالإنجليزية لضمان عملها بشكل مستقل
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userData = prefs.getString('user');
 
@@ -55,7 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 🔥🔥🔥 الدالة الجديدة لتغيير اللغة 🔥🔥🔥
   void _showLanguageDialog(BuildContext context) {
-    // 1. الوصول إلى LocaleProvider
     final provider = Provider.of<LocaleProvider>(context, listen: false);
     final currentLang = provider.locale.languageCode;
 
@@ -64,13 +65,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2C2C2C),
         title: Text(
-          AppLocalizations.of(context)!.appName, // مثال لاستخدام نص مترجم
+          AppLocalizations.of(context)!.appName,
           style: TextStyle(color: _goldColor),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 2. خيار الإنجليزية
             ListTile(
               title: const Text(
                 "English",
@@ -84,7 +84,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.pop(context);
               },
             ),
-            // 3. خيار العربية
             ListTile(
               title: const Text(
                 "العربية",
@@ -183,12 +182,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Icons.lock_outline,
               localizations.changePassword, // نص مترجم
               () {
-                /*Navigator.push(
+                // 🔥🔥 التعديل: تفعيل التوجيه إلى شاشة تغيير كلمة المرور 🔥🔥
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const ChangePasswordScreen(),
                   ),
-                );*/
+                );
               },
             ),
 

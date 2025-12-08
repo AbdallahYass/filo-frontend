@@ -1,3 +1,5 @@
+// lib/services/menu_service.dart
+
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
@@ -12,7 +14,7 @@ class MenuService {
 
   Future<List<MenuItem>> fetchMenu() async {
     try {
-      print("جاري الاتصال بـ: $baseUrl");
+      print("Connecting to: $baseUrl"); // ✅ تم التوحيد
 
       // 👇👇👇 التعديل الهام هنا: إضافة الـ Header
       final response = await http.get(
@@ -27,13 +29,15 @@ class MenuService {
         List<dynamic> body = jsonDecode(response.body);
         return body.map((json) => MenuItem.fromJson(json)).toList();
       } else {
+        // 🔥 توحيد رسالة الخطأ إلى كود ثابت/إنجليزي لـ UI layer
         throw Exception(
-          'خطأ في السيرفر: ${response.statusCode} - ${response.body}',
+          'SERVER_ERROR: ${response.statusCode} - ${response.body}',
         );
       }
     } catch (e) {
-      print("خطأ في الاتصال: $e");
-      throw Exception('فشل الاتصال: $e');
+      print("Connection Error: $e"); // ✅ تم التوحيد
+      // 🔥 توحيد رسالة الخطأ
+      throw Exception('CONNECTION_ERROR: $e');
     }
   }
 }

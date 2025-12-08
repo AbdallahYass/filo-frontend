@@ -1,11 +1,11 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../models/menu_item.dart';
 import 'item_detail_screen.dart';
 
 class AllItemsScreen extends StatefulWidget {
-  // نستقبل كل العناصر (وليس المفلترة فقط) لنتمكن من التبديل بينها
   final List<MenuItem> allItems;
   final String initialCategory;
 
@@ -37,15 +37,21 @@ class _AllItemsScreenState extends State<AllItemsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+    final String allKey = localizations.all; // الحصول على الترجمة لكلمة "الكل"
+
     // 1. استخراج كل التصنيفات الموجودة من القائمة
-    Set<String> categories = {'All'};
+    Set<String> categories = {allKey}; // 👈 استخدام المفتاح المترجم
     for (var item in widget.allItems) {
       categories.add(item.category);
     }
     List<String> categoryList = categories.toList();
 
-    // 2. فلترة العناصر بناءً على التصنيف المختار حالياً داخل هذه الصفحة
-    final displayItems = _selectedCategory == 'All'
+    // 2. فلترة العناصر بناءً على التصنيف المختار حالياً
+    final displayItems =
+        _selectedCategory ==
+            allKey // 👈 مقارنة بالمفتاح المترجم
         ? widget.allItems
         : widget.allItems
               .where((item) => item.category == _selectedCategory)
@@ -54,9 +60,12 @@ class _AllItemsScreenState extends State<AllItemsScreen> {
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
-        title: const Text(
-          'Menu',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          localizations.menu, // 👈 نص مترجم
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.black,
         iconTheme: IconThemeData(color: _goldColor),
@@ -117,7 +126,7 @@ class _AllItemsScreenState extends State<AllItemsScreen> {
             child: displayItems.isEmpty
                 ? Center(
                     child: Text(
-                      "No items found",
+                      localizations.noItemsFound, // 👈 نص مترجم
                       style: TextStyle(color: Colors.grey[400]),
                     ),
                   )
@@ -143,6 +152,7 @@ class _AllItemsScreenState extends State<AllItemsScreen> {
   }
 
   Widget _buildGridCard(BuildContext context, MenuItem item) {
+    // 🔥 هذا الـ Widget لا يحتاج إلى الترجمة الآن، لأنه يعرض بيانات (title, price) من الموديل
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -204,6 +214,7 @@ class _AllItemsScreenState extends State<AllItemsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
+                        // Price formatting
                         '${item.price.toStringAsFixed(2)} \$',
                         style: TextStyle(
                           color: _goldColor,

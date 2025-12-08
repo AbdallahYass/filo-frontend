@@ -1,3 +1,5 @@
+// lib/services/cart_service.dart
+
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
@@ -19,14 +21,13 @@ class CartService {
   List<CartItem> get items => List.unmodifiable(_items);
 
   // 👇👇👇 التعديل الحاسم: استخدام رابط السيرفر العالمي (Render)
-  // الآن يعمل التطبيق على أي شبكة إنترنت!
   final String _baseUrl = 'https://filo-menu.onrender.com/api/orders';
 
   String? tableNumber;
 
   void setTableNumber(String number) {
     tableNumber = number;
-    print("تم تعيين رقم الطاولة: $number");
+    print("Table number set: $number"); // ✅ تم التوحيد
   }
 
   int getQuantity(String itemId) {
@@ -100,13 +101,11 @@ class CartService {
     try {
       print('Sending order to: $_baseUrl');
 
-      // داخل دالة placeOrder في http.post
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key':
-              'FiloSecretKey202512341234', // 👈 أضف هذا السطر (نفس الكلمة اللي في السيرفر)
+          'x-api-key': 'FiloSecretKey202512341234', // 👈 مفتاح الحماية
         },
         body: jsonEncode(orderData),
       );

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // للويب
+import 'package:flutter/foundation.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
 import '../menu_screen.dart';
 import 'add_phone_screen.dart';
 import 'signup_screen.dart';
 import 'otp_screen.dart';
 import 'forgot_password_screen.dart';
-// 1. استيراد المكتبات اللازمة
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart' as auth;
-import 'package:shared_preferences/shared_preferences.dart'; // لتخزين التوكن
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,7 +32,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final Color _darkBackground = const Color(0xFF1A1A1A);
   final Color _fieldColor = const Color(0xFF2C2C2C);
 
-  // 2. إعداد Google Sign In
   final auth.GoogleSignIn _googleSignIn = kIsWeb
       ? auth.GoogleSignIn(
           clientId:
@@ -44,25 +43,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleGoogleSignIn() async {
     try {
       setState(() => _isLoading = true);
-
-      // تنظيف الجلسة لضمان اختيار الحساب
       await _googleSignIn.signOut();
-
-      // بدء عملية الدخول
       final auth.GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
         setState(() => _isLoading = false);
-        return; // المستخدم ألغى العملية
+        return;
       }
 
-      // الحصول على التوكن
       final auth.GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       String? tokenToSend = googleAuth.accessToken;
 
       if (tokenToSend != null) {
-        // إرسال التوكن للسيرفر
         final response = await http.post(
           Uri.parse('https://filo-menu.onrender.com/api/auth/google'),
           headers: {'Content-Type': 'application/json'},
@@ -80,13 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (mounted) {
             if (savedPhone == null || savedPhone.isEmpty) {
-              // 1. إذا ما عنده رقم -> وديه شاشة إضافة الرقم
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const AddPhoneScreen()),
               );
             } else {
-              // 2. إذا عنده رقم -> وديه المنيو فوراً
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const MenuScreen()),
@@ -96,9 +87,12 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           print("Server Error: ${response.body}");
           if (mounted) {
+            final localizations = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("Google Login Failed: ${response.statusCode}"),
+                content: Text(
+                  "${localizations.loginFailed}: ${response.statusCode}",
+                ),
                 backgroundColor: Colors.red,
               ),
             );
@@ -110,8 +104,12 @@ class _LoginScreenState extends State<LoginScreen> {
       print("Google Error: $error");
       setState(() => _isLoading = false);
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $error"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("${localizations.error}: $error"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -119,6 +117,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // دالة الدخول العادي (الإيميل والباسوورد)
   Future<void> _login() async {
+    final localizations = AppLocalizations.of(context)!;
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -140,8 +140,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (result == 'NOT_VERIFIED') {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('الإيميل غير مفعل! تم إرسال رمز جديد 📧'),
+          SnackBar(
+            content: Text(localizations.emailNotVerified), // 👈 نص مترجم
             backgroundColor: Colors.orange,
           ),
         );
@@ -164,6 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: _darkBackground,
       body: Center(
@@ -174,6 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // ... (Logo Icon)
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -187,17 +191,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                const Text(
-                  "Welcome Back!",
-                  style: TextStyle(
+                Text(
+                  localizations.welcomeMessage, // 👈 نص مترجم
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Text(
-                  "Sign in to continue",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                Text(
+                  localizations.signInToContinue, // 👈 نص مترجم
+                  style: const TextStyle(color: Colors.grey, fontSize: 16),
                 ),
                 const SizedBox(height: 40),
 
@@ -206,8 +210,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   style: const TextStyle(color: Colors.white),
                   keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration("Email", Icons.email_outlined),
-                  validator: (val) => val!.isEmpty ? 'Required' : null,
+                  decoration: _inputDecoration(
+                    localizations.email,
+                    Icons.email_outlined,
+                  ), // 👈 نص مترجم
+                  validator: (val) => val!.isEmpty
+                      ? localizations.requiredField
+                      : null, // 👈 نص مترجم
                 ),
                 const SizedBox(height: 20),
 
@@ -216,23 +225,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _isObscure,
                   style: const TextStyle(color: Colors.white),
-                  decoration: _inputDecoration("Password", Icons.lock_outline)
-                      .copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscure
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey,
+                  decoration:
+                      _inputDecoration(
+                            localizations.password,
+                            Icons.lock_outline,
+                          ) // 👈 نص مترجم
+                          .copyWith(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isObscure
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.grey,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _isObscure = !_isObscure),
+                            ),
                           ),
-                          onPressed: () =>
-                              setState(() => _isObscure = !_isObscure),
-                        ),
-                      ),
-                  validator: (val) => val!.isEmpty ? 'Required' : null,
+                  validator: (val) => val!.isEmpty
+                      ? localizations.requiredField
+                      : null, // 👈 نص مترجم
                 ),
                 const SizedBox(height: 10),
 
+                // زر نسيت كلمة المرور
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -245,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       );
                     },
                     child: Text(
-                      "Forgot Password?",
+                      localizations.forgotPassword, // 👈 نص مترجم
                       style: TextStyle(color: _goldColor),
                     ),
                   ),
@@ -266,9 +282,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.black)
-                        : const Text(
-                            "LOGIN",
-                            style: TextStyle(
+                        : Text(
+                            localizations.login, // 👈 نص مترجم
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -279,13 +295,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 30),
 
-                // --- 4. فاصل وزر جوجل ---
+                // --- فاصل وزر جوجل ---
                 Row(
                   children: [
                     Expanded(child: Divider(color: Colors.grey[700])),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text("OR", style: TextStyle(color: Colors.grey)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        localizations.or,
+                        style: TextStyle(color: Colors.grey),
+                      ), // 👈 نص مترجم
                     ),
                     Expanded(child: Divider(color: Colors.grey[700])),
                   ],
@@ -302,7 +321,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const SizedBox()
                         : const Icon(Icons.login, color: Colors.black),
                     label: Text(
-                      _isLoading ? "Processing..." : "Continue with Google",
+                      _isLoading
+                          ? localizations.processing
+                          : localizations.continueWithGoogle, // 👈 نص مترجم
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black,
@@ -322,12 +343,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 // -----------------------
                 const SizedBox(height: 30),
 
+                // رابط التسجيل
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(color: Colors.grey),
+                    Text(
+                      localizations.noAccount, // 👈 نص مترجم
+                      style: const TextStyle(color: Colors.grey),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -339,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                       child: Text(
-                        "Sign Up",
+                        localizations.signUp, // 👈 نص مترجم
                         style: TextStyle(
                           color: _goldColor,
                           fontWeight: FontWeight.bold,

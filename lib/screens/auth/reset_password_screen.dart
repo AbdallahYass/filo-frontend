@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -23,6 +24,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
+    final localizations = AppLocalizations.of(context)!;
+
     try {
       final url = Uri.parse(
         'https://filo-menu.onrender.com/api/auth/reset-password',
@@ -41,8 +44,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (response.statusCode == 200) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Password Changed! Please Login 🚀"),
+            SnackBar(
+              content: Text(
+                localizations.passwordChangedSuccess,
+              ), // 👈 نص مترجم (نجاح)
               backgroundColor: Colors.green,
             ),
           );
@@ -51,7 +56,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         }
       } else {
         if (mounted) {
-          final errorMsg = jsonDecode(response.body)['error'] ?? "Error";
+          final errorMsg =
+              jsonDecode(response.body)['error'] ?? localizations.error;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
           );
@@ -59,8 +65,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("${localizations.error}: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -69,11 +79,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: _goldColor),
+        title: Text(
+          localizations.resetPassword,
+          style: TextStyle(color: _goldColor),
+        ), // 👈 نص مترجم
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -81,9 +98,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           key: _formKey,
           child: Column(
             children: [
-              const Text(
-                "New Password",
-                style: TextStyle(
+              Text(
+                localizations.newPasswordTitle, // 👈 نص مترجم
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -97,10 +114,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 style: const TextStyle(color: Colors.white),
                 keyboardType: TextInputType.number,
                 decoration: _inputDecoration(
-                  "Enter OTP Code",
+                  localizations.enterOtpCode, // 👈 نص مترجم
                   Icons.lock_clock,
                 ),
-                validator: (val) => val!.length < 6 ? "Invalid Code" : null,
+                validator: (val) => val!.length < 6
+                    ? localizations.invalidCode
+                    : null, // 👈 نص مترجم
               ),
               const SizedBox(height: 20),
 
@@ -109,8 +128,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 controller: _newPasswordController,
                 style: const TextStyle(color: Colors.white),
                 obscureText: true,
-                decoration: _inputDecoration("New Password", Icons.lock),
-                validator: (val) => val!.length < 6 ? "Too short" : null,
+                decoration: _inputDecoration(
+                  localizations.password,
+                  Icons.lock,
+                ), // 👈 نص مترجم
+                validator: (val) => val!.length < 6
+                    ? localizations.tooShort
+                    : null, // 👈 نص مترجم
               ),
               const SizedBox(height: 30),
 
@@ -127,9 +151,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          "CHANGE PASSWORD",
-                          style: TextStyle(
+                      : Text(
+                          localizations.changePasswordButton, // 👈 نص مترجم
+                          style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

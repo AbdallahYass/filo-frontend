@@ -4,8 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart'; // مكتبة التحقق من الاتصال
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../../services/auth_service.dart';
 import 'menu_screen.dart';
 import 'auth/login_screen.dart';
@@ -23,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   bool _isInitialized = false;
   final AuthService _authService = AuthService();
   final LocationService _locationService = LocationService();
-  // 🔥 التعديل: إزالة القائمة (List) من التعريف 🔥
+
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   bool _isWaitingForConnection = false;
   final Color _goldColor = const Color(0xFFC5A028);
@@ -46,32 +47,26 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     });
 
-    // 2. إعداد مراقبة الاتصال (الاشتراك الآن يرجع قيمة واحدة)
-    // ⚠️ تم تغيير .onConnectivityChanged.listen() لاستقبال قيمة مفردة
+    // 2. إعداد مراقبة الاتصال
     _connectivitySubscription =
         Connectivity().onConnectivityChanged.listen(_updateConnectionStatus)
-            as StreamSubscription<
-              ConnectivityResult
-            >; // يتم استخدام الكاستينغ للتوافق مع الإصدارات المختلفة
+            as StreamSubscription<ConnectivityResult>;
 
     // فحص حالة الاتصال الأولية
     _checkInitialConnection();
   }
 
-  // فحص الاتصال الأولي (الآن checkConnectivity() ترجع قيمة واحدة)
+  // فحص الاتصال الأولي
   Future<void> _checkInitialConnection() async {
-    // ⚠️ checkConnectivity() الآن ترجع قيمة مفردة
     final connectivityResult = await (Connectivity().checkConnectivity());
 
-    // ⚠️ التحقق من القيمة المفردة
     if (connectivityResult == ConnectivityResult.none) {
       setState(() => _isWaitingForConnection = true);
     }
   }
 
-  // 🔥🔥 التعديل: دالة التحديث تستقبل قيمة مفردة (result) 🔥🔥
+  // دالة التحديث تستقبل قيمة مفردة
   void _updateConnectionStatus(ConnectivityResult result) {
-    // ⚠️ التحقق الآن يتم مباشرة على النتيجة
     final bool isConnected = result != ConnectivityResult.none;
 
     if (mounted) {
@@ -92,7 +87,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  // 🔥 الدالة المعدلة: تبدأ بالتحقق من الاتصال قبل التوكن 🔥
+  // الدالة المعدلة: تبدأ بالتحقق من الاتصال قبل التوكن
   Future<void> _checkAuthAndNavigate() async {
     _controller.pause();
     if (ModalRoute.of(context)?.isCurrent == false || _isWaitingForConnection) {
@@ -106,10 +101,9 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    // 🔥 2. جلب الموقع الجغرافي للمستخدم 🔥
+    // جلب الموقع الجغرافي للمستخدم
     Position? userPosition = await _locationService.getCurrentPositionSafe();
 
-    // (ملاحظة: يمكنك هنا تخزين الـ userPosition في Provider أو State Management)
     if (userPosition == null) {
       if (kDebugMode) {
         print("Could not determine user location, proceeding...");
@@ -144,7 +138,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... (كود الـ build لا يتغير)
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -186,17 +182,17 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Text(
-                        "Skip",
-                        style: TextStyle(
+                        localizations.skip, // 👈 نص مترجم
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
                       ),
-                      SizedBox(width: 5),
-                      Icon(
+                      const SizedBox(width: 5),
+                      const Icon(
                         Icons.arrow_forward_ios,
                         color: Colors.white,
                         size: 12,
@@ -218,18 +214,21 @@ class _SplashScreenState extends State<SplashScreen> {
                     children: [
                       Icon(Icons.wifi_off, color: _goldColor, size: 60),
                       const SizedBox(height: 20),
-                      const Text(
-                        "No Internet Connection",
-                        style: TextStyle(
+                      Text(
+                        localizations.noInternetConnection, // 👈 نص مترجم
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        "Please check your network and try again.",
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      Text(
+                        localizations.checkNetworkMessage, // 👈 نص مترجم
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
                       ),
                       const SizedBox(height: 40),
                       // دائرة انتظار شفافة ترمز إلى المراقبة المستمرة

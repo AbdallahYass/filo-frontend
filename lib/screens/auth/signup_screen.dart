@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // للويب
-import 'package:intl_phone_field/intl_phone_field.dart'; // 👈 استيراد المكتبة
+import 'package:flutter/foundation.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../../services/auth_service.dart';
 import 'otp_screen.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,7 @@ import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart' as auth;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../menu_screen.dart';
-import 'add_phone_screen.dart'; // تأكد من استيراد الشاشات اللازمة
+import 'add_phone_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -22,15 +23,12 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  // حذفنا _phoneController لأن المكتبة تدير النص بنفسها
 
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
 
-  // 🔥 متغير لحفظ الرقم الكامل (مع الكود الدولي)
   String _completePhoneNumber = '';
 
-  // تعريف كائن جوجل
   final auth.GoogleSignIn _googleSignIn = kIsWeb
       ? auth.GoogleSignIn(
           clientId:
@@ -41,9 +39,11 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFF1A1A1A);
+  final Color _fieldColor = const Color(0xFF2C2C2C);
 
-  // --- دوال جوجل (كما هي) ---
+  // --- دوال جوجل ---
   Future<void> _handleGoogleSignIn() async {
+    final localizations = AppLocalizations.of(context)!;
     try {
       setState(() => _isLoading = true);
       await _googleSignIn.signOut();
@@ -74,18 +74,26 @@ class _SignupScreenState extends State<SignupScreen> {
             await prefs.setString('user', jsonEncode(data['user']));
           }
 
-          // فحص هل الرقم موجود
           String? savedPhone = data['user']['phone'];
 
           if (mounted) {
+            // 🔥 رسالة الترحيب مترجمة مع الاسم 🔥
+            // [قبل] الخطأ الذي ظهر: localizations.welcomeUser.replaceAll( ... )
+
+            // 🔥 الصيغة الصحيحة لاستخدام الدالة المولدة 🔥
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("Welcome ${googleUser.displayName}"),
+                content: Text(
+                  // 1. استدعي welcomeUser كدالة
+                  localizations.welcomeUser(
+                    // 2. مرر الاسم المطلوب
+                    googleUser.displayName ?? localizations.signUp,
+                  ),
+                ),
                 backgroundColor: Colors.green,
               ),
             );
 
-            // التوجيه الذكي
             if (savedPhone == null || savedPhone.isEmpty) {
               Navigator.pushReplacement(
                 context,
@@ -113,11 +121,13 @@ class _SignupScreenState extends State<SignupScreen> {
   void _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final localizations = AppLocalizations.of(context)!;
+
     // التحقق من أن الرقم تم إدخاله
     if (_completePhoneNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a valid phone number"),
+        SnackBar(
+          content: Text(localizations.enterValidPhone), // 👈 نص مترجم
           backgroundColor: Colors.red,
         ),
       );
@@ -155,8 +165,50 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  // 🔥🔥 دالة المساعدة المعدلة لاستقبال كائن الترجمة 🔥🔥
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, // هذا سيكون النص المترجم نفسه
+    IconData icon, {
+    required AppLocalizations localizations, // 👈 استقبل كائن الترجمة
+    bool isPassword = false,
+    TextInputType inputType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: isPassword,
+      keyboardType: inputType,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: _goldColor),
+        filled: true,
+        fillColor: _fieldColor,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: _goldColor),
+        ),
+      ),
+      validator: (val) {
+        if (val == null || val.isEmpty)
+          return localizations.requiredField; // 👈 نص مترجم
+        if (isPassword && val.length < 6)
+          return localizations.tooShort; // 👈 نص مترجم
+        if (inputType == TextInputType.emailAddress && !val.contains('@')) {
+          return localizations.invalidEmail; // 👈 نص مترجم
+        }
+        return null;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
@@ -171,9 +223,9 @@ class _SignupScreenState extends State<SignupScreen> {
             key: _formKey,
             child: Column(
               children: [
-                const Text(
-                  "Create Account",
-                  style: TextStyle(
+                Text(
+                  localizations.createAccount, // 👈 نص مترجم
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -181,24 +233,34 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                _buildTextField(_nameController, "Full Name", Icons.person),
+                _buildTextField(
+                  _nameController,
+                  localizations.fullName, // 👈 نص مترجم
+                  Icons.person,
+                  localizations: localizations, // 👈 تمرير الكائن
+                ),
                 const SizedBox(height: 20),
 
                 _buildTextField(
                   _emailController,
-                  "Email",
+                  localizations.email, // 👈 نص مترجم
                   Icons.email,
                   inputType: TextInputType.emailAddress,
+                  localizations: localizations, // 👈 تمرير الكائن
                 ),
                 const SizedBox(height: 20),
 
-                // 🔥🔥 حقل الهاتف الجديد (IntlPhoneField) 🔥🔥
+                // 🔥 حقل الهاتف الجديد (IntlPhoneField) 🔥
                 IntlPhoneField(
                   decoration: InputDecoration(
-                    labelText: 'Phone Number',
+                    labelText: localizations.phoneNumber, // 👈 نص مترجم
                     labelStyle: const TextStyle(color: Colors.grey),
                     filled: true,
-                    fillColor: const Color(0xFF2C2C2C),
+                    fillColor: _fieldColor,
+                    prefixIcon: Icon(
+                      Icons.phone,
+                      color: _goldColor,
+                    ), // إضافة أيقونة الهاتف
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide.none,
@@ -207,30 +269,40 @@ class _SignupScreenState extends State<SignupScreen> {
                       borderRadius: BorderRadius.circular(15),
                       borderSide: BorderSide(color: _goldColor),
                     ),
-                    counterText: "", // إخفاء العداد
+                    counterText: "",
                   ),
                   style: const TextStyle(color: Colors.white),
                   dropdownTextStyle: const TextStyle(color: Colors.white),
                   dropdownIcon: Icon(Icons.arrow_drop_down, color: _goldColor),
-                  initialCountryCode: 'JO', // الدولة الافتراضية
-                  disableLengthCheck: false, // تفعيل التحقق من الطول
+                  initialCountryCode: 'JO',
+                  disableLengthCheck: false,
+                  languageCode: localizations
+                      .localeName, // استخدام لغة التطبيق لأسماء الدول
+
+                  validator: (phone) {
+                    if (phone == null || !phone.isValidNumber()) {
+                      return localizations.enterValidPhone; // 👈 نص مترجم
+                    }
+                    return null;
+                  },
+
                   onChanged: (phone) {
-                    // حفظ الرقم الكامل عند التغيير
                     _completePhoneNumber = phone.completeNumber;
                   },
-                  languageCode: "en",
                 ),
 
                 const SizedBox(height: 20),
 
                 _buildTextField(
                   _passwordController,
-                  "Password",
+                  localizations.password, // 👈 نص مترجم
                   Icons.lock,
                   isPassword: true,
+                  localizations: localizations, // 👈 تمرير الكائن
                 ),
                 const SizedBox(height: 30),
 
+                // زر التسجيل
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -244,9 +316,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.black)
-                        : const Text(
-                            "SIGN UP",
-                            style: TextStyle(
+                        : Text(
+                            localizations.signUp, // 👈 نص مترجم
+                            style: const TextStyle(
                               fontSize: 18,
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -257,12 +329,16 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 const SizedBox(height: 20),
 
+                // فاصل
                 Row(
                   children: [
                     Expanded(child: Divider(color: Colors.grey[700])),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      child: Text("OR", style: TextStyle(color: Colors.grey)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        localizations.or,
+                        style: TextStyle(color: Colors.grey),
+                      ), // 👈 نص مترجم
                     ),
                     Expanded(child: Divider(color: Colors.grey[700])),
                   ],
@@ -270,6 +346,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 const SizedBox(height: 20),
 
+                // زر قوقل
                 SizedBox(
                   width: double.infinity,
                   height: 55,
@@ -279,7 +356,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         ? const SizedBox()
                         : const Icon(Icons.login, color: Colors.black),
                     label: Text(
-                      _isLoading ? "Processing..." : "Continue with Google",
+                      _isLoading
+                          ? localizations.processing
+                          : localizations.continueWithGoogle, // 👈 نص مترجم
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.black,
@@ -301,40 +380,6 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label,
-    IconData icon, {
-    bool isPassword = false,
-    TextInputType inputType = TextInputType.text,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: inputType,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: Icon(icon, color: _goldColor),
-        filled: true,
-        fillColor: const Color(0xFF2C2C2C),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: _goldColor),
-        ),
-      ),
-      validator: (val) {
-        if (val == null || val.isEmpty) return "Required";
-        if (inputType == TextInputType.emailAddress && !val.contains('@')) {
-          return "Invalid Email";
-        }
-        return null;
-      },
     );
   }
 }

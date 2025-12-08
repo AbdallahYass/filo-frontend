@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl_phone_field/intl_phone_field.dart'; // 👈 استيراد المكتبة
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:filo_menu/l10n/app_localizations.dart'; // 👈 استيراد ملف اللغات
 import '../menu_screen.dart';
 
 class AddPhoneScreen extends StatefulWidget {
@@ -13,12 +14,12 @@ class AddPhoneScreen extends StatefulWidget {
 }
 
 class _AddPhoneScreenState extends State<AddPhoneScreen> {
-  // متغير لحفظ الرقم الكامل مع الكود الدولي
   String fullPhoneNumber = '';
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _savePhone() async {
+    // يجب أن تكون دالة التحقق من المكتبة قد تم تشغيلها عبر زر الـ ElevatedButton
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -26,7 +27,6 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
 
-    // 🔴 عدل الرابط حسب سيرفرك (localhost أو Live)
     final url = Uri.parse(
       'https://filo-menu.onrender.com/api/user/update-phone',
     );
@@ -38,7 +38,7 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'phone': fullPhoneNumber}), // نرسل الرقم الكامل
+        body: jsonEncode({'phone': fullPhoneNumber}),
       );
 
       if (response.statusCode == 200) {
@@ -53,7 +53,9 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("Error: ${response.statusCode}"),
+              content: Text(
+                "Error: ${response.statusCode}",
+              ), // يمكن ترجمة هذا الخطأ لاحقاً
               backgroundColor: Colors.red,
             ),
           );
@@ -67,6 +69,9 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     // تعريف الألوان
     final Color goldColor = const Color(0xFFC5A028);
     final Color darkFieldColor = const Color(0xFF2C2C2C);
@@ -74,7 +79,7 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
-        title: const Text("Complete Profile"),
+        title: Text(localizations.completeProfile), // 👈 نص مترجم
         backgroundColor: Colors.transparent,
         foregroundColor: goldColor,
       ),
@@ -85,18 +90,18 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "Add Your Phone Number 📱",
-                style: TextStyle(
+              Text(
+                localizations.addPhoneNumberTitle, // 👈 نص مترجم
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                "Select your country and enter phone number.",
-                style: TextStyle(color: Colors.grey),
+              Text(
+                localizations.addPhoneNumberHint, // 👈 نص مترجم
+                style: const TextStyle(color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
@@ -104,7 +109,7 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
               // 🔥🔥 حقل الهاتف الذكي الجديد 🔥🔥
               IntlPhoneField(
                 decoration: InputDecoration(
-                  labelText: 'Phone Number',
+                  labelText: localizations.phoneNumber, // 👈 نص مترجم
                   labelStyle: const TextStyle(color: Colors.grey),
                   filled: true,
                   fillColor: darkFieldColor,
@@ -116,25 +121,29 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(color: goldColor),
                   ),
-                  counterText: "", // لإخفاء عداد الأحرف أسفل الحقل
+                  counterText: "",
                 ),
-                style: const TextStyle(color: Colors.white), // لون الرقم
-                dropdownTextStyle: const TextStyle(
-                  color: Colors.white,
-                ), // لون القائمة
+                style: const TextStyle(color: Colors.white),
+                dropdownTextStyle: const TextStyle(color: Colors.white),
                 dropdownIcon: Icon(Icons.arrow_drop_down, color: goldColor),
 
-                initialCountryCode: 'JO', // الدولة الافتراضية (الأردن مثلاً)
+                initialCountryCode: 'JO',
 
-                onChanged: (phone) {
-                  // هنا يتم حفظ الرقم كاملاً (مثال: +962791234567)
-                  fullPhoneNumber = phone.completeNumber;
+                // استخدام دالة التحقق الافتراضية للمكتبة
+                validator: (phone) {
+                  if (phone == null || !phone.isValidNumber()) {
+                    return localizations.invalidPhone; // 👈 نص مترجم
+                  }
+                  return null;
                 },
 
-                // هذه الخاصية تمنع الإدخال إذا كان الرقم غير صالح للدولة المختارة
+                onChanged: (phone) {
+                  fullPhoneNumber = phone.completeNumber;
+                },
                 disableLengthCheck: false,
                 showCountryFlag: true,
-                languageCode: "en", // لغة أسماء الدول
+                languageCode: localizations
+                    .localeName, // لغة أسماء الدول تتطابق مع لغة التطبيق
               ),
 
               const SizedBox(height: 30),
@@ -147,9 +156,9 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                   style: ElevatedButton.styleFrom(backgroundColor: goldColor),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          "SAVE & CONTINUE",
-                          style: TextStyle(
+                      : Text(
+                          localizations.saveAndContinue, // 👈 نص مترجم
+                          style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                           ),

@@ -1,7 +1,8 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../models/menu_item.dart';
 import '../services/menu_service.dart';
 import '../services/cart_service.dart';
@@ -10,7 +11,7 @@ import 'cart_screen.dart';
 import 'all_items_screen.dart';
 import 'qr_scanner_screen.dart';
 import 'qr_generator_screen.dart';
-import 'settings_screen.dart'; // استيراد شاشة الإعدادات
+import 'settings_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -29,23 +30,13 @@ class _MenuScreenState extends State<MenuScreen> {
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkColor = const Color(0xFF1A1A1A);
 
+  // تحديث هذه القيمة بناءً على الـ localizations.all في كل build
   String _selectedCategory = 'All';
-
-  // قائمة المحتويات للألسنة السفلية
-  late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
     _menuItemsFuture = _menuService.fetchMenu();
-
-    // تعريف محتويات الألسنة
-    _pages = [
-      _buildMenuContentWrapper(), // Index 0: المحتوى الرئيسي (Menu/Home)
-      _buildPlaceholderScreen('Search'), // Index 1: البحث
-      _buildPlaceholderScreen('Cart'), // Index 2: السلة (مؤقتاً)
-      const SettingsScreen(), // Index 3: الإعدادات (الشخص)
-    ];
 
     // كود خاص بالويب (Web initialization)
     if (kIsWeb) {
@@ -62,15 +53,12 @@ class _MenuScreenState extends State<MenuScreen> {
   // دالة تغيير التبويب
   void _onItemTapped(int index) {
     if (index == 2) {
-      // إذا ضغط على أيقونة السلة (Index 2) نفتح شاشة منفصلة
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const CartScreen()),
       );
       return;
     }
-
-    // إذا كان التبويب Home, Search, أو Settings
     setState(() {
       _currentIndex = index;
     });
@@ -82,38 +70,57 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  // دالة لإنشاء شاشة Placeholder (للبحث والسلة المؤقتة)
+  // دالة إنشاء Placeholder - تستخدم الترجمة الموضعية
   Widget _buildPlaceholderScreen(String title) {
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: _darkColor,
       appBar: AppBar(
+        // بما أن title يأتي مترجماً من دالة build، نستخدمه مباشرة هنا
         title: Text(title, style: TextStyle(color: _goldColor)),
         backgroundColor: _darkColor,
       ),
       body: Center(
-        child: Text("$title Screen", style: TextStyle(color: Colors.white)),
+        child: Text(
+          // 🔥🔥 التصحيح هنا: استدعاء الدالة المولّدة مباشرة 🔥🔥
+          localizations.screenTitlePlaceholder(title),
+
+          // ملاحظة: لكي يعمل هذا، يجب أن يكون المفتاح في ملف .arb معرفاً هكذا:
+          // "screenTitlePlaceholder": "{title} Screen",
+          // "@screenTitlePlaceholder": { "placeholders": { "title": {} } }
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
     );
   }
 
-  // دالة تحتوي على كل محتوى الشاشة الرئيسية القديم (المنيو)
+  // دالة محتوى الشاشة الرئيسية - تستخدم الترجمة الموضعية
   Widget _buildMenuContentWrapper() {
+    final localizations = AppLocalizations.of(context)!;
+    final String allKey = localizations.all;
+
+    // تحديث الـ selectedCategory عند تغيير اللغة
+    if (_selectedCategory == 'All') {
+      _selectedCategory = allKey;
+    }
+
+    // ... (بقية المحتوى مع استدعاء الدوال المساعدة)
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: _darkColor,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Home',
-          style: TextStyle(
+        title: Text(
+          localizations.home, // 🔥 ترجمة
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         actions: [
-          // زر الماسح الضوئي (يظهر فقط في الموبايل)
           if (!kIsWeb)
             IconButton(
               icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
@@ -126,8 +133,6 @@ class _MenuScreenState extends State<MenuScreen> {
                 );
               },
             ),
-
-          // زر توليد الكود (مؤقت للتجربة)
           IconButton(
             icon: Icon(Icons.qr_code_2, color: _goldColor),
             onPressed: () {
@@ -139,10 +144,6 @@ class _MenuScreenState extends State<MenuScreen> {
               );
             },
           ),
-
-          // 🔥🔥 تم حذف زر الإعدادات من هنا 🔥🔥
-
-          // أيقونة السلة (تبقى هنا كـ Button لفتح شاشة السلة مباشرة)
           Stack(
             alignment: Alignment.center,
             children: [
@@ -175,8 +176,6 @@ class _MenuScreenState extends State<MenuScreen> {
           const SizedBox(width: 10),
         ],
       ),
-
-      // ... محتوى الـ Body القديم (يحتوي على الـ RefreshIndicator والـ FutureBuilder) ...
       body: RefreshIndicator(
         onRefresh: _refreshData,
         color: _goldColor,
@@ -202,16 +201,17 @@ class _MenuScreenState extends State<MenuScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 10),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          "احصل على تجربة أفضل مع التطبيق!",
-                          style: TextStyle(color: Colors.white, fontSize: 13),
+                          localizations.getBetterAppExperience, // 🔥 ترجمة
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          // رابط المتجر
-                        },
+                        onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _goldColor,
                           foregroundColor: Colors.black,
@@ -221,9 +221,9 @@ class _MenuScreenState extends State<MenuScreen> {
                           ),
                           minimumSize: const Size(0, 30),
                         ),
-                        child: const Text(
-                          "حمل الآن",
-                          style: TextStyle(
+                        child: Text(
+                          localizations.downloadNow, // 🔥 ترجمة
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -247,10 +247,9 @@ class _MenuScreenState extends State<MenuScreen> {
                     bottomRight: Radius.circular(30),
                   ),
                 ),
-                child: _buildSearchBar(),
+                child: _buildSearchBar(), // سيتم التعامل مع الترجمة داخله
               ),
               const SizedBox(height: 20),
-
               FutureBuilder<List<MenuItem>>(
                 future: _menuItemsFuture,
                 builder: (context, snapshot) {
@@ -261,12 +260,14 @@ class _MenuScreenState extends State<MenuScreen> {
                   } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     final allItems = snapshot.data!;
 
-                    Set<String> categories = {'All'};
+                    // 1. ترجمة مفتاح 'All'
+                    Set<String> categories = {allKey};
                     for (var item in allItems) {
                       categories.add(item.category);
                     }
 
-                    final filteredItems = _selectedCategory == 'All'
+                    // 2. فلترة العناصر بناءً على المفتاح المترجم
+                    final filteredItems = _selectedCategory == allKey
                         ? allItems
                         : allItems
                               .where(
@@ -277,10 +278,14 @@ class _MenuScreenState extends State<MenuScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildCategoryList(categories.toList()),
+                        _buildCategoryList(
+                          categories.toList(),
+                        ), // سيتم التعامل مع الترجمة داخله
                         const SizedBox(height: 20),
                         if (filteredItems.isEmpty)
-                          const Center(child: Text("No items found"))
+                          Center(
+                            child: Text(localizations.noItemsFound),
+                          ) // 🔥 ترجمة
                         else
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +295,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                   horizontal: 20.0,
                                 ),
                                 child: _buildFeaturedCard(filteredItems.first),
-                              ),
+                              ), // سيتم التعامل مع الترجمة داخله
                               const SizedBox(height: 25),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -301,8 +306,9 @@ class _MenuScreenState extends State<MenuScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      _selectedCategory == 'All'
-                                          ? "Popular Now"
+                                      _selectedCategory == allKey
+                                          ? localizations
+                                                .popularNow // 🔥 ترجمة
                                           : _selectedCategory,
                                       style: const TextStyle(
                                         fontSize: 18,
@@ -325,7 +331,7 @@ class _MenuScreenState extends State<MenuScreen> {
                                         );
                                       },
                                       child: Text(
-                                        "See All",
+                                        localizations.seeAll, // 🔥 ترجمة
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
@@ -347,42 +353,47 @@ class _MenuScreenState extends State<MenuScreen> {
                                       : 0,
                                   itemBuilder: (context, index) {
                                     final item = filteredItems[index + 1];
-                                    return _buildRestaurantCard(item);
+                                    return _buildRestaurantCard(
+                                      item,
+                                    ); // سيتم التعامل مع الترجمة داخله
                                   },
                                 ),
                               ),
+                              const SizedBox(height: 20),
                             ],
                           ),
-                        const SizedBox(height: 20),
                       ],
                     );
                   } else if (snapshot.hasError) {
                     return Center(
                       child: Column(
                         children: [
-                          const Text("حدث خطأ في الاتصال"),
+                          Text(localizations.connectionError), // 🔥 ترجمة
                           TextButton(
                             onPressed: _refreshData,
-                            child: const Text("إعادة المحاولة"),
+                            child: Text(localizations.retry), // 🔥 ترجمة
                           ),
                         ],
                       ),
                     );
                   }
-                  return const Center(child: Text("No menu items available"));
+                  return Center(
+                    child: Text(localizations.noMenuItems),
+                  ); // 🔥 ترجمة
                 },
               ),
             ],
           ),
         ),
       ),
-      // نهاية الـ Body القديم
     );
   }
 
-  // --- دوال بناء الواجهة المساعدة (تبقى كما هي) ---
+  // --- دوال بناء الواجهة المساعدة (تطبيق الترجمة الموضعية) ---
   Widget _buildSearchBar() {
-    /* ... */
+    // 🔥 ترجمة موضعية 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -392,11 +403,11 @@ class _MenuScreenState extends State<MenuScreen> {
       child: Row(
         children: [
           const SizedBox(width: 15),
-          const Expanded(
+          Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: "Search",
-                hintStyle: TextStyle(color: Colors.grey),
+                hintText: localizations.searchHint, // 🔥 ترجمة
+                hintStyle: const TextStyle(color: Colors.grey),
                 border: InputBorder.none,
               ),
             ),
@@ -416,6 +427,8 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildCategoryList(List<String> categories) {
+    // 🔥 ترجمة موضعية 🔥
+
     return SizedBox(
       height: 40,
       child: ListView.builder(
@@ -467,6 +480,9 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildFeaturedCard(MenuItem item) {
+    // 🔥 ترجمة موضعية 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -498,9 +514,12 @@ class _MenuScreenState extends State<MenuScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  "Order",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                child: Text(
+                  localizations.order, // 🔥 ترجمة
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
@@ -536,6 +555,8 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   Widget _buildRestaurantCard(MenuItem item) {
+    // 🔥 ترجمة موضعية 🔥
+
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -600,10 +621,10 @@ class _MenuScreenState extends State<MenuScreen> {
               children: [
                 Icon(Icons.star, color: _goldColor, size: 14),
                 const SizedBox(width: 4),
-                Text(
+                const Text(
                   "5.0",
                   style: TextStyle(
-                    color: _goldColor,
+                    color: Color(0xFFC5A028),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -618,11 +639,22 @@ class _MenuScreenState extends State<MenuScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
+    // تهيئة الصفحات بالاعتماد على الـ build context
+    final List<Widget> pages = [
+      _buildMenuContentWrapper(),
+      _buildPlaceholderScreen(localizations.searchHint),
+      _buildPlaceholderScreen(localizations.myCart),
+      const SettingsScreen(),
+    ];
+
     return Scaffold(
       backgroundColor: _darkColor,
 
       // 🔥 الجسم الرئيسي يستخدم IndexedStack لعرض المحتوى بناءً على التبويب
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: _currentIndex, children: pages),
 
       // 🔥 شريط التنقل السفلي المعدل
       bottomNavigationBar: BottomNavigationBar(
@@ -634,21 +666,21 @@ class _MenuScreenState extends State<MenuScreen> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
-        items: [
-          const BottomNavigationBarItem(
+        items: const [
+          BottomNavigationBarItem(
             icon: Icon(Icons.home_filled),
             label: '',
           ), // Home/Menu
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: '',
           ), // Search
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag_outlined),
             label: '',
           ), // Cart
           // 🔥 استبدال أيقونة الشخص بالإعدادات 🔥
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: '',
           ), // Settings

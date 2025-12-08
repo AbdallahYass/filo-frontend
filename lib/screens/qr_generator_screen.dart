@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 
 class QRGeneratorScreen extends StatefulWidget {
   const QRGeneratorScreen({super.key});
@@ -13,18 +14,22 @@ class QRGeneratorScreen extends StatefulWidget {
 class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
   final TextEditingController _controller = TextEditingController();
   String _dataToGenerate = ""; // البيانات التي سنحولها لـ QR
+  final Color _goldColor = const Color(0xFFC5A028);
 
   @override
   Widget build(BuildContext context) {
+    // 🔥 الوصول لكائن الترجمة 🔥
+    final localizations = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          'Generate Table QR',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          localizations.generateQrTitle, // 👈 نص مترجم
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Color(0xFFC5A028)),
+        iconTheme: IconThemeData(color: _goldColor),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -41,12 +46,12 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: _dataToGenerate.isEmpty
-                  ? const SizedBox(
+                  ? SizedBox(
                       height: 200,
                       width: 200,
                       child: Center(
                         child: Text(
-                          "Enter table number to generate QR",
+                          localizations.enterTableNumberHint, // 👈 نص مترجم
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -69,7 +74,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               style: const TextStyle(color: Colors.white),
               keyboardType: TextInputType.number, // لوحة مفاتيح أرقام
               decoration: InputDecoration(
-                hintText: "Enter Table Number (e.g., 5)",
+                hintText: localizations.enterTableNumberField, // 👈 نص مترجم
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 filled: true,
                 fillColor: Colors.grey[900],
@@ -77,10 +82,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: const Icon(
-                  Icons.table_restaurant,
-                  color: Color(0xFFC5A028),
-                ),
+                prefixIcon: Icon(Icons.table_restaurant, color: _goldColor),
               ),
             ),
 
@@ -93,7 +95,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    // 👇👇👇 التغيير هنا: نصنع رابطاً بدلاً من رقم مجرد
+                    // 👇👇👇 هنا التغيير: نصنع رابطاً بدلاً من رقم مجرد
                     // هام: استبدل 192.168.1.XX برقم الـ IP الخاص بجهازك
                     String myIP = "192.168.1.26";
                     String tableNum = _controller.text;
@@ -102,7 +104,7 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                     if (tableNum.isEmpty) return;
 
                     // الرابط النهائي الذي سيفتح نسخة الويب
-                    // المنفذ 8080 هو المنفذ الافتراضي لـ flutter web server
+                    // المنفذ 8081 هو المنفذ الافتراضي لـ flutter web server (قد يختلف)
                     _dataToGenerate = "http://$myIP:8081/?table=$tableNum";
                   });
 
@@ -110,14 +112,14 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
                   FocusScope.of(context).unfocus();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC5A028),
+                  backgroundColor: _goldColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                child: const Text(
-                  "Generate Web QR",
-                  style: TextStyle(
+                child: Text(
+                  localizations.generateQrButton, // 👈 نص مترجم
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -127,9 +129,9 @@ class _QRGeneratorScreenState extends State<QRGeneratorScreen> {
             ),
 
             const SizedBox(height: 20),
-            const Text(
-              "Note: This QR will open the web version on any phone.",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+            Text(
+              localizations.qrWebNote, // 👈 نص مترجم
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),

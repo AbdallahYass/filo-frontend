@@ -1,14 +1,132 @@
 {
   "@@locale": "en",
+  
   "appName": "Filo Menu",
+  "welcomeMessage": "Welcome Back!",
+  "skip": "Skip",
+  "noInternetConnection": "No Internet Connection",
+  "checkNetworkMessage": "Please check your network and try again.",
+  "error": "Error",
+  "processing": "Processing...",
+  
   "settings": "Settings",
   "editProfile": "Edit Profile",
   "changePassword": "Change Password",
   "changeLanguage": "Change Language",
   "notifications": "Notifications",
   "logout": "Logout",
-  "welcomeMessage": "Welcome Back!",
-  "noInternetConnection": "No Internet Connection",
-  "checkNetworkMessage": "Please check your network and try again.",
-  "skip": "Skip"
+  
+  "signInToContinue": "Sign in to continue",
+  "forgotPassword": "Forgot Password?",
+  "resetPassword": "Reset Password",
+  "forgotPasswordInstructions": "Enter your email address to receive a verification code.",
+  "login": "LOGIN",
+  "sendCode": "SEND CODE",
+  "codeSentSuccess": "Code sent! Check your email 📧",
+  "or": "OR",
+  "continueWithGoogle": "Continue with Google",
+  "noAccount": "Don't have an account?",
+  "signUp": "Sign Up",
+  "requiredField": "Required",
+  "emailNotVerified": "Email not verified! New code sent 📧",
+  "loginFailed": "Login Failed",
+  "email": "Email",
+  "password": "Password",
+  
+  "completeProfile": "Complete Profile",
+  "addPhoneNumberTitle": "Add Your Phone Number 📱",
+  "addPhoneNumberHint": "Select your country and enter phone number.",
+  "phoneNumber": "Phone Number",
+  "saveAndContinue": "SAVE & CONTINUE",
+  "invalidPhone": "Invalid Phone",
+  
+  "checkEmailTitle": "Check your Email",
+  "otpInstruction": "We sent a code to",
+  "verify": "VERIFY",
+  "verificationSuccess": "Account activated successfully! Login now ✅",
+
+  "newPasswordTitle": "New Password",
+  "enterOtpCode": "Enter OTP Code",
+  "tooShort": "Too short (min 6 chars)",
+  "invalidCode": "Invalid Code",
+  "changePasswordButton": "CHANGE PASSWORD",
+  "passwordChangedSuccess": "Password Changed! Please Login 🚀",
+  
+  "createAccount": "Create Account",
+  "fullName": "Full Name",
+  "invalidEmail": "Invalid Email",
+  "enterValidPhone": "Please enter a valid phone number",
+  "welcomeUser": "Welcome {name}",
+  
+  "menu": "Menu",
+  "all": "All",
+  "noItemsFound": "No items found",
+  
+  "myCart": "My Cart",
+  "cartEmpty": "Your cart is empty",
+  "itemRemoved": "Item removed",
+  "total": "Total:",
+  "checkout": "Checkout",
+  "orderPlacedTitle": "Order Placed! 🎉",
+  "orderPlacedSuccessMsg": "Your order has been sent to the kitchen.",
+  "ok": "OK",
+  "orderFailed": "Failed to place order. Check connection.",
+
+  "newPhoneNumber": "New Phone Number",
+  "saveChanges": "SAVE CHANGES",
+  "profileUpdatedSuccess": "Profile Updated!",
+  
+  "descriptionHeader": "Description:",
+  "updateOrderButton": "Update Order",
+  "addToCartButton": "Add to Cart",
+  "quantityUpdated": "Quantity updated to {quantity}",
+  "@quantityUpdated": {
+    "placeholders": {
+      "quantity": {}
+    }
+  },
+  "itemAddedToCart": "{quantity} of {itemTitle} added to cart",
+  "@itemAddedToCart": {
+    "placeholders": {
+      "quantity": {},
+      "itemTitle": {}
+    }
+  },
+
+  "home": "Home",
+  "getBetterAppExperience": "Get a better experience with the App!",
+  "downloadNow": "Download Now",
+  "searchHint": "Search for your favorite dish",
+  "popularNow": "Popular Now",
+  "seeAll": "See All",
+  "connectionError": "Connection error occurred",
+  "retry": "Retry",
+  "noMenuItems": "No menu items available",
+  "screenTitlePlaceholder": "{title} Screen",
+  "order": "Order",
+  
+  "updateYourPassword": "Update Your Password",
+  "oldPassword": "Old Password",
+  "confirmNewPassword": "Confirm New Password",
+  "passwordsDoNotMatch": "Passwords do not match!",
+
+  "generateQrTitle": "Generate Table QR",
+  "enterTableNumberHint": "Enter table number to generate QR",
+  "enterTableNumberField": "Enter Table Number (e.g., 5)",
+  "generateQrButton": "Generate Web QR",
+  "qrWebNote": "Note: This QR will open the web version on any phone.",
+  
+  "scanQrTitle": "Scan Table QR",
+  "tableSetSuccess": "Table {tableNumber} set successfully! ✅",
+  "@tableSetSuccess": {
+    "placeholders": {
+      "tableNumber": {}
+    }
+  },
+
+  "registrationFailed": "Registration failed.",
+  "connectionError": "Server connection error.",
+  "invalidOtp": "Invalid activation code.",
+  "roleNotAllowed": "Account role not allowed here.",
+  "loginFailed": "Login failed."
 }
