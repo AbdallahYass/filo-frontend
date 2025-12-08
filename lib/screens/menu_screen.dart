@@ -643,7 +643,6 @@ class _MenuScreenState extends State<MenuScreen> {
             icon: Icon(Icons.search),
             label: '',
           ), // Search
-          // نترك أيقونة الحقيبة هنا، وعند الضغط عليها نستخدم دالة push (شرحنا ذلك في _onItemTapped)
           const BottomNavigationBarItem(
             icon: Icon(Icons.shopping_bag_outlined),
             label: '',

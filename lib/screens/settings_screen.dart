@@ -118,13 +118,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             }),
 
-            _buildSettingsItem(Icons.lock_outline, "Change Password", () {
-              // TODO: Navigate to Change Password Screen
-            }),
+            _buildSettingsItem(Icons.lock_outline, "Change Password", () {}),
 
-            _buildSettingsItem(Icons.language, "Language", () {
-              // TODO: Show Language Dialog
-            }),
+            _buildSettingsItem(Icons.language, "Language", () {}),
 
             _buildSettingsItem(
               Icons.notifications_outlined,

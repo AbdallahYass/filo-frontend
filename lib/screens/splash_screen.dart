@@ -1,10 +1,13 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, unnecessary_cast
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'auth/login_screen.dart';
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart'; // مكتبة التحقق من الاتصال
+
 import '../../services/auth_service.dart';
 import 'menu_screen.dart';
+import 'auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,60 +19,116 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
-  final AuthService _authService = AuthService(); // تعريف خدمة التحقق
+  final AuthService _authService = AuthService();
+
+  // 🔥 التعديل: إزالة القائمة (List) من التعريف 🔥
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  bool _isWaitingForConnection = false;
+  final Color _goldColor = const Color(0xFFC5A028);
 
   @override
   void initState() {
     super.initState();
 
+    // 1. إعداد الفيديو (كما هو)
     _controller = VideoPlayerController.asset('assets/videos/intro.mp4')
       ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
+        setState(() => _isInitialized = true);
         _controller.setVolume(0.0);
         _controller.play();
       });
 
-    // عند انتهاء الفيديو، نفذ دالة التحقق والانتقال
     _controller.addListener(() {
       if (_controller.value.position >= _controller.value.duration) {
-        _checkAuthAndNavigate(); // 👈 استدعاء الدالة الجديدة
+        _checkAuthAndNavigate();
       }
     });
+
+    // 2. إعداد مراقبة الاتصال (الاشتراك الآن يرجع قيمة واحدة)
+    // ⚠️ تم تغيير .onConnectivityChanged.listen() لاستقبال قيمة مفردة
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus)
+            as StreamSubscription<
+              ConnectivityResult
+            >; // يتم استخدام الكاستينغ للتوافق مع الإصدارات المختلفة
+
+    // فحص حالة الاتصال الأولية
+    _checkInitialConnection();
   }
 
-  // 🔥🔥🔥 الدالة المعدلة التي تتحقق من التوكن وتحدد الوجهة 🔥🔥🔥
-  Future<void> _checkAuthAndNavigate() async {
-    // نوقف الفيديو أولاً لمنع استمراره في الخلفية
-    _controller.pause();
+  // فحص الاتصال الأولي (الآن checkConnectivity() ترجع قيمة واحدة)
+  Future<void> _checkInitialConnection() async {
+    // ⚠️ checkConnectivity() الآن ترجع قيمة مفردة
+    final connectivityResult = await (Connectivity().checkConnectivity());
 
-    // للتأكد من عدم تنفيذ الدالة أكثر من مرة عند انتهاء الفيديو والضغط على تخطي في نفس الوقت
-    if (ModalRoute.of(context)?.isCurrent == false) return;
+    // ⚠️ التحقق من القيمة المفردة
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() => _isWaitingForConnection = true);
+    }
+  }
 
-    // 1. فحص حالة التوكن
-    bool isLoggedIn = await _authService.isLoggedIn();
-
-    // 2. تحديد الوجهة بناءً على حالة تسجيل الدخول
-    Widget nextScreen = isLoggedIn ? const MenuScreen() : const LoginScreen();
+  // 🔥🔥 التعديل: دالة التحديث تستقبل قيمة مفردة (result) 🔥🔥
+  void _updateConnectionStatus(ConnectivityResult result) {
+    // ⚠️ التحقق الآن يتم مباشرة على النتيجة
+    final bool isConnected = result != ConnectivityResult.none;
 
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => nextScreen,
-        ), // 👈 الانتقال الذكي
-      );
+      if (_isWaitingForConnection && isConnected) {
+        // إذا كان ينتظر الاتصال وعاد الاتصال: استأنف العملية
+        setState(() => _isWaitingForConnection = false);
+
+        if (_controller.value.duration > _controller.value.position) {
+          _controller.play();
+        }
+
+        _checkAuthAndNavigate();
+      } else if (!isConnected) {
+        // الاتصال مفقود: توقف واعرض التنبيه
+        _controller.pause();
+        setState(() => _isWaitingForConnection = true);
+      }
+    }
+  }
+
+  // 🔥 الدالة المعدلة: تبدأ بالتحقق من الاتصال قبل التوكن 🔥
+  Future<void> _checkAuthAndNavigate() async {
+    _controller.pause();
+    if (ModalRoute.of(context)?.isCurrent == false || _isWaitingForConnection)
+      return;
+
+    // 1. التحقق النهائي من الاتصال (الآن ترجع قيمة مفردة)
+    final connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() => _isWaitingForConnection = true);
+      return; // توقف وانتظر
+    }
+
+    // --- إذا كان الاتصال موجوداً، أكمل عملية التحقق من التوكن ---
+
+    // 2. فحص حالة التوكن
+    bool isLoggedIn = await _authService.isLoggedIn();
+
+    // 3. تحديد الوجهة
+    Widget nextScreen = isLoggedIn ? const MenuScreen() : const LoginScreen();
+
+    // 4. الانتقال للشاشة
+    if (mounted) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (context) => nextScreen));
     }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // ... (كود الـ build لا يتغير)
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -88,11 +147,12 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                     ),
                   )
-                : Container(), // شاشة سوداء حتى يجهز
+                : Container(),
           ),
 
           // 2. طبقة زر التخطي (في الأمام)
-          if (_isInitialized)
+          if (_isInitialized &&
+              !_isWaitingForConnection) // لا يظهر زر التخطي عند انقطاع الإنترنت
             Positioned(
               top: 50,
               right: 20,
@@ -124,6 +184,46 @@ class _SplashScreenState extends State<SplashScreen> {
                         Icons.arrow_forward_ios,
                         color: Colors.white,
                         size: 12,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // 🔥 3. طبقة تنبيه انقطاع الإنترنت (تظهر فوق كل شيء) 🔥
+          if (_isWaitingForConnection)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.85),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.wifi_off, color: _goldColor, size: 60),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "No Internet Connection",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        "Please check your network and try again.",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                      const SizedBox(height: 40),
+                      // دائرة انتظار شفافة ترمز إلى المراقبة المستمرة
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: _goldColor,
+                          strokeWidth: 2,
+                        ),
                       ),
                     ],
                   ),
