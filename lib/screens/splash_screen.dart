@@ -1,295 +1,251 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, unnecessary_cast
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'package:provider/provider.dart';
-import '/l10n/app_localizations.dart';
-import '../l10n/locale_provider.dart';
+import 'package:video_player/video_player.dart';
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:geolocator/geolocator.dart';
+import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
+import '../../services/auth_service.dart';
+import 'menu_screen.dart';
 import 'auth/login_screen.dart';
-import 'edit_profile_screen.dart';
-import 'change_password_screen.dart'; // تأكد من استيراد هذه الشاشة
+import 'location_service.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  // قيم افتراضية لضمان عدم ظهور "null"
-  String userName = "Guest";
-  String userEmail = "Login Required";
-  final Color _goldColor = const Color(0xFFC5A028);
-  final Color _darkBackground = const Color(0xFF1A1A1A);
+class _SplashScreenState extends State<SplashScreen> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+  final AuthService _authService = AuthService();
+  final LocationService _locationService = LocationService();
 
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  bool _isWaitingForConnection = false;
+  final Color _goldColor = const Color(0xFFC5A028);
+  //
   @override
   void initState() {
     super.initState();
-    // 💡 نستخدم addPostFrameCallback لضمان أن الـ context جاهز وأننا نتابع البيانات
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadUserData();
+
+    // 1. إعداد الفيديو (كما هو)
+    _controller = VideoPlayerController.asset('assets/videos/intro.mp4')
+      ..initialize().then((_) {
+        setState(() => _isInitialized = true);
+        _controller.setVolume(0.0);
+        _controller.play();
+      });
+
+    _controller.addListener(() {
+      if (_controller.value.position >= _controller.value.duration) {
+        _checkAuthAndNavigate();
+      }
     });
+
+    // 2. إعداد مراقبة الاتصال
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus)
+            as StreamSubscription<ConnectivityResult>;
+
+    // فحص حالة الاتصال الأولية
+    _checkInitialConnection();
   }
 
-  // 🔥🔥 دالة تحميل البيانات الأكثر موثوقية 🔥🔥
-  Future<void> _loadUserData() async {
-    // 1. استخدام المفتاح الموحد 'user'
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userData = prefs.getString('user');
+  // فحص الاتصال الأولي
+  Future<void> _checkInitialConnection() async {
+    final connectivityResult = await (Connectivity().checkConnectivity());
 
-    if (userData != null) {
-      var userMap = jsonDecode(userData);
-      // 2. استخدام setState بشكل آمن
-      if (mounted) {
-        setState(() {
-          userName = userMap['name'] ?? "User";
-          userEmail = userMap['email'] ?? "No Email";
-        });
-      }
-    } else {
-      // 3. مسح الحالة إذا لم يكن المستخدم مسجلاً
-      if (mounted) {
-        setState(() {
-          userName = "Guest";
-          userEmail = "Login Required";
-        });
-      }
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() => _isWaitingForConnection = true);
     }
   }
 
-  Future<void> _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+  // دالة التحديث تستقبل قيمة مفردة
+  void _updateConnectionStatus(ConnectivityResult result) {
+    final bool isConnected = result != ConnectivityResult.none;
 
     if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (route) => false,
-      );
+      if (_isWaitingForConnection && isConnected) {
+        // إذا كان ينتظر الاتصال وعاد الاتصال: استأنف العملية
+        setState(() => _isWaitingForConnection = false);
+
+        if (_controller.value.duration > _controller.value.position) {
+          _controller.play();
+        }
+
+        _checkAuthAndNavigate();
+      } else if (!isConnected) {
+        // الاتصال مفقود: توقف واعرض التنبيه
+        _controller.pause();
+        setState(() => _isWaitingForConnection = true);
+      }
     }
   }
 
-  void _showLanguageDialog(BuildContext context) {
-    // الوصول إلى نصوص الترجمة من جديد داخل الدالة
-    final localizations = AppLocalizations.of(context)!;
+  // الدالة المعدلة: تبدأ بالتحقق من الاتصال قبل التوكن
+  Future<void> _checkAuthAndNavigate() async {
+    _controller.pause();
+    if (ModalRoute.of(context)?.isCurrent == false || _isWaitingForConnection) {
+      return;
+    }
 
-    final provider = Provider.of<LocaleProvider>(context, listen: false);
-    final currentLang = provider.locale.languageCode;
+    // 1. التحقق النهائي من الاتصال
+    final connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() => _isWaitingForConnection = true);
+      return;
+    }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2C2C2C),
-        title: Text(
-          localizations.appName, // استخدام نص مترجم
-          style: TextStyle(color: _goldColor),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text(
-                "English",
-                style: TextStyle(color: Colors.white),
-              ),
-              trailing: currentLang == 'en'
-                  ? Icon(Icons.check, color: _goldColor)
-                  : null,
-              onTap: () {
-                provider.setLocale(const Locale('en', ''));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text(
-                "العربية",
-                style: TextStyle(color: Colors.white),
-              ),
-              trailing: currentLang == 'ar'
-                  ? Icon(Icons.check, color: _goldColor)
-                  : null,
-              onTap: () {
-                provider.setLocale(const Locale('ar', ''));
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+    // جلب الموقع الجغرافي للمستخدم
+    Position? userPosition = await _locationService.getCurrentPositionSafe();
+
+    if (userPosition == null) {
+      if (kDebugMode) {
+        print("Could not determine user location, proceeding...");
+      }
+    } else {
+      if (kDebugMode) {
+        print(
+          "User is at: ${userPosition.latitude}, ${userPosition.longitude}",
+        );
+      }
+    }
+
+    // 3. فحص حالة التوكن
+    bool isLoggedIn = await _authService.isLoggedIn();
+
+    // 4. تحديد الوجهة والانتقال
+    Widget nextScreen = isLoggedIn ? const MenuScreen() : const LoginScreen();
+
+    if (mounted) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (context) => nextScreen));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _connectivitySubscription.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // يجب إضافة الاستماع لـ _loadUserData عند العودة للصفحة (مثلاً من شاشة EditProfile)
-    // نستخدم Consumer أو FutureBuilder أو نعتمد على استدعاء _loadUserData في initState/didChangeDependencies
-    // لكن الأسهل هو استدعاء _loadUserData في didChangeDependencies:
-
+    // 🔥 الوصول لكائن الترجمة 🔥
     final localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: _darkBackground,
-      appBar: AppBar(
-        title: Text(localizations.settings),
-        backgroundColor: Colors.transparent,
-        foregroundColor: _goldColor,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        // 💡 إضافة WillPopScope لضمان تحديث البيانات عند العودة من شاشة EditProfile
-        child: WillPopScope(
-          onWillPop: () async {
-            _loadUserData(); // إعادة تحميل البيانات عند محاولة العودة
-            return true;
-          },
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              // 1. كارت المعلومات الشخصية
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2C2C2C),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: _goldColor.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: _goldColor,
-                      child: const Icon(
-                        Icons.person,
-                        size: 35,
-                        color: Colors.black,
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. طبقة الفيديو (في الخلفية)
+          Center(
+            child: _isInitialized
+                ? SizedBox.expand(
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: _controller.value.size.width,
+                        height: _controller.value.size.height,
+                        child: VideoPlayer(_controller),
                       ),
                     ),
-                    const SizedBox(width: 15),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          userName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  )
+                : Container(),
+          ),
+
+          // 2. طبقة زر التخطي (في الأمام)
+          if (_isInitialized &&
+              !_isWaitingForConnection) // لا يظهر زر التخطي عند انقطاع الإنترنت
+            Positioned(
+              top: 50,
+              right: 20,
+              child: GestureDetector(
+                onTap: _checkAuthAndNavigate, // 👈 عند الضغط، نفذ دالة التحقق
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.5)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        localizations.skip, // 👈 نص مترجم
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
-                        Text(
-                          userEmail,
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(width: 5),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            ),
 
-              const SizedBox(height: 30),
-
-              // 2. قائمة الخيارات
-              _buildSettingsItem(
-                Icons.person_outline,
-                localizations.editProfile,
-                () async {
-                  // استخدام async
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const EditProfileScreen(),
-                    ),
-                  );
-                  _loadUserData(); // إعادة تحميل البيانات بعد العودة من التعديل
-                },
+          // 🔥 3. طبقة تنبيه انقطاع الإنترنت (تظهر فوق كل شيء) 🔥
+          if (_isWaitingForConnection)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.85),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.wifi_off, color: _goldColor, size: 60),
+                      const SizedBox(height: 20),
+                      Text(
+                        localizations.noInternetConnection, // 👈 نص مترجم
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        localizations.checkNetworkMessage, // 👈 نص مترجم
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      // دائرة انتظار شفافة ترمز إلى المراقبة المستمرة
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: _goldColor,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-
-              _buildSettingsItem(
-                Icons.lock_outline,
-                localizations.changePassword,
-                () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ChangePasswordScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              _buildSettingsItem(
-                Icons.language,
-                localizations.changeLanguage,
-                () => _showLanguageDialog(context),
-              ),
-
-              _buildSettingsItem(
-                Icons.notifications_outlined,
-                localizations.notifications,
-                () {
-                  // Toggle Switch
-                },
-              ),
-
-              const SizedBox(height: 20),
-              Divider(color: Colors.grey[800]),
-              const SizedBox(height: 20),
-
-              _buildSettingsItem(
-                Icons.logout,
-                localizations.logout,
-                _logout,
-                isDestructive: true,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // تم نقل دالة المساعدة كما هي
-  Widget _buildSettingsItem(
-    IconData icon,
-    String title,
-    VoidCallback onTap, {
-    bool isDestructive = false,
-  }) {
-    return ListTile(
-      onTap: onTap,
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isDestructive
-              ? Colors.red.withOpacity(0.1)
-              : const Color(0xFF2C2C2C),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          color: isDestructive ? Colors.red : _goldColor,
-          size: 22,
-        ),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      trailing: Icon(
-        Icons.arrow_forward_ios,
-        color: Colors.grey[600],
-        size: 16,
+            ),
+        ],
       ),
     );
   }
