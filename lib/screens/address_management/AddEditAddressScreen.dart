@@ -59,55 +59,45 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   // 🔥 اختيار الموقع باستخدام GPS أو الخريطة (Placeholder)
   // ===============================================
   Future<void> _pickLocation(AppLocalizations localizations) async {
-    // 1. جلب الموقع الحالي (افتراضياً)
+    // ... (هذا الجزء لا يتطلب تعديلاً)
     Position? currentPosition = await _locationService.getCurrentPositionSafe();
 
     if (currentPosition != null) {
-      // 2. تحديث الحقول بناءً على الموقع الحالي
-      // في تطبيق حقيقي، سيتم استخدام خدمة Geocoding (مثل Google Maps API)
-      // لتحويل (Lat, Lng) إلى نص عنوان (details). سنستخدم placeholder حالياً.
       String geoDetails =
           'Lat: ${currentPosition.latitude.toStringAsFixed(4)}, Lng: ${currentPosition.longitude.toStringAsFixed(4)}';
 
       setState(() {
         _selectedLatitude = currentPosition.latitude;
         _selectedLongitude = currentPosition.longitude;
-        // تحديث حقل التفاصيل مؤقتاً بالـ Lat/Lng
         _detailsController.text = geoDetails;
       });
 
-      // رسالة نجاح مؤقتة
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(localizations.locationPickedSuccess), // نص مترجم جديد
+          content: Text(localizations.locationPickedSuccess),
           backgroundColor: Colors.blueGrey,
         ),
       );
     } else {
-      // رسالة فشل
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(localizations.locationPermissionError), // نص مترجم جديد
+          content: Text(localizations.locationPermissionError),
           backgroundColor: Colors.red,
         ),
       );
     }
-
-    // ⚠️ ملاحظة: عند بناء الشاشة الفعلية، يجب استبدال هذا المنطق
-    // بشاشة (MapPickerScreen) تعود بقيمة (lat, lng) وتفاصيل العنوان.
   }
 
   // ===============================================
-  // 🔥 دالة الحفظ (إضافة أو تعديل)
+  // 🔥 دالة الحفظ (إضافة أو تعديل) - تم التصحيح 🔥
   // ===============================================
   Future<void> _saveAddress(AppLocalizations localizations) async {
     if (!_formKey.currentState!.validate()) return;
 
-    // التحقق من أن الموقع محدد
     if (_selectedLatitude == 0.0 && _selectedLongitude == 0.0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(localizations.selectLocationRequired), // نص مترجم جديد
+          content: Text(localizations.selectLocationRequired),
           backgroundColor: Colors.orange,
         ),
       );
@@ -117,7 +107,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     setState(() => _isLoading = true);
 
     final newAddress = AddressModel(
-      id: widget.addressToEdit?.id ?? '', // سيتم تجاهل الـ ID في الإضافة
+      id: widget.addressToEdit?.id ?? '', // سيتم استخدام الـ ID في التعديل
       title: _titleController.text,
       details: _detailsController.text,
       latitude: _selectedLatitude,
@@ -126,12 +116,10 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
 
     String? errorMessage;
 
-    // ⚠️ ملاحظة: نحتاج إلى إضافة دالة _updateAddress في AddressService
-    // حالياً، سنقوم بمعالجة التعديل كإضافة (API مؤقت)
     if (_isEditing) {
-      // استخدام API التعديل (سنفترض أنه موجود)
-      // errorMessage = await _addressService.updateAddress(newAddress);
-      errorMessage = localizations.addressUpdateFailed; // Placeholder
+      // ✅✅ استدعاء دالة التعديل الحقيقية ✅✅
+      // نفترض أنك أضفت دالة updateAddress() في AddressService
+      errorMessage = await _addressService.updateAddress(newAddress);
     } else {
       errorMessage = await _addressService.addAddress(newAddress);
     }
@@ -151,7 +139,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
       );
       Navigator.pop(context, true); // إرسال true كإشارة للنجاح
     } else {
-      // ترجمة أكواد الأخطاء الثابتة
+      // ✅✅ ترجمة الخطأ 🔥
       String translatedError = _translateError(errorMessage, localizations);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(translatedError), backgroundColor: Colors.red),
@@ -159,7 +147,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     }
   }
 
-  // دالة مساعدة لترجمة الأخطاء الثابتة
+  // دالة مساعدة لترجمة الأخطاء الثابتة (تم التصحيح)
   String _translateError(String errorCode, AppLocalizations localizations) {
     switch (errorCode) {
       case 'connectionError':
@@ -168,6 +156,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         return localizations.loginRequired;
       case 'addressAddFailed':
         return localizations.addressAddFailed;
+      // 🔥 إضافة الخطأ الجديد 🔥
+      case 'addressUpdateFailed':
+        return localizations.addressUpdateFailed;
       default:
         return localizations.error;
     }

@@ -82,7 +82,37 @@ class AddressService {
   }
 
   // ==================================================
-  // 4. حذف عنوان
+  // 4. تعديل عنوان موجود
+  // ==================================================
+  Future<String?> updateAddress(AddressModel address) async {
+    final token = await _getToken();
+    if (token == null) return "loginRequired";
+
+    try {
+      final response = await http.put(
+        // 🔥 نستخدم الـ ID في المسار 🔥
+        Uri.parse('$_baseUrl/${address.id}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'x-api-key': _apiKey,
+        },
+        body: jsonEncode(address.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        return null; // نجاح
+      } else {
+        final body = jsonDecode(response.body);
+        return body['error'] ?? 'addressUpdateFailed';
+      }
+    } catch (e) {
+      return 'connectionError';
+    }
+  }
+
+  // ==================================================
+  // 5. حذف عنوان
   // ==================================================
   Future<bool> deleteAddress(String addressId) async {
     final token = await _getToken();
