@@ -24,9 +24,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get checkNetworkMessage => 'يرجى التحقق من الشبكة والمحاولة مرة أخرى.';
 
   @override
-  String get error => 'خطأ';
-
-  @override
   String get processing => 'جاري المعالجة...';
 
   @override
@@ -82,7 +79,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signUp => 'تسجيل حساب';
 
   @override
-  String get requiredField => 'مطلوب';
+  String get requiredField => 'هذا الحقل مطلوب.';
 
   @override
   String get emailNotVerified => 'الإيميل غير مفعل! تم إرسال رمز جديد 📧';
@@ -203,9 +200,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get newPhoneNumber => 'رقم هاتف جديد';
 
   @override
-  String get saveChanges => 'حفظ التغييرات';
-
-  @override
   String get profileUpdatedSuccess => 'تم تحديث الملف الشخصي!';
 
   @override
@@ -244,9 +238,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get seeAll => 'مشاهدة الكل';
-
-  @override
-  String get connectionError => 'خطأ في الاتصال بالسيرفر.';
 
   @override
   String get retry => 'إعادة المحاولة';
@@ -316,7 +307,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get editAddressTitle => 'تعديل العنوان';
 
   @override
-  String get selectLocationRequired => 'يرجى تحديد الموقع على الخريطة.';
+  String get selectLocationRequired => 'الرجاء اختيار الموقع الجغرافي.';
 
   @override
   String get selectLocationButton => 'حدد الموقع على الخريطة';
@@ -364,9 +355,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get serverError => 'حدث خطأ في الخادم.';
 
   @override
-  String get addressAddFailed => 'فشل إضافة العنوان.';
-
-  @override
   String get loginRequired => 'يجب تسجيل الدخول لإجراء هذه العملية.';
 
   @override
@@ -382,5 +370,33 @@ class AppLocalizationsAr extends AppLocalizations {
   String get wrongCredentials => 'بيانات الاعتماد غير صحيحة.';
 
   @override
-  String get addressUpdateFailed => 'فشل تحديث العنوان.';
+  String get connectionError =>
+      'فشل الاتصال بالخادم. الرجاء التحقق من الإنترنت.';
+
+  @override
+  String get addressAddFailed => 'فشل إضافة العنوان. يرجى المحاولة لاحقًا.';
+
+  @override
+  String get addressUpdateFailed => 'فشل تعديل العنوان. يرجى المحاولة لاحقًا.';
+
+  @override
+  String get error => 'حدث خطأ غير متوقع.';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get confirmation => 'تأكيد';
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get confirmUpdateAddress => 'هل أنت متأكد من تعديل هذا العنوان؟';
+
+  @override
+  String get confirmAddAddress => 'هل أنت متأكد من إضافة هذا العنوان؟';
 }

@@ -56,6 +56,46 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   }
 
   // ===============================================
+  // 🆕🆕 دالة لعرض مربع حوار التأكيد 🆕🆕
+  // ===============================================
+  Future<bool?> _showConfirmationDialog(AppLocalizations localizations) async {
+    final String actionText = _isEditing
+        ? localizations
+              .confirmUpdateAddress // نص: تأكيد تعديل العنوان
+        : localizations.confirmAddAddress; // نص: تأكيد إضافة العنوان
+
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(localizations.confirmation), // نص: تأكيد
+          content: Text(actionText),
+          backgroundColor: _fieldColor, // لون خلفية مناسب
+          titleTextStyle: TextStyle(color: _goldColor, fontSize: 20),
+          contentTextStyle: const TextStyle(color: Colors.white70),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), // لا
+              child: Text(
+                localizations.cancel,
+                style: const TextStyle(color: Colors.white70),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true), // نعم، تابع
+              style: ElevatedButton.styleFrom(backgroundColor: _goldColor),
+              child: Text(
+                localizations.confirm,
+                style: const TextStyle(color: Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ===============================================
   // 🔥 اختيار الموقع باستخدام GPS أو الخريطة (Placeholder)
   // ===============================================
   Future<void> _pickLocation(AppLocalizations localizations) async {
@@ -89,7 +129,7 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
   }
 
   // ===============================================
-  // 🔥 دالة الحفظ (إضافة أو تعديل) - تم التصحيح 🔥
+  // 🔥 دالة الحفظ (إضافة أو تعديل) - تم التعديل لإضافة التأكيد 🔥
   // ===============================================
   Future<void> _saveAddress(AppLocalizations localizations) async {
     if (!_formKey.currentState!.validate()) return;
@@ -102,6 +142,12 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
         ),
       );
       return;
+    }
+
+    // 🆕🆕 خطوة التأكيد 🆕🆕
+    final bool? confirmed = await _showConfirmationDialog(localizations);
+    if (confirmed != true) {
+      return; // توقف إذا لم يتم التأكيد
     }
 
     setState(() => _isLoading = true);
@@ -117,8 +163,6 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
     String? errorMessage;
 
     if (_isEditing) {
-      // ✅✅ استدعاء دالة التعديل الحقيقية ✅✅
-      // نفترض أنك أضفت دالة updateAddress() في AddressService
       errorMessage = await _addressService.updateAddress(newAddress);
     } else {
       errorMessage = await _addressService.addAddress(newAddress);
@@ -257,7 +301,9 @@ class _AddEditAddressScreenState extends State<AddEditAddressScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading
                       ? null
-                      : () => _saveAddress(localizations),
+                      : () => _saveAddress(
+                          localizations,
+                        ), // 👈 تم التعديل لاستدعاء دالة الحفظ
                   style: ElevatedButton.styleFrom(backgroundColor: _goldColor),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)

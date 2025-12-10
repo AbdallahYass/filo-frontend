@@ -128,12 +128,6 @@ abstract class AppLocalizations {
   /// **'Please check your network and try again.'**
   String get checkNetworkMessage;
 
-  /// No description provided for @error.
-  ///
-  /// In en, this message translates to:
-  /// **'Error'**
-  String get error;
-
   /// No description provided for @processing.
   ///
   /// In en, this message translates to:
@@ -476,12 +470,6 @@ abstract class AppLocalizations {
   /// **'New Phone Number'**
   String get newPhoneNumber;
 
-  /// No description provided for @saveChanges.
-  ///
-  /// In en, this message translates to:
-  /// **'SAVE CHANGES'**
-  String get saveChanges;
-
   /// No description provided for @profileUpdatedSuccess.
   ///
   /// In en, this message translates to:
@@ -553,12 +541,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See All'**
   String get seeAll;
-
-  /// No description provided for @connectionError.
-  ///
-  /// In en, this message translates to:
-  /// **'Server connection error.'**
-  String get connectionError;
 
   /// No description provided for @retry.
   ///
@@ -782,12 +764,6 @@ abstract class AppLocalizations {
   /// **'Server error occurred.'**
   String get serverError;
 
-  /// No description provided for @addressAddFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Failed to add address.'**
-  String get addressAddFailed;
-
   /// No description provided for @loginRequired.
   ///
   /// In en, this message translates to:
@@ -818,11 +794,65 @@ abstract class AppLocalizations {
   /// **'Wrong credentials.'**
   String get wrongCredentials;
 
+  /// No description provided for @connectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed. Please check your internet.'**
+  String get connectionError;
+
+  /// No description provided for @addressAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add address. Please try again later.'**
+  String get addressAddFailed;
+
   /// No description provided for @addressUpdateFailed.
   ///
   /// In en, this message translates to:
-  /// **'Address update failed.'**
+  /// **'Failed to update address. Please try again later.'**
   String get addressUpdateFailed;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred.'**
+  String get error;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation'**
+  String get confirmation;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @confirmUpdateAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to update this address?'**
+  String get confirmUpdateAddress;
+
+  /// No description provided for @confirmAddAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to add this address?'**
+  String get confirmAddAddress;
 }
 
 class _AppLocalizationsDelegate

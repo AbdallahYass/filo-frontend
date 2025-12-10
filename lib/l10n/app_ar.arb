@@ -7,7 +7,6 @@
   "skip": "تخطي",
   "noInternetConnection": "لا يوجد اتصال بالإنترنت",
   "checkNetworkMessage": "يرجى التحقق من الشبكة والمحاولة مرة أخرى.",
-  "error": "خطأ",
   "processing": "جاري المعالجة...",
   
   "settings": "الإعدادات",
@@ -100,7 +99,6 @@
   "searchHint": "ابحث عن طبقك المفضل",
   "popularNow": "الأكثر شعبية الآن",
   "seeAll": "مشاهدة الكل",
-  "connectionError": "حدث خطأ في الاتصال",
   "retry": "إعادة المحاولة",
   "noMenuItems": "لا توجد عناصر في القائمة",
   "screenTitlePlaceholder": "شاشة {title}",
@@ -146,18 +144,27 @@
   "cancelButton": "إلغاء",
 
   "registrationFailed": "فشل عملية التسجيل.",
-  "connectionError": "خطأ في الاتصال بالسيرفر.",
   "invalidOtp": "رمز التفعيل غير صحيح.",
   "roleNotAllowed": "هذا الحساب غير مخصص لتطبيق الزبائن.",
   "serverError": "حدث خطأ في الخادم.",
-  "addressAddFailed": "فشل إضافة العنوان.",
   "loginRequired": "يجب تسجيل الدخول لإجراء هذه العملية.",
 
   "emailNotFound": "البريد الإلكتروني غير موجود.",
   "userNotFound": "المستخدم غير موجود.",
   "invalidOtpOrExpired": "رمز التفعيل غير صحيح أو منتهي الصلاحية.",
   "wrongCredentials": "بيانات الاعتماد غير صحيحة.",
-    "addressUpdateFailed": "فشل تحديث العنوان.",
-  "serverError": "حدث خطأ في الخادم."
+  "serverError": "حدث خطأ في الخادم.",
+  "requiredField": "هذا الحقل مطلوب.",
+    "selectLocationRequired": "الرجاء اختيار الموقع الجغرافي.",
+      
+    "connectionError": "فشل الاتصال بالخادم. الرجاء التحقق من الإنترنت.",
+    "addressAddFailed": "فشل إضافة العنوان. يرجى المحاولة لاحقًا.",
+    "addressUpdateFailed": "فشل تعديل العنوان. يرجى المحاولة لاحقًا.",
+    "error": "حدث خطأ غير متوقع.",
+        
+    "confirmation": "تأكيد",
+    "confirm": "تأكيد",
+    "confirmUpdateAddress": "هل أنت متأكد من تعديل هذا العنوان؟",
+    "confirmAddAddress": "هل أنت متأكد من إضافة هذا العنوان؟"
 }
 

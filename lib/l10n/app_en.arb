@@ -6,7 +6,6 @@
   "skip": "Skip",
   "noInternetConnection": "No Internet Connection",
   "checkNetworkMessage": "Please check your network and try again.",
-  "error": "Error",
   "processing": "Processing...",
   
   "settings": "Settings",
@@ -73,7 +72,6 @@
   "orderFailed": "Failed to place order. Check connection.",
 
   "newPhoneNumber": "New Phone Number",
-  "saveChanges": "SAVE CHANGES",
   "profileUpdatedSuccess": "Profile Updated!",
   
   "descriptionHeader": "Description:",
@@ -99,7 +97,6 @@
   "searchHint": "Search for your favorite dish",
   "popularNow": "Popular Now",
   "seeAll": "See All",
-  "connectionError": "Connection error occurred",
   "retry": "Retry",
   "noMenuItems": "No menu items available",
   "screenTitlePlaceholder": "{title} Screen",
@@ -145,19 +142,30 @@
   "cancelButton": "Cancel",
 
   "registrationFailed": "Registration failed.",
-  "connectionError": "Server connection error.",
   "invalidOtp": "Invalid activation code.",
   "roleNotAllowed": "Account role not allowed here.",
   "serverError": "Server error occurred.",
-  "addressAddFailed": "Failed to add address.",
   "loginRequired": "Login is required to perform this action.",
   
   "emailNotFound": "Email not found.",
   "userNotFound": "User not found.",
   "invalidOtpOrExpired": "Invalid or expired OTP.",
   "wrongCredentials": "Wrong credentials.",
-  "addressUpdateFailed": "Address update failed.",
-  "serverError": "Server error occurred."
+  "serverError": "Server error occurred.",    
+
+    "connectionError": "Connection failed. Please check your internet.",
+    "addressAddFailed": "Failed to add address. Please try again later.",
+    "addressUpdateFailed": "Failed to update address. Please try again later.",
+    "error": "An unexpected error occurred.",
+    
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    
+    
+    "confirmation": "Confirmation",
+    "confirm": "Confirm",
+    "confirmUpdateAddress": "Are you sure you want to update this address?",
+    "confirmAddAddress": "Are you sure you want to add this address?"
 }
 
 

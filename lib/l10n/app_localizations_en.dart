@@ -24,9 +24,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkNetworkMessage => 'Please check your network and try again.';
 
   @override
-  String get error => 'Error';
-
-  @override
   String get processing => 'Processing...';
 
   @override
@@ -204,9 +201,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newPhoneNumber => 'New Phone Number';
 
   @override
-  String get saveChanges => 'SAVE CHANGES';
-
-  @override
   String get profileUpdatedSuccess => 'Profile Updated!';
 
   @override
@@ -245,9 +239,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeAll => 'See All';
-
-  @override
-  String get connectionError => 'Server connection error.';
 
   @override
   String get retry => 'Retry';
@@ -366,9 +357,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverError => 'Server error occurred.';
 
   @override
-  String get addressAddFailed => 'Failed to add address.';
-
-  @override
   String get loginRequired => 'Login is required to perform this action.';
 
   @override
@@ -384,5 +372,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wrongCredentials => 'Wrong credentials.';
 
   @override
-  String get addressUpdateFailed => 'Address update failed.';
+  String get connectionError =>
+      'Connection failed. Please check your internet.';
+
+  @override
+  String get addressAddFailed =>
+      'Failed to add address. Please try again later.';
+
+  @override
+  String get addressUpdateFailed =>
+      'Failed to update address. Please try again later.';
+
+  @override
+  String get error => 'An unexpected error occurred.';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get confirmation => 'Confirmation';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get confirmUpdateAddress =>
+      'Are you sure you want to update this address?';
+
+  @override
+  String get confirmAddAddress => 'Are you sure you want to add this address?';
 }
