@@ -12,8 +12,10 @@ import '../services/category_service.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
 import 'settings_screen.dart';
-//import 'vendor_list_screen.dart'; // 🔥 تم تفعيل الاستيراد والتنقل
+// يجب استيراد الشاشة التالية الآن
+//import 'vendor_list_screen.dart'; // ✅ تم تفعيل الاستيراد
 
+// 🔥🔥 تم تغيير اسم الكلاس ليناسب وظيفته الجديدة 🔥🔥
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
 
@@ -22,10 +24,8 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  // 🔥🔥🔥 حالة التنقل السفلية: 0 (Categories), 1 (Settings) 🔥🔥🔥
   int _currentIndex = 0;
 
-  // 🔥🔥 جلب الفئات بدلاً من عناصر القائمة 🔥🔥
   late Future<List<CategoryModel>> _categoriesFuture;
   final CategoryService _categoryService = CategoryService();
 
@@ -33,14 +33,14 @@ class _MenuScreenState extends State<MenuScreen> {
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
 
-  // 🔥🔥🔥 مصفوفة الألوان الجديدة للكروت 🔥🔥🔥
+  // 🔥🔥🔥 مصفوفة الألوان المبهجة 🔥🔥🔥
   final List<Color> _categoryColors = const [
-    Color(0xFFE0F7FA), // سماوي فاتح
-    Color(0xFFFFECB3), // أصفر ليموني فاتح
-    Color(0xFFF8BBD0), // وردي خفيف
-    Color(0xFFDCEDC8), // أخضر نعناعي
-    Color(0xFFCFD8DC), // رمادي فاتح أزرق
-    Color(0xFFBBDEFB), // أزرق سماء خفيف
+    Color(0xFF000000), // اسود
+    Color(0xFF000000), // اسود
+    Color(0xFF000000), // اسود
+    Color(0xFF000000), // اسود
+    Color(0xFF000000), // اسود
+    Color(0xFF000000), // اسود
   ];
 
   @override
@@ -70,20 +70,35 @@ class _MenuScreenState extends State<MenuScreen> {
       _categoriesFuture = _categoryService.fetchCategories();
     });
   }
+
   /*
-  // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
+  // 🔥🔥 الانتقال إلى شاشة قائمة التجار 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VendorListScreen(
           categoryKey: category.key,
-          categoryName: category.name,
+          categoryName: category
+              .nameAr, // نمرر الاسم العربي أو الإنجليزي (سيتم تحديث VendorListScreen لاحقاً)
         ),
       ),
     );
   }
 */
+  // ----------------------------------------------------
+  // 🔥🔥 الدالة الجديدة: تحديد الاسم بناءً على اللغة 🔥🔥
+  // ----------------------------------------------------
+  String _getCategoryDisplayName(CategoryModel category, BuildContext context) {
+    final currentLocale = AppLocalizations.of(context)!.localeName;
+
+    // نختار الاسم المخزن في الموديل (الذي يجب أن يعكس الـ DB)
+    if (currentLocale == 'ar') {
+      return category.nameAr;
+    }
+    return category.nameEn; // الافتراضي هو الإنجليزي
+  }
+
   // ----------------------------------------------------
   // 🎨 دوال بناء الواجهة المساعدة 🎨
   // ----------------------------------------------------
@@ -123,8 +138,14 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   // 🔥🔥 دالة بناء بطاقة الفئة (مع الألوان والـ index) 🔥🔥
-  Widget _buildCategoryCard(CategoryModel category, int index) {
-    // اختيار اللون الديناميكي
+  Widget _buildCategoryCard(
+    CategoryModel category,
+    int index,
+    AppLocalizations localizations,
+  ) {
+    // 🔥🔥 جلب الاسم المترجم هنا 🔥🔥
+    final String translatedName = _getCategoryDisplayName(category, context);
+
     final Color cardColor = _categoryColors[index % _categoryColors.length];
     final Color contentColor = Colors.black87;
 
@@ -149,22 +170,19 @@ class _MenuScreenState extends State<MenuScreen> {
     return GestureDetector(
       // onTap: () => _navigateToVendorList(category),
       child: Card(
-        // 🔥 استخدام اللون الديناميكي 🔥
         color: cardColor,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🔥 استخدام لون المحتوى الغامق 🔥
             Icon(getIconData(category.icon), color: contentColor, size: 40),
             const SizedBox(height: 10),
             Text(
-              category.name,
+              translatedName, // ✅ استخدام الاسم المترجم
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
-                // 🔥 استخدام لون المحتوى الغامق 🔥
                 color: contentColor,
               ),
             ),
@@ -206,8 +224,8 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           itemCount: categories.length,
           itemBuilder: (context, index) {
-            // 🔥🔥 تمرير الـ index 🔥🔥
-            return _buildCategoryCard(categories[index], index);
+            // 🔥🔥 تمرير الـ localizations والدالة المساعدة 🔥🔥
+            return _buildCategoryCard(categories[index], index, localizations);
           },
         ),
       ],

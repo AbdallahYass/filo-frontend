@@ -2,13 +2,16 @@
 
 class CategoryModel {
   final String id;
-  final String name;
+  // 🔥🔥🔥 الأسماء الآن تأتي من الـ DB 🔥🔥🔥
+  final String nameEn;
+  final String nameAr;
   final String key;
-  final String icon; // اسم أيقونة (مثلاً 'restaurant')
+  final String icon;
 
   CategoryModel({
     required this.id,
-    required this.name,
+    required this.nameEn,
+    required this.nameAr,
     required this.key,
     required this.icon,
   });
@@ -16,9 +19,11 @@ class CategoryModel {
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
       id: json['_id'] as String,
-      name: json['name'] as String,
       key: json['key'] as String,
       icon: json['icon'] as String,
+      // 🔥 جلب الأسماء من الكائن الفرعي 'name' 🔥
+      nameEn: json['name']['en'] as String,
+      nameAr: json['name']['ar'] as String,
     );
   }
 }
