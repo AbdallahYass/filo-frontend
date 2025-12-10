@@ -671,7 +671,7 @@ class _MenuScreenState extends State<MenuScreen> {
             icon: Icon(Icons.home_filled),
             label: '',
           ), // Home/Menu
-          BottomNavigationBarItem(
+          /* BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: '',
           ), // Search
@@ -679,7 +679,7 @@ class _MenuScreenState extends State<MenuScreen> {
             icon: Icon(Icons.shopping_bag_outlined),
             label: '',
           ), // Cart
-          // 🔥 استبدال أيقونة الشخص بالإعدادات 🔥
+          // 🔥 استبدال أيقونة الشخص بالإعدادات 🔥*/
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: '',
