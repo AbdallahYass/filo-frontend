@@ -1,43 +1,100 @@
 // lib/services/menu_service.dart
 
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/menu_item.dart';
 
 class MenuService {
-  String get baseUrl {
-    // نستخدم الرابط العالمي دائماً الآن
-    return 'https://filo-menu.onrender.com/api/menu';
+  final String _apiBaseUrl = kDebugMode
+      ? 'http://10.0.2.2:3000/api'
+      : 'https://filo-menu.onrender.com/api';
+  final String _apiKey = 'FiloSecretKey202512341234';
+
+  // 🔥🔥🔥 تم إضافة تعليق لتجاهل تحذير عدم الاستخدام 🔥🔥🔥
+  // إذا كنت تخطط لاستخدام التوكن لاحقاً، ابقِ الدالة هنا.
+  // ignore: unused_element
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
   }
 
-  Future<List<MenuItem>> fetchMenu() async {
+  // ==================================================
+  // 1. جلب قائمة الطعام (مع دعم لـ vendorId)
+  // ==================================================
+  Future<List<MenuItem>> fetchMenu({String? vendorId}) async {
     try {
-      print("Connecting to: $baseUrl"); // ✅ تم التوحيد
+      final String endpoint = vendorId != null
+          ? '$_apiBaseUrl/menu?vendorId=$vendorId'
+          : '$_apiBaseUrl/menu';
 
-      // 👇👇👇 التعديل الهام هنا: إضافة الـ Header
       final response = await http.get(
-        Uri.parse(baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'FiloSecretKey202512341234', // 🔑 المفتاح السري
-        },
+        Uri.parse(endpoint),
+        headers: {'x-api-key': _apiKey},
       );
 
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
+        if (body.isEmpty) return _getMockMenuItems(vendorId);
         return body.map((json) => MenuItem.fromJson(json)).toList();
-      } else {
-        // 🔥 توحيد رسالة الخطأ إلى كود ثابت/إنجليزي لـ UI layer
-        throw Exception(
-          'SERVER_ERROR: ${response.statusCode} - ${response.body}',
-        );
       }
     } catch (e) {
-      print("Connection Error: $e"); // ✅ تم التوحيد
-      // 🔥 توحيد رسالة الخطأ
-      throw Exception('CONNECTION_ERROR: $e');
+      if (kDebugMode) print("MenuService Error: $e");
     }
+    return _getMockMenuItems(vendorId);
+  }
+
+  // ==================================================
+  // 2. دالة Mock Data
+  // ==================================================
+  List<MenuItem> _getMockMenuItems(String? vendorId) {
+    if (vendorId == 'v1' || vendorId == 'v2') {
+      // بيانات مخصصة للتاجر الأول (مطعم)
+      final mockData = [
+        {
+          "_id": "i101",
+          "title": "طبق الشيف المميز",
+          "description": "وجبة لحم فاخرة مع الخضروات الموسمية.",
+          "price": 18.50,
+          "category": "Main Dishes",
+          "imageUrl":
+              "https://placehold.co/400x300/C5A028/FFFFFF?text=Featured%20Dish",
+          "isAvailable": true,
+        },
+        {
+          "_id": "i102",
+          "title": "سلطة السيزر",
+          "description": "سلطة خفيفة مع دجاج مشوي.",
+          "price": 7.00,
+          "category": "Salads",
+          "imageUrl": "https://placehold.co/400x300/C5A028/FFFFFF?text=Salad",
+          "isAvailable": true,
+        },
+        {
+          "_id": "i103",
+          "title": "عصير ليمون بالنعناع",
+          "description": "منعش ومثالي للصيف.",
+          "price": 3.50,
+          "category": "Drinks",
+          "imageUrl": "https://placehold.co/400x300/C5A028/FFFFFF?text=Drink",
+          "isAvailable": true,
+        },
+      ];
+      return mockData
+          .map(
+            (json) => MenuItem.fromJson({
+              'id': json['_id'],
+              'title': json['title'],
+              'description': json['description'],
+              'price': json['price'],
+              'category': json['category'],
+              'imageUrl': json['imageUrl'],
+              'isAvailable': json['isAvailable'],
+            }),
+          )
+          .toList();
+    }
+    return [];
   }
 }

@@ -415,4 +415,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String confirmDeleteAddressMessage(Object addressTitle) {
     return 'Are you sure you want to delete the address: $addressTitle?';
   }
+
+  @override
+  String get vendorDefaultName => 'Store Name';
+
+  @override
+  String get vendorDefaultDescription => 'Specializing in this category';
+
+  @override
+  String get storeOpen => 'Open Now';
+
+  @override
+  String get storeClosed => 'Closed';
+
+  @override
+  String noVendorsFound(Object categoryName) {
+    return 'No $categoryName found yet.';
+  }
 }

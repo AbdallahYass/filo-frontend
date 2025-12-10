@@ -410,4 +410,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String confirmDeleteAddressMessage(Object addressTitle) {
     return 'هل أنت متأكد من حذف العنوان: $addressTitle؟';
   }
+
+  @override
+  String get vendorDefaultName => 'اسم المتجر';
+
+  @override
+  String get vendorDefaultDescription => 'متخصص في هذه الفئة';
+
+  @override
+  String get storeOpen => 'مفتوح حالياً';
+
+  @override
+  String get storeClosed => 'مغلق';
+
+  @override
+  String noVendorsFound(Object categoryName) {
+    return 'لم يتم العثور على متاجر في $categoryName.';
+  }
 }

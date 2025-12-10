@@ -173,6 +173,16 @@
     "placeholders": {
       "addressTitle": {}
     }
+  },
+  "vendorDefaultName": "اسم المتجر",
+  "vendorDefaultDescription": "متخصص في هذه الفئة",
+  "storeOpen": "مفتوح حالياً",
+  "storeClosed": "مغلق",
+  "noVendorsFound": "لم يتم العثور على متاجر في {categoryName}.",
+  "@noVendorsFound": {
+    "placeholders": {
+      "categoryName": {}
+    }
   }
 
 }

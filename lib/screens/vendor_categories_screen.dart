@@ -12,7 +12,7 @@ import '../services/category_service.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
 import 'settings_screen.dart';
-//import 'vendor_list_screen.dart'; // ✅ تم تفعيل الاستيراد والتنقل
+import 'vendor_list_screen.dart';
 
 // 🔥🔥 تم تغيير اسم الكلاس ليناسب وظيفته الجديدة 🔥🔥
 class MenuScreen extends StatefulWidget {
@@ -70,7 +70,6 @@ class _MenuScreenState extends State<MenuScreen> {
     });
   }
 
-  /*
   // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
     // يجب أن تكون شاشة VendorListScreen جاهزة
@@ -87,7 +86,7 @@ class _MenuScreenState extends State<MenuScreen> {
       ),
     );
   }
-*/
+
   // ----------------------------------------------------
   // 🔥🔥 الدالة الجديدة: تحديد الاسم بناءً على اللغة 🔥🔥
   // ----------------------------------------------------
@@ -150,6 +149,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
     final Color cardColor = _categoryColors[index % _categoryColors.length];
     final Color contentColor = Colors.black87;
+    final Color icomColor = Colors.black87;
 
     // 💡 دالة تحويل اسم الأيقونة النصي
     IconData getIconData(String key) {
@@ -170,7 +170,7 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     return GestureDetector(
-      //    onTap: () => _navigateToVendorList(category), // ✅ تفعيل التنقل
+      onTap: () => _navigateToVendorList(category),
       child: Card(
         color: cardColor,
         elevation: 4,
@@ -178,7 +178,7 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(getIconData(category.icon), color: contentColor, size: 40),
+            Icon(getIconData(category.icon), color: icomColor, size: 40),
             const SizedBox(height: 10),
             Text(
               translatedName, // ✅ استخدام الاسم المترجم
@@ -447,7 +447,10 @@ class _MenuScreenState extends State<MenuScreen> {
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Menu'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled),
+            label: 'Categories',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',

@@ -173,5 +173,15 @@
     "placeholders": {
       "addressTitle": {}
     }
+  },
+  "vendorDefaultName": "Store Name",
+  "vendorDefaultDescription": "Specializing in this category",
+  "storeOpen": "Open Now",
+  "storeClosed": "Closed",
+  "noVendorsFound": "No {categoryName} found yet.",
+  "@noVendorsFound": {
+    "placeholders": {
+      "categoryName": {}
+    }
   }
 }
