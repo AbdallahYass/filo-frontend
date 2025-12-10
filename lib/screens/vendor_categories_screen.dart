@@ -1,4 +1,4 @@
-// lib/screens/vendor_categories_screen.dart (اسم الملف الصحيح)
+// lib/screens/vendor_categories_screen.dart
 
 // 🚀 هذا الملف يمثل الشاشة الرئيسية للتطبيق، ويعرض فئات التجار ديناميكياً.
 
@@ -6,14 +6,13 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart'; // استخدام الاستيراد الصحيح للغة
+import '/l10n/app_localizations.dart';
 import '../models/category_model.dart';
 import '../services/category_service.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
 import 'settings_screen.dart';
-// يجب استيراد الشاشة التالية الآن
-//import 'vendor_list_screen.dart'; // ✅ تم تفعيل الاستيراد
+//import 'vendor_list_screen.dart'; // ✅ تم تفعيل الاستيراد والتنقل
 
 // 🔥🔥 تم تغيير اسم الكلاس ليناسب وظيفته الجديدة 🔥🔥
 class MenuScreen extends StatefulWidget {
@@ -33,14 +32,14 @@ class _MenuScreenState extends State<MenuScreen> {
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
 
-  // 🔥🔥🔥 مصفوفة الألوان المبهجة 🔥🔥🔥
+  // 🔥🔥🔥 مصفوفة الألوان المبهجة (تم تصحيحها) 🔥🔥🔥
   final List<Color> _categoryColors = const [
-    Color(0xFF000000), // اسود
-    Color(0xFF000000), // اسود
-    Color(0xFF000000), // اسود
-    Color(0xFF000000), // اسود
-    Color(0xFF000000), // اسود
-    Color(0xFF000000), // اسود
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
   ];
 
   @override
@@ -72,15 +71,18 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   /*
-  // 🔥🔥 الانتقال إلى شاشة قائمة التجار 🔥🔥
+  // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
+    // يجب أن تكون شاشة VendorListScreen جاهزة
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VendorListScreen(
           categoryKey: category.key,
-          categoryName: category
-              .nameAr, // نمرر الاسم العربي أو الإنجليزي (سيتم تحديث VendorListScreen لاحقاً)
+          categoryName: _getCategoryDisplayName(
+            category,
+            context,
+          ), // 🔥 نمرر الاسم المترجم
         ),
       ),
     );
@@ -168,7 +170,7 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     return GestureDetector(
-      // onTap: () => _navigateToVendorList(category),
+      //    onTap: () => _navigateToVendorList(category), // ✅ تفعيل التنقل
       child: Card(
         color: cardColor,
         elevation: 4,
