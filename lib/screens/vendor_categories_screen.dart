@@ -1,4 +1,4 @@
-// lib/screens/vendor_categories_screen.dart (اسم الملف الجديد)
+// lib/screens/vendor_categories_screen.dart (اسم الملف الصحيح)
 
 // 🚀 هذا الملف يمثل الشاشة الرئيسية للتطبيق، ويعرض فئات التجار ديناميكياً.
 
@@ -6,16 +6,14 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart';
-import '../models/category_model.dart'; // 🔥 استيراد الموديل الجديد
-import '../services/category_service.dart'; // 🔥 استيراد الخدمة الجديدة
+import '/l10n/app_localizations.dart'; // استخدام الاستيراد الصحيح للغة
+import '../models/category_model.dart';
+import '../services/category_service.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
 import 'settings_screen.dart';
-// يجب استيراد الشاشة التالية الآن
-//import 'vendor_list_screen.dart';
+//import 'vendor_list_screen.dart'; // 🔥 تم تفعيل الاستيراد والتنقل
 
-// 🔥🔥 يجب أن يكون هذا الكلاس في ملف vendor_categories_screen.dart 🔥🔥
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
 
@@ -35,13 +33,21 @@ class _MenuScreenState extends State<MenuScreen> {
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
 
+  // 🔥🔥🔥 مصفوفة الألوان الجديدة للكروت 🔥🔥🔥
+  final List<Color> _categoryColors = const [
+    Color(0xFFE0F7FA), // سماوي فاتح
+    Color(0xFFFFECB3), // أصفر ليموني فاتح
+    Color(0xFFF8BBD0), // وردي خفيف
+    Color(0xFFDCEDC8), // أخضر نعناعي
+    Color(0xFFCFD8DC), // رمادي فاتح أزرق
+    Color(0xFFBBDEFB), // أزرق سماء خفيف
+  ];
+
   @override
   void initState() {
     super.initState();
-    // بدء جلب الفئات من الخادم
     _categoriesFuture = _categoryService.fetchCategories();
 
-    // منطق خاص ببدء تشغيل الويب
     if (kIsWeb) {
       final uri = Uri.base;
       if (uri.queryParameters.containsKey('table')) {
@@ -53,21 +59,19 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  // دالة تغيير التبويب
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
 
-  // دالة تحديث بيانات الفئات (تستخدم مع RefreshIndicator)
   Future<void> _refreshData() async {
     setState(() {
       _categoriesFuture = _categoryService.fetchCategories();
     });
   }
   /*
-  // 🔥🔥 الانتقال إلى شاشة قائمة التجار عند اختيار فئة 🔥🔥
+  // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
     Navigator.push(
       context,
@@ -118,9 +122,13 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // 🔥🔥 دالة بناء بطاقة الفئة (بدلاً من كروت الطعام القديمة) 🔥🔥
-  Widget _buildCategoryCard(CategoryModel category) {
-    // 💡 دالة بسيطة لتحويل اسم الأيقونة النصي (المحفوظ في DB) إلى IconData
+  // 🔥🔥 دالة بناء بطاقة الفئة (مع الألوان والـ index) 🔥🔥
+  Widget _buildCategoryCard(CategoryModel category, int index) {
+    // اختيار اللون الديناميكي
+    final Color cardColor = _categoryColors[index % _categoryColors.length];
+    final Color contentColor = Colors.black87;
+
+    // 💡 دالة تحويل اسم الأيقونة النصي
     IconData getIconData(String key) {
       switch (key) {
         case 'restaurant':
@@ -139,27 +147,70 @@ class _MenuScreenState extends State<MenuScreen> {
     }
 
     return GestureDetector(
-      //  onTap: () => _navigateToVendorList(category),
+      // onTap: () => _navigateToVendorList(category),
       child: Card(
-        color: Colors.white,
+        // 🔥 استخدام اللون الديناميكي 🔥
+        color: cardColor,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(getIconData(category.icon), color: _goldColor, size: 40),
+            // 🔥 استخدام لون المحتوى الغامق 🔥
+            Icon(getIconData(category.icon), color: contentColor, size: 40),
             const SizedBox(height: 10),
             Text(
               category.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
-                color: Colors.black87,
+                // 🔥 استخدام لون المحتوى الغامق 🔥
+                color: contentColor,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // 🔥 دالة مساعدة لعرض الـ GridView (لتبسيط FutureBuilder)
+  Widget _buildCategoryGridView(
+    List<CategoryModel> categories,
+    AppLocalizations localizations,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            localizations.menu,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(15),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1.2,
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
+          ),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            // 🔥🔥 تمرير الـ index 🔥🔥
+            return _buildCategoryCard(categories[index], index);
+          },
+        ),
+      ],
     );
   }
 
@@ -174,7 +225,7 @@ class _MenuScreenState extends State<MenuScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          localizations.menu, // "القائمة" كعنوان لاستكشاف الفئات
+          localizations.menu,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -312,14 +363,14 @@ class _MenuScreenState extends State<MenuScreen> {
                   } else if (snapshot.hasError ||
                       !snapshot.hasData ||
                       snapshot.data!.isEmpty) {
-                    // رسالة خطأ الاتصال أو حالة لا يوجد فئات
                     final categories = snapshot.data;
 
+                    // إذا كان هناك بيانات وهمية (Mock Data) من الخدمة، اعرضها
                     if (categories != null && categories.isNotEmpty) {
-                      // في حال أرجع الـ Mock data
                       return _buildCategoryGridView(categories, localizations);
                     }
 
+                    // إذا لم يتم العثور على أي شيء، اعرض رسالة الخطأ
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(40.0),
@@ -334,14 +385,6 @@ class _MenuScreenState extends State<MenuScreen> {
                               onPressed: _refreshData,
                               child: Text(localizations.retry),
                             ),
-                            const SizedBox(height: 10),
-                            /*    Text(
-                              localizations.noVendorsFound(localizations.menu),
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                              ),
-                            ),*/
                           ],
                         ),
                       ),
@@ -356,45 +399,6 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  // 🔥 دالة مساعدة لعرض الـ GridView (لتبسيط FutureBuilder)
-  Widget _buildCategoryGridView(
-    List<CategoryModel> categories,
-    AppLocalizations localizations,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            localizations.menu,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(15),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1.2,
-            crossAxisSpacing: 15,
-            mainAxisSpacing: 15,
-          ),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            return _buildCategoryCard(categories[index]);
-          },
-        ),
-      ],
     );
   }
 
