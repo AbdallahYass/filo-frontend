@@ -1,48 +1,57 @@
-// lib/services/category_service.dart
+// lib/services/category_service.dart (الكود المحدث)
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import '../models/category_model.dart';
-// ⚠️ ملاحظة: يجب التأكد من وجود موديل CategoryModel.dart
 
 class CategoryService {
-  // 🔥🔥🔥 الإعدادات (نفس ما اتفقنا عليه) 🔥🔥🔥
+  // 🔥🔥🔥 الإعدادات (تم تصحيح الرابط) 🔥🔥🔥
   final String _apiBaseUrl = kDebugMode
       ? 'http://10.0.2.2:3000/api'
-      : 'https://filo-menu.onrender.com/api/categories';
+      : 'https://filo-menu.onrender.com/api'; // تم حذف "/categories" من الرابط الأساسي
   final String _apiKey = 'FiloSecretKey202512341234';
 
   // ----------------------------------------------------------------
 
-  // 🔥🔥 دالة جلب البيانات الافتراضية (Default/Fallback Categories) 🔥🔥
+  // 🔥🔥 دالة جلب البيانات الافتراضية (تم تحديثها لدعم اللغتين) 🔥🔥
   List<CategoryModel> _getMockCategories() {
     // قائمة الفئات التي ستظهر عند فشل الاتصال أو عند التشغيل الأول
     final mockData = [
-      {'id': 'm1', 'name': 'مطاعم', 'key': 'restaurant', 'icon': 'restaurant'},
       {
-        'id': 'm2',
-        'name': 'مخابز وحلويات',
+        '_id': 'm1',
+        'key': 'restaurant',
+        'icon': 'restaurant',
+        'name': {'en': 'Restaurants', 'ar': 'مطاعم'},
+      },
+      {
+        '_id': 'm2',
         'key': 'bakery',
         'icon': 'bakery_dining',
+        'name': {'en': 'Bakeries & Sweets', 'ar': 'مخابز وحلويات'},
       },
       {
-        'id': 'm3',
-        'name': 'سوبر ماركت',
+        '_id': 'm3',
         'key': 'market',
         'icon': 'local_grocery_store',
+        'name': {'en': 'Supermarkets', 'ar': 'سوبر ماركت'},
       },
-      {'id': 'm4', 'name': 'كافيهات', 'key': 'cafe', 'icon': 'coffee'},
+      {
+        '_id': 'm4',
+        'key': 'cafe',
+        'icon': 'coffee',
+        'name': {'en': 'Cafes', 'ar': 'كافيهات'},
+      },
     ];
 
-    // تحويل القائمة الثابتة إلى موديل CategoryModel
+    // تحويل القائمة الثابتة باستخدام الـ FromJson الجديد
     return mockData
         .map(
           (json) => CategoryModel.fromJson({
-            '_id': json['id'], // MongoDB uses _id
-            'name': json['name'],
+            '_id': json['_id'],
             'key': json['key'],
             'icon': json['icon'],
+            'name': json['name'], // 🔥 تمرير الكائن المتعدد اللغات
           }),
         )
         .toList();
@@ -54,6 +63,7 @@ class CategoryService {
   Future<List<CategoryModel>> fetchCategories() async {
     try {
       final response = await http.get(
+        // 🔥 استخدام الرابط الصحيح (جذر API + المسار) 🔥
         Uri.parse('$_apiBaseUrl/categories'),
         headers: {'x-api-key': _apiKey},
       );
