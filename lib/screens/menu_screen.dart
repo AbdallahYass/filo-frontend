@@ -1,8 +1,13 @@
+// lib/screens/menu_screen.dart
+
+// 🚀 هذا الملف يمثل الشاشة الرئيسية للتطبيق (القائمة)
+// ويحتوي على منطق التنقل الرئيسي بين الشاشات.
+
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
+import '/l10n/app_localizations.dart';
 import '../models/menu_item.dart';
 import '../services/menu_service.dart';
 import '../services/cart_service.dart';
@@ -21,7 +26,7 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  // 🔥🔥🔥 حالة التنقل السفلية 🔥🔥🔥
+  // 🔥🔥🔥 حالة التنقل السفلية: 0 (Menu), 1 (Settings) 🔥🔥🔥
   int _currentIndex = 0;
 
   late Future<List<MenuItem>> _menuItemsFuture;
@@ -30,15 +35,16 @@ class _MenuScreenState extends State<MenuScreen> {
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkColor = const Color(0xFF1A1A1A);
 
-  // تحديث هذه القيمة بناءً على الـ localizations.all في كل build
+  // المتغير الذي يحمل الفئة المختارة للتصفية
   String _selectedCategory = 'All';
 
   @override
   void initState() {
     super.initState();
+    // بدء جلب قائمة الطعام من الخادم
     _menuItemsFuture = _menuService.fetchMenu();
 
-    // كود خاص بالويب (Web initialization)
+    // منطق خاص ببدء تشغيل الويب: قراءة رقم الطاولة من الـ URL
     if (kIsWeb) {
       final uri = Uri.base;
       if (uri.queryParameters.containsKey('table')) {
@@ -50,350 +56,28 @@ class _MenuScreenState extends State<MenuScreen> {
     }
   }
 
-  // دالة تغيير التبويب
+  // دالة تغيير التبويب (للتبويبات المتبقية: 0 و 1)
   void _onItemTapped(int index) {
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const CartScreen()),
-      );
-      return;
-    }
     setState(() {
       _currentIndex = index;
     });
   }
 
+  // دالة تحديث بيانات القائمة (تستخدم مع RefreshIndicator)
   Future<void> _refreshData() async {
     setState(() {
       _menuItemsFuture = _menuService.fetchMenu();
     });
   }
 
-  // دالة إنشاء Placeholder - تستخدم الترجمة الموضعية
-  Widget _buildPlaceholderScreen(String title) {
-    final localizations = AppLocalizations.of(context)!;
+  // ----------------------------------------------------
+  // 🎨 دوال بناء الواجهة المساعدة 🎨
+  // ----------------------------------------------------
 
-    return Scaffold(
-      backgroundColor: _darkColor,
-      appBar: AppBar(
-        // بما أن title يأتي مترجماً من دالة build، نستخدمه مباشرة هنا
-        title: Text(title, style: TextStyle(color: _goldColor)),
-        backgroundColor: _darkColor,
-      ),
-      body: Center(
-        child: Text(
-          // 🔥🔥 التصحيح هنا: استدعاء الدالة المولّدة مباشرة 🔥🔥
-          localizations.screenTitlePlaceholder(title),
+  // دالة بناء شاشة Placeholder (تستخدم لصفحات غير مكتملة)
 
-          // ملاحظة: لكي يعمل هذا، يجب أن يكون المفتاح في ملف .arb معرفاً هكذا:
-          // "screenTitlePlaceholder": "{title} Screen",
-          // "@screenTitlePlaceholder": { "placeholders": { "title": {} } }
-          style: const TextStyle(color: Colors.white),
-        ),
-      ),
-    );
-  }
-
-  // دالة محتوى الشاشة الرئيسية - تستخدم الترجمة الموضعية
-  Widget _buildMenuContentWrapper() {
-    final localizations = AppLocalizations.of(context)!;
-    final String allKey = localizations.all;
-
-    // تحديث الـ selectedCategory عند تغيير اللغة
-    if (_selectedCategory == 'All') {
-      _selectedCategory = allKey;
-    }
-
-    // ... (بقية المحتوى مع استدعاء الدوال المساعدة)
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      appBar: AppBar(
-        backgroundColor: _darkColor,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          localizations.home, // 🔥 ترجمة
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          if (!kIsWeb)
-            IconButton(
-              icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const QRScannerScreen(),
-                  ),
-                );
-              },
-            ),
-          IconButton(
-            icon: Icon(Icons.qr_code_2, color: _goldColor),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const QRGeneratorScreen(),
-                ),
-              );
-            },
-          ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.shopping_bag_outlined,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartScreen()),
-                  );
-                },
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _goldColor,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 10),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        color: _goldColor,
-        backgroundColor: _darkColor,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (kIsWeb)
-                Container(
-                  width: double.infinity,
-                  color: Colors.black,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.phone_android,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          localizations.getBetterAppExperience, // 🔥 ترجمة
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _goldColor,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 5,
-                          ),
-                          minimumSize: const Size(0, 30),
-                        ),
-                        child: Text(
-                          localizations.downloadNow, // 🔥 ترجمة
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  bottom: 20,
-                  top: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: _darkColor,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                child: _buildSearchBar(), // سيتم التعامل مع الترجمة داخله
-              ),
-              const SizedBox(height: 20),
-              FutureBuilder<List<MenuItem>>(
-                future: _menuItemsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: CircularProgressIndicator(color: _goldColor),
-                    );
-                  } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    final allItems = snapshot.data!;
-
-                    // 1. ترجمة مفتاح 'All'
-                    Set<String> categories = {allKey};
-                    for (var item in allItems) {
-                      categories.add(item.category);
-                    }
-
-                    // 2. فلترة العناصر بناءً على المفتاح المترجم
-                    final filteredItems = _selectedCategory == allKey
-                        ? allItems
-                        : allItems
-                              .where(
-                                (item) => item.category == _selectedCategory,
-                              )
-                              .toList();
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildCategoryList(
-                          categories.toList(),
-                        ), // سيتم التعامل مع الترجمة داخله
-                        const SizedBox(height: 20),
-                        if (filteredItems.isEmpty)
-                          Center(
-                            child: Text(localizations.noItemsFound),
-                          ) // 🔥 ترجمة
-                        else
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0,
-                                ),
-                                child: _buildFeaturedCard(filteredItems.first),
-                              ), // سيتم التعامل مع الترجمة داخله
-                              const SizedBox(height: 25),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20.0,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      _selectedCategory == allKey
-                                          ? localizations
-                                                .popularNow // 🔥 ترجمة
-                                          : _selectedCategory,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                AllItemsScreen(
-                                                  allItems: allItems,
-                                                  initialCategory:
-                                                      _selectedCategory,
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        localizations.seeAll, // 🔥 ترجمة
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey[400],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              SizedBox(
-                                height: 220,
-                                child: ListView.builder(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: const EdgeInsets.only(left: 20),
-                                  itemCount: filteredItems.length > 1
-                                      ? filteredItems.length - 1
-                                      : 0,
-                                  itemBuilder: (context, index) {
-                                    final item = filteredItems[index + 1];
-                                    return _buildRestaurantCard(
-                                      item,
-                                    ); // سيتم التعامل مع الترجمة داخله
-                                  },
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-                          ),
-                      ],
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Column(
-                        children: [
-                          Text(localizations.connectionError), // 🔥 ترجمة
-                          TextButton(
-                            onPressed: _refreshData,
-                            child: Text(localizations.retry), // 🔥 ترجمة
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  return Center(
-                    child: Text(localizations.noMenuItems),
-                  ); // 🔥 ترجمة
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // --- دوال بناء الواجهة المساعدة (تطبيق الترجمة الموضعية) ---
-  Widget _buildSearchBar() {
-    // 🔥 ترجمة موضعية 🔥
-    final localizations = AppLocalizations.of(context)!;
-
+  // بناء شريط البحث العلوي
+  Widget _buildSearchBar(AppLocalizations localizations) {
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -406,7 +90,7 @@ class _MenuScreenState extends State<MenuScreen> {
           Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: localizations.searchHint, // 🔥 ترجمة
+                hintText: localizations.searchHint,
                 hintStyle: const TextStyle(color: Colors.grey),
                 border: InputBorder.none,
               ),
@@ -426,9 +110,8 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  // بناء قائمة فئات الطعام الأفقية
   Widget _buildCategoryList(List<String> categories) {
-    // 🔥 ترجمة موضعية 🔥
-
     return SizedBox(
       height: 40,
       child: ListView.builder(
@@ -462,6 +145,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.1),
                           blurRadius: 5,
+                          offset: const Offset(0, 2),
                         ),
                       ],
               ),
@@ -479,10 +163,8 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildFeaturedCard(MenuItem item) {
-    // 🔥 ترجمة موضعية 🔥
-    final localizations = AppLocalizations.of(context)!;
-
+  // كارت العنصر البارز/المميز (Featured Card)
+  Widget _buildFeaturedCard(MenuItem item, AppLocalizations localizations) {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -502,6 +184,7 @@ class _MenuScreenState extends State<MenuScreen> {
         ),
         child: Stack(
           children: [
+            // زر الطلب/Order في الأسفل اليمين
             Positioned(
               bottom: 15,
               right: 15,
@@ -515,7 +198,7 @@ class _MenuScreenState extends State<MenuScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  localizations.order, // 🔥 ترجمة
+                  localizations.order,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
@@ -523,6 +206,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
               ),
             ),
+            // العنوان والسعر في الأسفل اليسار
             Positioned(
               bottom: 15,
               left: 15,
@@ -554,9 +238,8 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  // كارت المطعم/العنصر القصير (Restaurant Card)
   Widget _buildRestaurantCard(MenuItem item) {
-    // 🔥 ترجمة موضعية 🔥
-
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -637,28 +320,328 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  // دالة محتوى الشاشة الرئيسية (القائمة)
+  Widget _buildMenuContentWrapper() {
+    final localizations = AppLocalizations.of(context)!;
+    final String allKey = localizations.all;
+
+    if (_selectedCategory == 'All') {
+      _selectedCategory = allKey;
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F9F9),
+      appBar: AppBar(
+        backgroundColor: _darkColor,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          localizations.home,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+        actions: [
+          // أيقونة الماسح الضوئي (فقط على الموبايل)
+          if (!kIsWeb)
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const QRScannerScreen(),
+                  ),
+                );
+              },
+            ),
+          // أيقونة توليد الـ QR
+          IconButton(
+            icon: Icon(Icons.qr_code_2, color: _goldColor),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const QRGeneratorScreen(),
+                ),
+              );
+            },
+          ),
+          // زر السلة (تم نقله إلى الـ AppBar)
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.shopping_bag_outlined,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _goldColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 10),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        color: _goldColor,
+        backgroundColor: _darkColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // بانر التطبيق على الويب
+              if (kIsWeb)
+                Container(
+                  width: double.infinity,
+                  color: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.phone_android,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          localizations.getBetterAppExperience,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _goldColor,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 5,
+                          ),
+                          minimumSize: const Size(0, 30),
+                        ),
+                        child: Text(
+                          localizations.downloadNow,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              // شريط البحث
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                  top: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: _darkColor,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                ),
+                child: _buildSearchBar(localizations),
+              ),
+              const SizedBox(height: 20),
+
+              // محتوى القائمة الفعلية (FutureBuilder)
+              FutureBuilder<List<MenuItem>>(
+                future: _menuItemsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(color: _goldColor),
+                    );
+                  } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    final allItems = snapshot.data!;
+
+                    // تهيئة الفئات
+                    Set<String> categories = {allKey};
+                    for (var item in allItems) {
+                      categories.add(item.category);
+                    }
+
+                    // فلترة العناصر
+                    final filteredItems = _selectedCategory == allKey
+                        ? allItems
+                        : allItems
+                              .where(
+                                (item) => item.category == _selectedCategory,
+                              )
+                              .toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCategoryList(categories.toList()),
+                        const SizedBox(height: 20),
+
+                        // حالة عدم وجود عناصر بعد الفلترة
+                        if (filteredItems.isEmpty)
+                          Center(child: Text(localizations.noItemsFound))
+                        else
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // العنصر المميز الأول
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0,
+                                ),
+                                child: _buildFeaturedCard(
+                                  filteredItems.first,
+                                  localizations,
+                                ),
+                              ),
+                              const SizedBox(height: 25),
+
+                              // عنوان (Popular Now / Category Name)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20.0,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _selectedCategory == allKey
+                                          ? localizations.popularNow
+                                          : _selectedCategory,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    // زر (See All)
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                AllItemsScreen(
+                                                  allItems: allItems,
+                                                  initialCategory:
+                                                      _selectedCategory,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        localizations.seeAll,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+
+                              // قائمة العناصر الأفقية (Restaurant Cards)
+                              SizedBox(
+                                height: 220,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: const EdgeInsets.only(left: 20),
+                                  itemCount: filteredItems.length > 1
+                                      ? filteredItems.length - 1
+                                      : 0,
+                                  itemBuilder: (context, index) {
+                                    final item = filteredItems[index + 1];
+                                    return _buildRestaurantCard(item);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+                      ],
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        children: [
+                          Text(localizations.connectionError),
+                          TextButton(
+                            onPressed: _refreshData,
+                            child: Text(localizations.retry),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  // حالة لا توجد عناصر menu (بعد التحميل)
+                  return Center(child: Text(localizations.noMenuItems));
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ----------------------------------------------------
+  // 🔨 دالة البناء الرئيسية (Build) 🔨
+  // ----------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    // 🔥 الوصول لكائن الترجمة 🔥
-    final localizations = AppLocalizations.of(context)!;
-
-    // تهيئة الصفحات بالاعتماد على الـ build context
+    // تهيئة الصفحات (تم حذف البحث والسلة)
     final List<Widget> pages = [
-      _buildMenuContentWrapper(),
-      _buildPlaceholderScreen(localizations.searchHint),
-      _buildPlaceholderScreen(localizations.myCart),
-      const SettingsScreen(),
+      _buildMenuContentWrapper(), // Index 0: Menu
+      const SettingsScreen(), // Index 1: Settings
     ];
 
     return Scaffold(
       backgroundColor: _darkColor,
 
-      // 🔥 الجسم الرئيسي يستخدم IndexedStack لعرض المحتوى بناءً على التبويب
+      // الجسم الرئيسي يستخدم IndexedStack لعرض المحتوى بناءً على التبويب
       body: IndexedStack(index: _currentIndex, children: pages),
 
-      // 🔥 شريط التنقل السفلي المعدل
+      // 🔥 شريط التنقل السفلي المعدل (تبويبين فقط) 🔥
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF1A1A1A), // خلفية الشريط
+        backgroundColor: const Color(0xFF1A1A1A),
         selectedItemColor: _goldColor,
         unselectedItemColor: Colors.grey,
         currentIndex: _currentIndex,
@@ -670,20 +653,12 @@ class _MenuScreenState extends State<MenuScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled),
             label: '',
-          ), // Home/Menu
-          /* BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-          ), // Search
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag_outlined),
-            label: '',
-          ), // Cart
-          // 🔥 استبدال أيقونة الشخص بالإعدادات 🔥*/
+          ), // Home/Menu (Index 0)
+
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: '',
-          ), // Settings
+          ), // Settings (Index 1)
         ],
       ),
     );
