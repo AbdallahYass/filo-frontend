@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'vendor_categories_screen.dart';
 import 'settings_screen.dart';
 
+//
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
 
