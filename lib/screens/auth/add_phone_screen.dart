@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:filo_menu/l10n/app_localizations.dart'; // 👈 استيراد ملف اللغات
-import '../vendor_categories_screen.dart';
+import '../main_wrapper.dart';
 
 class AddPhoneScreen extends StatefulWidget {
   const AddPhoneScreen({super.key});
@@ -46,7 +46,7 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const MenuScreen()),
+            MaterialPageRoute(builder: (context) => const MainWrapper()),
             (route) => false,
           );
         }

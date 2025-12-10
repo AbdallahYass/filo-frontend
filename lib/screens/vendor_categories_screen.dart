@@ -14,15 +14,15 @@ import 'cart_screen.dart';
 import 'settings_screen.dart';
 import 'vendor_list_screen.dart';
 
-// 🔥🔥 تم تغيير اسم الكلاس ليناسب وظيفته الجديدة 🔥🔥
-class MenuScreen extends StatefulWidget {
-  const MenuScreen({super.key});
+// 🔥🔥 تصحيح اسم الكلاس ليتوافق مع الملف 🔥🔥
+class VendorCategoriesScreen extends StatefulWidget {
+  const VendorCategoriesScreen({super.key});
 
   @override
-  State<MenuScreen> createState() => _MenuScreenState();
+  State<VendorCategoriesScreen> createState() => _VendorCategoriesScreenState();
 }
 
-class _MenuScreenState extends State<MenuScreen> {
+class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
   int _currentIndex = 0;
 
   late Future<List<CategoryModel>> _categoriesFuture;
@@ -32,7 +32,7 @@ class _MenuScreenState extends State<MenuScreen> {
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
 
-  // 🔥🔥🔥 مصفوفة الألوان المبهجة (تم تصحيحها) 🔥🔥🔥
+  // 🔥🔥🔥 مصفوفة الألوان (بيضاء) 🔥🔥🔥
   final List<Color> _categoryColors = const [
     Color(0xFFFFFFFF),
     Color(0xFFFFFFFF),
@@ -72,16 +72,12 @@ class _MenuScreenState extends State<MenuScreen> {
 
   // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
-    // يجب أن تكون شاشة VendorListScreen جاهزة
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VendorListScreen(
           categoryKey: category.key,
-          categoryName: _getCategoryDisplayName(
-            category,
-            context,
-          ), // 🔥 نمرر الاسم المترجم
+          categoryName: _getCategoryDisplayName(category, context),
         ),
       ),
     );
@@ -138,18 +134,18 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // 🔥🔥 دالة بناء بطاقة الفئة (مع الألوان والـ index) 🔥🔥
+  // 🔥🔥 دالة بناء بطاقة الفئة 🔥🔥
   Widget _buildCategoryCard(
     CategoryModel category,
     int index,
     AppLocalizations localizations,
   ) {
-    // 🔥🔥 جلب الاسم المترجم هنا 🔥🔥
     final String translatedName = _getCategoryDisplayName(category, context);
 
     final Color cardColor = _categoryColors[index % _categoryColors.length];
     final Color contentColor = Colors.black87;
-    final Color icomColor = Colors.black87;
+    // 🔥 تم تثبيت لون الأيقونة على الذهبي
+    final Color iconColor = _goldColor;
 
     // 💡 دالة تحويل اسم الأيقونة النصي
     IconData getIconData(String key) {
@@ -178,10 +174,10 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(getIconData(category.icon), color: icomColor, size: 40),
+            Icon(getIconData(category.icon), color: iconColor, size: 40),
             const SizedBox(height: 10),
             Text(
-              translatedName, // ✅ استخدام الاسم المترجم
+              translatedName,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -194,7 +190,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // 🔥 دالة مساعدة لعرض الـ GridView (لتبسيط FutureBuilder)
+  // 🔥 دالة مساعدة لعرض الـ GridView
   Widget _buildCategoryGridView(
     List<CategoryModel> categories,
     AppLocalizations localizations,
@@ -226,7 +222,6 @@ class _MenuScreenState extends State<MenuScreen> {
           ),
           itemCount: categories.length,
           itemBuilder: (context, index) {
-            // 🔥🔥 تمرير الـ localizations والدالة المساعدة 🔥🔥
             return _buildCategoryCard(categories[index], index, localizations);
           },
         ),
@@ -385,12 +380,10 @@ class _MenuScreenState extends State<MenuScreen> {
                       snapshot.data!.isEmpty) {
                     final categories = snapshot.data;
 
-                    // إذا كان هناك بيانات وهمية (Mock Data) من الخدمة، اعرضها
                     if (categories != null && categories.isNotEmpty) {
                       return _buildCategoryGridView(categories, localizations);
                     }
 
-                    // إذا لم يتم العثور على أي شيء، اعرض رسالة الخطأ
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(40.0),

@@ -8,7 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../../services/auth_service.dart';
-import 'vendor_categories_screen.dart';
+import 'main_wrapper.dart';
 import 'auth/login_screen.dart';
 import 'location_service.dart';
 
@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen> {
     bool isLoggedIn = await _authService.isLoggedIn();
 
     // 4. تحديد الوجهة والانتقال
-    Widget nextScreen = isLoggedIn ? const MenuScreen() : const LoginScreen();
+    Widget nextScreen = isLoggedIn ? const MainWrapper() : const LoginScreen();
 
     if (mounted) {
       Navigator.of(

@@ -4,9 +4,9 @@
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';
-import '../models/user_model.dart'; // 🔥 استيراد الموديل
-import '../services/vendor_service.dart'; // 🔥 استيراد الخدمة
-import 'vendor_menu_screen.dart'; // 🔥 استيراد شاشة القائمة
+import '../models/user_model.dart';
+import '../services/vendor_service.dart';
+import 'vendor_menu_screen.dart';
 
 class VendorListScreen extends StatefulWidget {
   // 🔥🔥🔥 المعاملات المستقبلة من شاشة الفئات 🔥🔥🔥

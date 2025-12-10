@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart' as auth;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../vendor_categories_screen.dart';
+import '../main_wrapper.dart';
 import 'add_phone_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -102,7 +102,7 @@ class _SignupScreenState extends State<SignupScreen> {
             } else {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const MenuScreen()),
+                MaterialPageRoute(builder: (context) => const MainWrapper()),
               );
             }
           }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
-import '../vendor_categories_screen.dart';
+import '../main_wrapper.dart';
 import 'add_phone_screen.dart';
 import 'signup_screen.dart';
 import 'otp_screen.dart';
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
             } else {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const MenuScreen()),
+                MaterialPageRoute(builder: (context) => const MainWrapper()),
               );
             }
           }
@@ -138,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MenuScreen()),
+          MaterialPageRoute(builder: (context) => const MainWrapper()),
         );
       }
     } else if (result == 'NOT_VERIFIED') {

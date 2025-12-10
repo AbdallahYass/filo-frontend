@@ -4,12 +4,11 @@
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';
-import '../models/user_model.dart'; // يمثل التاجر (Vendor)
-import '../models/menu_item.dart'; // عناصر القائمة
-import '../services/menu_service.dart'; // خدمة جلب القائمة
-import 'item_detail_screen.dart'; // شاشة تفاصيل العنصر
-import 'cart_screen.dart'; // شاشة السلة
-// import 'checkout_screen.dart'; // سنستخدمه لاحقًا
+import '../models/user_model.dart';
+import '../models/menu_item.dart';
+import '../services/menu_service.dart';
+import 'item_detail_screen.dart';
+import 'cart_screen.dart';
 
 class VendorMenuScreen extends StatefulWidget {
   final UserModel vendor; // 🔥 التاجر الذي تم اختياره
@@ -92,11 +91,16 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isSelected = _selectedCategory == category;
+          // 🔥 تصحيح: يجب استخدام مفتاح 'All' للمقارنة إذا كنا نعتمد على الترجمة
+          final isSelected = category == 'All'
+              ? _selectedCategory == allKey
+              : _selectedCategory == category;
+
           return GestureDetector(
             onTap: () {
               setState(() {
-                _selectedCategory = category;
+                // حفظ القيمة الأصلية أو المترجمة
+                _selectedCategory = category == 'All' ? allKey : category;
               });
             },
             child: Container(
@@ -201,7 +205,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     );
   }
 
-  // كارت العنصر العادي (Restaurant Card)
+  // كارت العنصر العادي
   Widget _buildMenuItemCard(MenuItem item) {
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -258,11 +262,11 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     final localizations = AppLocalizations.of(context)!;
     final String allKey = localizations.all;
 
+    // 🔥 تصحيح: إذا كان 'All' هو الفئة المحددة، استخدم القيمة المترجمة
     if (_selectedCategory == 'All') {
       _selectedCategory = allKey;
     }
 
-    // 🔥🔥 تصحيح الخطأ: ضمان أن اسم المتجر ليس فارغاً (مستخدم في العنوان) 🔥🔥
     final String displayStoreName =
         widget.vendor.storeInfo?.storeName ??
         widget.vendor.name ??
@@ -302,7 +306,6 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
         onRefresh: _refreshData,
         color: _goldColor,
         backgroundColor: _darkColor,
-        // 🔥🔥🔥 SingleChildScrollView يحيط بكل المحتوى الآن 🔥🔥🔥
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
@@ -324,9 +327,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                     bottomRight: Radius.circular(30),
                   ),
                 ),
-                child: _buildSearchBar(
-                  localizations,
-                ), // ✅ تم استخدام شريط البحث
+                child: _buildSearchBar(localizations),
               ),
               const SizedBox(height: 20),
 
@@ -340,7 +341,17 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                     );
                   } else if (snapshot.hasError ||
                       !snapshot.hasData ||
-                      snapshot.data == null) {
+                      snapshot.data == null ||
+                      snapshot.data!.isEmpty) {
+                    if (snapshot.data == null || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Text(
+                          localizations.noMenuItems,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -354,13 +365,6 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                             child: Text(localizations.retry),
                           ),
                         ],
-                      ),
-                    );
-                  } else if (snapshot.data!.isEmpty) {
-                    return Center(
-                      child: Text(
-                        localizations.noMenuItems,
-                        style: TextStyle(color: Colors.grey),
                       ),
                     );
                   }
@@ -380,76 +384,61 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                             .where((item) => item.category == _selectedCategory)
                             .toList();
 
+                  // 3. التحقق من وجود عناصر بعد الفلترة
+                  if (filteredItems.isEmpty) {
+                    return Center(
+                      child: Text(
+                        localizations.noItemsFound,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+
                   return Column(
-                    // ⬅️ هذا العمود هو محتوى القائمة الفعلية
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // قائمة الفئات الأفقية للتصفية
                       _buildCategoryList(categoryKeys.toList(), allKey),
                       const SizedBox(height: 20),
 
-                      // عرض العناصر (يجب أن يكون العنصر الأول مميزاً والبقية أفقياً)
-                      if (filteredItems.isNotEmpty)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // العنصر المميز (Featured)
-                            _buildFeaturedCard(
-                              filteredItems.first,
-                              localizations,
-                            ),
-                            const SizedBox(height: 25),
+                      // العنصر المميز (Featured)
+                      _buildFeaturedCard(filteredItems.first, localizations),
+                      const SizedBox(height: 25),
 
-                            // عنوان "الأكثر شيوعاً" أو الفئة
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20.0,
-                              ),
-                              child: Text(
-                                _selectedCategory == allKey
-                                    ? localizations.popularNow
-                                    : _selectedCategory,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 15),
-
-                            // قائمة العناصر الأفقية المتبقية
-                            SizedBox(
-                              height: 220,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.only(left: 20),
-                                itemCount: filteredItems.length,
-                                itemBuilder: (context, index) {
-                                  // التصحيح: يجب التعامل مع حالة عرض العنصر الأول والثاني بطريقة آمنة
-                                  if (index == 0 && filteredItems.length > 1) {
-                                    // إذا كان العنصر الأول هو المميز، نبدأ القائمة الأفقية من العنصر الثاني
-                                    return _buildMenuItemCard(filteredItems[1]);
-                                  } else if (index > 0) {
-                                    // عرض العناصر اللاحقة
-                                    return _buildMenuItemCard(
-                                      filteredItems[index],
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
-                        )
-                      else
-                        Center(
-                          child: Text(
-                            localizations.noItemsFound,
-                            style: TextStyle(color: Colors.grey),
+                      // عنوان "الأكثر شيوعاً" أو الفئة
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          _selectedCategory == allKey
+                              ? localizations.popularNow
+                              : _selectedCategory,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 15),
+
+                      // 🔥🔥 قائمة العناصر الأفقية المتبقية (تجاهل العنصر الأول المميز) 🔥🔥
+                      SizedBox(
+                        height: 220,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.only(left: 20),
+                          // itemCount: إجمالي العناصر ما عدا العنصر الأول
+                          itemCount: filteredItems.length > 1
+                              ? filteredItems.length - 1
+                              : 0,
+                          itemBuilder: (context, index) {
+                            // نبدأ من العنصر الثاني في القائمة (index + 1)
+                            final item = filteredItems[index + 1];
+                            return _buildMenuItemCard(item);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                     ],
                   );
                 },
