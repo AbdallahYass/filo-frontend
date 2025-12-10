@@ -14,8 +14,8 @@ import '../services/cart_service.dart';
 import 'item_detail_screen.dart';
 import 'cart_screen.dart';
 import 'all_items_screen.dart';
-import 'qr_scanner_screen.dart';
-import 'qr_generator_screen.dart';
+//import 'qr_scanner_screen.dart';
+//import 'qr_generator_screen.dart';
 import 'settings_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -345,7 +345,7 @@ class _MenuScreenState extends State<MenuScreen> {
         ),
         actions: [
           // أيقونة الماسح الضوئي (فقط على الموبايل)
-          if (!kIsWeb)
+          /*if (!kIsWeb)
             IconButton(
               icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
               onPressed: () {
@@ -368,7 +368,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 ),
               );
             },
-          ),
+          ),*/
           // زر السلة (تم نقله إلى الـ AppBar)
           Stack(
             alignment: Alignment.center,
@@ -652,12 +652,12 @@ class _MenuScreenState extends State<MenuScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled),
-            label: '',
+            label: 'Menu',
           ), // Home/Menu (Index 0)
 
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: '',
+            label: 'Settings',
           ), // Settings (Index 1)
         ],
       ),
