@@ -8,7 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../../services/auth_service.dart';
-import 'menu_screen.dart';
+import 'vendor_categories_screen.dart';
 import 'auth/login_screen.dart';
 import 'location_service.dart';
 

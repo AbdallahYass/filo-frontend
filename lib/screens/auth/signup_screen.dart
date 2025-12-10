@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart' as auth;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../menu_screen.dart';
+import '../vendor_categories_screen.dart';
 import 'add_phone_screen.dart';
 
 class SignupScreen extends StatefulWidget {
