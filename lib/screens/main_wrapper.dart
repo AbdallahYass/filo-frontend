@@ -3,7 +3,7 @@
 // ignore_for_file: file_names, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart';
+//import '/l10n/app_localizations.dart';
 import 'vendor_categories_screen.dart';
 import 'settings_screen.dart';
 
