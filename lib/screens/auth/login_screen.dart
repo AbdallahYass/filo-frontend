@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/auth_service.dart';
-import '../menu_screen.dart';
+import '../vendor_categories_screen.dart';
 import 'add_phone_screen.dart';
 import 'signup_screen.dart';
 import 'otp_screen.dart';

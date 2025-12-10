@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:filo_menu/l10n/app_localizations.dart'; // 👈 استيراد ملف اللغات
-import '../menu_screen.dart';
+import '../vendor_categories_screen.dart';
 
 class AddPhoneScreen extends StatefulWidget {
   const AddPhoneScreen({super.key});
