@@ -10,7 +10,7 @@ class CategoryService {
   // 🔥🔥🔥 الإعدادات (نفس ما اتفقنا عليه) 🔥🔥🔥
   final String _apiBaseUrl = kDebugMode
       ? 'http://10.0.2.2:3000/api'
-      : 'https://filo-menu.onrender.com/api';
+      : 'https://filo-menu.onrender.com/api/categories';
   final String _apiKey = 'FiloSecretKey202512341234';
 
   // ----------------------------------------------------------------
