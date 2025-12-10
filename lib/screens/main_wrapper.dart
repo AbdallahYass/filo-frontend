@@ -46,8 +46,6 @@ class _MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
