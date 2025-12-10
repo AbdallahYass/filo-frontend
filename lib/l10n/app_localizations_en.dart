@@ -404,4 +404,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmAddAddress => 'Are you sure you want to add this address?';
+
+  @override
+  String get confirmDeleteTitle => 'Confirm Deletion';
+
+  @override
+  String get deleteButton => 'Delete';
+
+  @override
+  String confirmDeleteAddressMessage(Object addressTitle) {
+    return 'Are you sure you want to delete the address: $addressTitle?';
+  }
 }

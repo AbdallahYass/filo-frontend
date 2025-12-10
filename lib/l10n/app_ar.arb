@@ -165,6 +165,14 @@
     "confirmation": "تأكيد",
     "confirm": "تأكيد",
     "confirmUpdateAddress": "هل أنت متأكد من تعديل هذا العنوان؟",
-    "confirmAddAddress": "هل أنت متأكد من إضافة هذا العنوان؟"
-}
+    "confirmAddAddress": "هل أنت متأكد من إضافة هذا العنوان؟",
+"confirmDeleteTitle": "تأكيد الحذف",
+  "deleteButton": "حذف",
+  "confirmDeleteAddressMessage": "هل أنت متأكد من حذف العنوان: {addressTitle}؟",
+  "@confirmDeleteAddressMessage": {
+    "placeholders": {
+      "addressTitle": {}
+    }
+  }
 
+}

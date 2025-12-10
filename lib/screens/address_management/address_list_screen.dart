@@ -1,12 +1,11 @@
 // lib/screens/address_management/address_list_screen.dart
 
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';
 import '../../../models/address_model.dart';
 import '../../services/AddressService.dart';
-// 🔥🔥 استيراد شاشة الإضافة/التعديل 🔥🔥
 import 'AddEditAddressScreen.dart';
 
 class AddressListScreen extends StatefulWidget {
@@ -35,14 +34,14 @@ class _AddressListScreenState extends State<AddressListScreen> {
     });
   }
 
-  // 🔥 حذف العنوان 🔥
-  void _deleteAddress(String addressId, AppLocalizations localizations) async {
+  // 🔥 دالة حذف العنوان الفعلية (تنفذ بعد التأكيد) 🔥
+  void _executeDelete(String addressId, AppLocalizations localizations) async {
     bool success = await _addressService.deleteAddress(addressId);
     if (success) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(localizations.addressDeletedSuccess), // نص مترجم
+            content: Text(localizations.addressDeletedSuccess),
             backgroundColor: Colors.green,
           ),
         );
@@ -52,12 +51,60 @@ class _AddressListScreenState extends State<AddressListScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(localizations.addressDeleteFailed), // نص مترجم
+            content: Text(localizations.addressDeleteFailed),
             backgroundColor: Colors.red,
           ),
         );
       }
     }
+  }
+
+  // 🔥🔥 الدالة الجديدة: ديالوج تأكيد الحذف 🔥🔥
+  void _showDeleteConfirmationDialog(
+    AddressModel address,
+    AppLocalizations localizations,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2C),
+        title: Text(
+          localizations.confirmDeleteTitle, // نص مترجم جديد
+          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          localizations.confirmDeleteAddressMessage(
+            address.title,
+          ), // نص مترجم جديد مع متغير
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          // زر الإلغاء
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              localizations.cancelButton, // نص مترجم
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ),
+          // زر التأكيد
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // إغلاق الديالوج
+              _executeDelete(address.id, localizations); // تنفيذ الحذف
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(
+              localizations.deleteButton, // نص مترجم جديد
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // 🔥🔥 الدالة المعدلة: الانتقال لشاشة إضافة/تعديل العنوان 🔥🔥
@@ -68,7 +115,6 @@ class _AddressListScreenState extends State<AddressListScreen> {
         builder: (context) => AddEditAddressScreen(addressToEdit: address),
       ),
     );
-    // إذا عادت قيمة true، هذا يعني أن عملية الحفظ نجحت
     if (result == true) {
       _refreshAddresses();
     }
@@ -81,7 +127,7 @@ class _AddressListScreenState extends State<AddressListScreen> {
     return Scaffold(
       backgroundColor: _darkBackground,
       appBar: AppBar(
-        title: Text(localizations.addressesTitle), // 👈 نص مترجم
+        title: Text(localizations.addressesTitle),
         backgroundColor: Colors.transparent,
         foregroundColor: _goldColor,
       ),
@@ -90,10 +136,12 @@ class _AddressListScreenState extends State<AddressListScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: _goldColor));
-          } else if (snapshot.hasError || !snapshot.hasData) {
+          } else if (snapshot.hasError ||
+              !snapshot.hasData ||
+              snapshot.data == null) {
             return Center(
               child: Text(
-                localizations.connectionError, // 👈 نص مترجم
+                localizations.connectionError,
                 style: TextStyle(color: Colors.grey),
               ),
             );
@@ -105,7 +153,7 @@ class _AddressListScreenState extends State<AddressListScreen> {
                   Icon(Icons.location_on, color: Colors.grey[700], size: 50),
                   const SizedBox(height: 10),
                   Text(
-                    localizations.noAddressesFound, // 👈 نص مترجم
+                    localizations.noAddressesFound,
                     style: TextStyle(color: Colors.grey),
                   ),
                   TextButton(
@@ -120,7 +168,6 @@ class _AddressListScreenState extends State<AddressListScreen> {
             );
           }
 
-          // عرض قائمة العناوين
           final addresses = snapshot.data!;
           return ListView.builder(
             padding: const EdgeInsets.all(15),
@@ -182,10 +229,11 @@ class _AddressListScreenState extends State<AddressListScreen> {
               icon: Icon(Icons.edit, color: Colors.grey),
               onPressed: () => _navigateToAddEditScreen(address),
             ),
-            // زر الحذف (Delete)
+            // 🔥 استبدال الاستدعاء المباشر باستدعاء الديالوج 🔥
             IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _deleteAddress(address.id, localizations),
+              onPressed: () =>
+                  _showDeleteConfirmationDialog(address, localizations),
             ),
           ],
         ),

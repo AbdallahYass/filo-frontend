@@ -399,4 +399,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get confirmAddAddress => 'هل أنت متأكد من إضافة هذا العنوان؟';
+
+  @override
+  String get confirmDeleteTitle => 'تأكيد الحذف';
+
+  @override
+  String get deleteButton => 'حذف';
+
+  @override
+  String confirmDeleteAddressMessage(Object addressTitle) {
+    return 'هل أنت متأكد من حذف العنوان: $addressTitle؟';
+  }
 }

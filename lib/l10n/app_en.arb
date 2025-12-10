@@ -165,7 +165,13 @@
     "confirmation": "Confirmation",
     "confirm": "Confirm",
     "confirmUpdateAddress": "Are you sure you want to update this address?",
-    "confirmAddAddress": "Are you sure you want to add this address?"
+    "confirmAddAddress": "Are you sure you want to add this address?",
+"confirmDeleteTitle": "Confirm Deletion",
+  "deleteButton": "Delete",
+  "confirmDeleteAddressMessage": "Are you sure you want to delete the address: {addressTitle}?",
+  "@confirmDeleteAddressMessage": {
+    "placeholders": {
+      "addressTitle": {}
+    }
+  }
 }
-
-

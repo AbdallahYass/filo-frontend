@@ -853,6 +853,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to add this address?'**
   String get confirmAddAddress;
+
+  /// No description provided for @confirmDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Deletion'**
+  String get confirmDeleteTitle;
+
+  /// No description provided for @deleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteButton;
+
+  /// No description provided for @confirmDeleteAddressMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the address: {addressTitle}?'**
+  String confirmDeleteAddressMessage(Object addressTitle);
 }
 
 class _AppLocalizationsDelegate
