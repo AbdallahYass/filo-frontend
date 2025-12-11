@@ -1,10 +1,12 @@
 // lib/screens/vendor_list_screen.dart
 
+// 🚀 هذا الملف يعرض قائمة التجار (Vendors) التابعين لفئة معينة، مع دعم البحث والفرز.
+
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names
 
 import 'package:flutter/material.dart';
 // نستخدم مسار الحزمة الكامل لضمان عدم وجود مشاكل في Vercel/Cache
-import '/l10n/app_localizations.dart';
+import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
 import '../../models/user_model.dart';
 import '../../services/vendor_service.dart';
 import 'vendor_menu_screen.dart';
@@ -24,6 +26,7 @@ class VendorListScreen extends StatefulWidget {
 }
 
 class _VendorListScreenState extends State<VendorListScreen> {
+  // 🔥🔥 1. إدارة الحالة والمتحكمات 🔥🔥
   final VendorService _vendorService = VendorService();
   late Future<List<UserModel>> _vendorsFuture;
 
@@ -31,9 +34,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
   String _searchQuery = '';
 
   String _selectedSortKey = 'default';
-  // 🔥🔥 تم تعديل هذا من late final إلى late فقط 🔥🔥
-  late List<Map<String, String>> _sortOptions;
+  late List<Map<String, String>> _sortOptions; // خيارات الفرز
 
+  // 🎨 تعريف الألوان والثوابت 🎨
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFFF9F9F9);
   final Color _darkColor = const Color(0xFF1A1A1A);
@@ -42,15 +45,18 @@ class _VendorListScreenState extends State<VendorListScreen> {
   @override
   void initState() {
     super.initState();
+    // جلب التجار لأول مرة
     _vendorsFuture = _vendorService.fetchVendorsByCategory(widget.categoryKey);
+    // ربط المستمع للبحث
     _searchController.addListener(_onSearchChanged);
   }
 
+  // 🔥 دالة تحدث حالة البحث
   void _onSearchChanged() {
     setState(() {
       _searchQuery = _searchController.text.toLowerCase();
     });
-    // لا نحتاج لـ _refreshData() هنا، لأن الفلترة تتم على الواجهة (Client-side)
+    // الفلترة تتم على الواجهة (Client-side)، لا حاجة لإعادة جلب البيانات
   }
 
   @override
@@ -60,8 +66,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
     super.dispose();
   }
 
+  // 🔄 دالة تحديث البيانات
   Future<void> _refreshData() async {
-    // 🔥 هذا سيعيد جلب البيانات من الخادم مع تطبيق خيار الفرز
+    // 🔥 إعادة جلب البيانات من الخادم مع تطبيق خيار الفرز الحالي
     setState(() {
       _vendorsFuture = _vendorService.fetchVendorsByCategory(
         widget.categoryKey,
@@ -74,6 +81,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
   // 🎨 دوال بناء الواجهة المساعدة 🎨
   // ----------------------------------------------------
 
+  // بناء شريط البحث العلوي
   Widget _buildSearchBar(AppLocalizations localizations) {
     return Container(
       height: 50,
@@ -86,7 +94,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
           const SizedBox(width: 15),
           Expanded(
             child: TextField(
-              controller: _searchController,
+              controller: _searchController, // 🔥 ربط المتحكم
               decoration: InputDecoration(
                 hintText: localizations.searchVendorHint,
                 hintStyle: const TextStyle(color: Colors.grey),
@@ -108,8 +116,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
+  // بناء القائمة المنسدلة للفرز
   Widget _buildSortDropdown(AppLocalizations localizations) {
-    // 🔥 تهيئة _sortOptions هنا (آمن الآن لأنها ليست final)
+    // 💡 تهيئة خيارات الفرز باستخدام الترجمة
     _sortOptions = [
       {'key': 'default', 'label': localizations.sortByDefault},
       {'key': 'popular', 'label': localizations.sortByPopular},
@@ -151,7 +160,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
-  // بناء كارت التاجر/المتجر
+  // 🔥 بناء بطاقة التاجر/المتجر
   Widget _buildVendorCard(UserModel vendor, AppLocalizations localizations) {
     final String storeName =
         vendor.storeInfo?.storeName ??
@@ -161,7 +170,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
         vendor.storeInfo?.description ?? localizations.vendorDefaultDescription;
     final bool isOpen = vendor.storeInfo?.isOpen == true;
 
-    // 🔥🔥 استخراج بيانات التقييم 🔥🔥
+    // استخراج بيانات التقييم
     final double rating = vendor.averageRating;
     final int reviews = vendor.reviewsCount;
 
@@ -222,7 +231,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     ),
                     const SizedBox(height: 4),
 
-                    // 🔥🔥 2. شريط التقييم والمراجعات 🔥🔥
+                    // 2. شريط التقييم والمراجعات
                     Row(
                       children: [
                         Icon(Icons.star, color: _goldColor, size: 16),
@@ -237,7 +246,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         const SizedBox(width: 8),
                         // عدد المراجعات
                         Text(
-                          '(${reviews} ${localizations.reviews})', // نص مترجم لـ "مراجعات"
+                          '(${reviews} ${localizations.reviews})', // نص مترجم
                           style: TextStyle(color: Colors.grey, fontSize: 13),
                         ),
                       ],
@@ -294,6 +303,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
       backgroundColor: _darkBackground,
       appBar: AppBar(
         title: Text(widget.categoryName),
+        // 🔥 تصميم شريط التطبيق: خلفية بيضاء ونصوص سوداء (لتكملة تصميم الـ AppBar في الشاشة السابقة)
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -302,7 +312,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. شريط البحث
+          // 1. شريط البحث والتظليل (لإعطاء فصل بصري)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(
@@ -341,7 +351,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
             ),
           ),
 
-          // 3. قائمة التجار (Expanded)
+          // 3. قائمة التجار (Expanded FutureBuilder)
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refreshData,
@@ -356,13 +366,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   } else if (snapshot.hasError ||
                       !snapshot.hasData ||
                       snapshot.data == null) {
+                    // ❌ معالجة حالة الخطأ (نفس نمط الشاشة السابقة)
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             localizations.connectionError,
-                            style: TextStyle(color: Colors.red),
+                            style: const TextStyle(color: Colors.red),
                           ),
                           TextButton(
                             onPressed: _refreshData,
@@ -375,7 +386,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
                   final allVendors = snapshot.data!;
 
-                  // 🔥🔥 تطبيق فلترة البحث (Client-side) 🔥🔥
+                  // 🔥 تطبيق فلترة البحث
                   final filteredVendors = allVendors.where((vendor) {
                     final name =
                         (vendor.storeInfo?.storeName ?? vendor.name ?? '')
@@ -387,22 +398,29 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         description.contains(_searchQuery);
                   }).toList();
 
-                  // 💡 التعامل مع حالة عدم وجود نتائج بحث/تجار
+                  // 💡 التعامل مع حالة عدم وجود نتائج بحث
                   if (filteredVendors.isEmpty && _searchQuery.isNotEmpty) {
                     return Center(
                       child: Text(
                         localizations.noResultsFound,
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     );
                   }
 
+                  // 💡 التعامل مع حالة عدم وجود تجار في الفئة
                   if (filteredVendors.isEmpty) {
                     return Center(
                       child: Text(
                         localizations.noVendorsFound(widget.categoryName),
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     );

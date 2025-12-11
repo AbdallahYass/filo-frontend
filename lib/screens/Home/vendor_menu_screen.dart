@@ -1,9 +1,11 @@
 // lib/screens/vendor_menu_screen.dart
 
+// 🚀 هذا الملف يعرض قائمة طعام متجر معين، مع دعم الفلترة حسب الفئة والعرض المميز.
+
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names
 
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart';
+import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
 import '../../models/user_model.dart';
 import '../../models/menu_item.dart';
 import '../../services/menu_service.dart';
@@ -20,15 +22,17 @@ class VendorMenuScreen extends StatefulWidget {
 }
 
 class _VendorMenuScreenState extends State<VendorMenuScreen> {
+  // 🔥🔥 1. إدارة الحالة والمتحكمات 🔥🔥
   late Future<List<MenuItem>> _menuItemsFuture;
   final MenuService _menuService = MenuService();
 
+  // لفلترة العناصر ضمن قائمة التاجر
+  String _selectedCategory = 'All'; // القيمة الافتراضية قبل الترجمة
+
+  // 🎨 تعريف الألوان والثوابت 🎨
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
-
-  // لفلترة العناصر ضمن قائمة التاجر
-  String _selectedCategory = 'All';
 
   @override
   void initState() {
@@ -37,6 +41,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     _menuItemsFuture = _menuService.fetchMenu(vendorId: widget.vendor.id);
   }
 
+  // 🔄 دالة تحديث البيانات
   Future<void> _refreshData() async {
     setState(() {
       _menuItemsFuture = _menuService.fetchMenu(vendorId: widget.vendor.id);
@@ -47,7 +52,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
   // 🎨 دوال بناء الواجهة المساعدة 🎨
   // ----------------------------------------------------
 
-  // بناء شريط البحث
+  // بناء شريط البحث العلوي (نفس تصميم الشاشات السابقة)
   Widget _buildSearchBar(AppLocalizations localizations) {
     return Container(
       height: 50,
@@ -60,6 +65,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
           const SizedBox(width: 15),
           Expanded(
             child: TextField(
+              // 💡 يمكن إضافة متحكم بحث هنا إذا لزم الأمر، حاليًا هو placeholder
               decoration: InputDecoration(
                 hintText: localizations.searchHint,
                 hintStyle: const TextStyle(color: Colors.grey),
@@ -90,17 +96,20 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
         padding: const EdgeInsets.only(left: 20),
         itemCount: categories.length,
         itemBuilder: (context, index) {
-          final category = categories[index];
-          // 🔥 تصحيح: يجب استخدام مفتاح 'All' للمقارنة إذا كنا نعتمد على الترجمة
-          final isSelected = category == 'All'
+          // 💡 يتم تمرير مفاتيح الفئات (الاسم الإنجليزي أو المفتاح)
+          final categoryKey = categories[index];
+          // إذا كان المفتاح هو 'All'، نستخدم القيمة المترجمة للمقارنة والعرض
+          final isAll = categoryKey == 'All';
+
+          final isSelected = isAll
               ? _selectedCategory == allKey
-              : _selectedCategory == category;
+              : _selectedCategory == categoryKey;
 
           return GestureDetector(
             onTap: () {
               setState(() {
-                // حفظ القيمة الأصلية أو المترجمة
-                _selectedCategory = category == 'All' ? allKey : category;
+                // نحفظ المفتاح الأصلي ('All') أو مفتاح الفئة
+                _selectedCategory = isAll ? allKey : categoryKey;
               });
             },
             child: Container(
@@ -118,10 +127,11 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                 ],
               ),
               child: Text(
-                category == 'All' ? allKey : category, // 🔥 ترجمة "الكل" فقط
+                isAll ? allKey : categoryKey, // عرض الترجمة للـ "الكل"
                 style: TextStyle(
-                  color: isSelected ? Colors.black : Colors.grey,
+                  color: isSelected ? Colors.black : Colors.grey[700],
                   fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -131,7 +141,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     );
   }
 
-  // كارت العنصر البارز
+  // 🔥 بناء كارت العنصر البارز (Featured Item Card)
   Widget _buildFeaturedCard(MenuItem item, AppLocalizations localizations) {
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -205,7 +215,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     );
   }
 
-  // كارت العنصر العادي
+  // 🔥 بناء كارت العنصر العادي (Grid/Horizontal List Item)
   Widget _buildMenuItemCard(MenuItem item) {
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -225,6 +235,16 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                 height: 140,
                 width: 160,
                 fit: BoxFit.cover,
+                // 💡 إضافة placeholder عند الخطأ لضمان استمرارية التصميم
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 140,
+                  width: 160,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Icon(Icons.fastfood, color: Colors.grey[600]),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -260,9 +280,9 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    final String allKey = localizations.all;
+    final String allKey = localizations.all; // القيمة المترجمة لـ "الكل"
 
-    // 🔥 تصحيح: إذا كان 'All' هو الفئة المحددة، استخدم القيمة المترجمة
+    // 💡 تحديث الفئة المختارة إلى القيمة المترجمة (للاستخدام في الفلترة)
     if (_selectedCategory == 'All') {
       _selectedCategory = allKey;
     }
@@ -275,10 +295,10 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     return Scaffold(
       backgroundColor: _lightBackground,
       appBar: AppBar(
+        // 🔥 تصميم الـ AppBar باللون الغامق
         backgroundColor: _darkColor,
         elevation: 0,
         centerTitle: true,
-        // 🔥 اسم المتجر في العنوان
         title: Text(
           displayStoreName,
           style: const TextStyle(
@@ -287,11 +307,11 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
             fontSize: 18,
           ),
         ),
-        foregroundColor: _goldColor,
+        foregroundColor: _goldColor, // لون زر الرجوع
         actions: [
           // زر السلة
           IconButton(
-            icon: Icon(Icons.shopping_bag_outlined, color: Colors.white),
+            icon: const Icon(Icons.shopping_bag_outlined, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
@@ -311,7 +331,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🔥 شريط البحث في الأعلى 🔥
+              // 🔥 البانر العلوي الذي يحتوي على شريط البحث
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(
@@ -343,35 +363,32 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                       !snapshot.hasData ||
                       snapshot.data == null ||
                       snapshot.data!.isEmpty) {
-                    if (snapshot.data == null || snapshot.data!.isEmpty) {
-                      return Center(
-                        child: Text(
-                          localizations.noMenuItems,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      );
-                    }
-
+                    // ❌ معالجة حالة الخطأ
                     return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            localizations.connectionError,
-                            style: TextStyle(color: Colors.red),
-                          ),
-                          TextButton(
-                            onPressed: _refreshData,
-                            child: Text(localizations.retry),
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(40.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              snapshot.hasError
+                                  ? localizations.connectionError
+                                  : localizations.noMenuItems,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                            TextButton(
+                              onPressed: _refreshData,
+                              child: Text(localizations.retry),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
 
                   final allItems = snapshot.data!;
 
-                  // 1. استخراج الفئات المتاحة من عناصر التاجر
+                  // 1. استخراج الفئات المتاحة
                   Set<String> categoryKeys = {'All'};
                   for (var item in allItems) {
                     categoryKeys.add(item.category);
@@ -389,7 +406,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                     return Center(
                       child: Text(
                         localizations.noItemsFound,
-                        style: TextStyle(color: Colors.grey),
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     );
                   }
@@ -401,11 +418,11 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                       _buildCategoryList(categoryKeys.toList(), allKey),
                       const SizedBox(height: 20),
 
-                      // العنصر المميز (Featured)
+                      // العنصر المميز (Featured) - هو أول عنصر في القائمة
                       _buildFeaturedCard(filteredItems.first, localizations),
                       const SizedBox(height: 25),
 
-                      // عنوان "الأكثر شيوعاً" أو الفئة
+                      // عنوان "الأكثر شيوعاً" أو الفئة المختارة
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(
@@ -421,13 +438,13 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                       ),
                       const SizedBox(height: 15),
 
-                      // 🔥🔥 قائمة العناصر الأفقية المتبقية (تجاهل العنصر الأول المميز) 🔥🔥
+                      // 🔥🔥 قائمة العناصر الأفقية المتبقية 🔥🔥
                       SizedBox(
-                        height: 220,
+                        height: 220, // ارتفاع ثابت للقائمة الأفقية
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.only(left: 20),
-                          // itemCount: إجمالي العناصر ما عدا العنصر الأول
+                          // إجمالي العناصر ما عدا العنصر الأول
                           itemCount: filteredItems.length > 1
                               ? filteredItems.length - 1
                               : 0,
