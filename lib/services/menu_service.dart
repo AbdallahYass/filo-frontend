@@ -12,8 +12,6 @@ class MenuService {
       : 'https://filo-menu.onrender.com/api';
   final String _apiKey = 'FiloSecretKey202512341234';
 
-  // 🔥🔥🔥 تم إضافة تعليق لتجاهل تحذير عدم الاستخدام 🔥🔥🔥
-  // إذا كنت تخطط لاستخدام التوكن لاحقاً، ابقِ الدالة هنا.
   // ignore: unused_element
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,19 +34,32 @@ class MenuService {
 
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
+
+        // 🔥🔥 إضافة طباعة للمراجعة (Debugging) 🔥🔥
+        if (kDebugMode && body.isNotEmpty) {
+          print(
+            "API MENU RESPONSE (First Item): ${body[0]['title']} (${body.length} items)",
+          );
+        }
+        // 🔥🔥
+
         if (body.isEmpty) return _getMockMenuItems(vendorId);
         return body.map((json) => MenuItem.fromJson(json)).toList();
       }
     } catch (e) {
-      if (kDebugMode) print("MenuService Error: $e");
+      if (kDebugMode) print("MenuService Network/Parsing Error: $e");
     }
     return _getMockMenuItems(vendorId);
   }
 
   // ==================================================
-  // 2. دالة Mock Data
+  // 2. دالة Mock Data (المعدلة)
   // ==================================================
   List<MenuItem> _getMockMenuItems(String? vendorId) {
+    if (kDebugMode) {
+      print("-> Using Mock Menu Data for vendor: $vendorId");
+    }
+
     if (vendorId == 'v1' || vendorId == 'v2') {
       // بيانات مخصصة للتاجر الأول (مطعم)
       final mockData = [
@@ -61,6 +72,7 @@ class MenuService {
           "imageUrl":
               "https://placehold.co/400x300/C5A028/FFFFFF?text=Featured%20Dish",
           "isAvailable": true,
+          "vendorId": "v1", // 🔥🔥 تمت الإضافة 🔥🔥
         },
         {
           "_id": "i102",
@@ -70,6 +82,7 @@ class MenuService {
           "category": "Salads",
           "imageUrl": "https://placehold.co/400x300/C5A028/FFFFFF?text=Salad",
           "isAvailable": true,
+          "vendorId": "v1", // 🔥🔥 تمت الإضافة 🔥🔥
         },
         {
           "_id": "i103",
@@ -79,6 +92,7 @@ class MenuService {
           "category": "Drinks",
           "imageUrl": "https://placehold.co/400x300/C5A028/FFFFFF?text=Drink",
           "isAvailable": true,
+          "vendorId": "v2", // 🔥🔥 تمت الإضافة 🔥🔥
         },
       ];
       return mockData
@@ -91,6 +105,7 @@ class MenuService {
               'category': json['category'],
               'imageUrl': json['imageUrl'],
               'isAvailable': json['isAvailable'],
+              'vendorId': json['vendorId'], // 🔥🔥 تمت الإضافة 🔥🔥
             }),
           )
           .toList();

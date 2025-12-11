@@ -5,7 +5,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names
 
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
+import '/l10n/app_localizations.dart';
 import '../../models/user_model.dart';
 import '../../models/menu_item.dart';
 import '../../services/menu_service.dart';
@@ -13,7 +13,7 @@ import 'item_detail_screen.dart';
 import '../cart_screen.dart';
 
 class VendorMenuScreen extends StatefulWidget {
-  final UserModel vendor; // 🔥 التاجر الذي تم اختياره
+  final UserModel vendor;
 
   const VendorMenuScreen({super.key, required this.vendor});
 
@@ -26,8 +26,8 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
   late Future<List<MenuItem>> _menuItemsFuture;
   final MenuService _menuService = MenuService();
 
-  // لفلترة العناصر ضمن قائمة التاجر
-  String _selectedCategory = 'All'; // القيمة الافتراضية قبل الترجمة
+  // 💡 نستخدم المفتاح الحقيقي 'All' للتخزين، و localizations.all للعرض
+  String _selectedCategory = 'All';
 
   // 🎨 تعريف الألوان والثوابت 🎨
   final Color _goldColor = const Color(0xFFC5A028);
@@ -37,7 +37,6 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
   @override
   void initState() {
     super.initState();
-    // 🚀 جلب قائمة الطعام الخاصة بالتاجر باستخدام ID التاجر
     _menuItemsFuture = _menuService.fetchMenu(vendorId: widget.vendor.id);
   }
 
@@ -55,6 +54,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
   // بناء شريط البحث العلوي (نفس تصميم الشاشات السابقة)
   Widget _buildSearchBar(AppLocalizations localizations) {
     return Container(
+      width: double.infinity,
       height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -96,20 +96,17 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
         padding: const EdgeInsets.only(left: 20),
         itemCount: categories.length,
         itemBuilder: (context, index) {
-          // 💡 يتم تمرير مفاتيح الفئات (الاسم الإنجليزي أو المفتاح)
-          final categoryKey = categories[index];
-          // إذا كان المفتاح هو 'All'، نستخدم القيمة المترجمة للمقارنة والعرض
-          final isAll = categoryKey == 'All';
+          final String actualKey = categories[index];
+          final String displayLabel = actualKey == 'All' ? allKey : actualKey;
 
-          final isSelected = isAll
-              ? _selectedCategory == allKey
-              : _selectedCategory == categoryKey;
+          // التحقق من الاختيار يتم مقابل المفتاح الحقيقي المخزن
+          final isSelected = _selectedCategory == actualKey;
 
           return GestureDetector(
             onTap: () {
               setState(() {
-                // نحفظ المفتاح الأصلي ('All') أو مفتاح الفئة
-                _selectedCategory = isAll ? allKey : categoryKey;
+                // 🔥🔥 نحفظ المفتاح الحقيقي (Category Key) 🔥🔥
+                _selectedCategory = actualKey;
               });
             },
             child: Container(
@@ -127,7 +124,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                 ],
               ),
               child: Text(
-                isAll ? allKey : categoryKey, // عرض الترجمة للـ "الكل"
+                displayLabel,
                 style: TextStyle(
                   color: isSelected ? Colors.black : Colors.grey[700],
                   fontWeight: FontWeight.bold,
@@ -395,7 +392,9 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                   }
 
                   // 2. فلترة العناصر بناءً على الفئة المختارة
-                  final filteredItems = _selectedCategory == allKey
+                  final filteredItems =
+                      _selectedCategory ==
+                          'All' // 🔥 تم التعديل
                       ? allItems
                       : allItems
                             .where((item) => item.category == _selectedCategory)
@@ -426,7 +425,8 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(
-                          _selectedCategory == allKey
+                          _selectedCategory ==
+                                  'All' // 🔥 تم التعديل
                               ? localizations.popularNow
                               : _selectedCategory,
                           style: const TextStyle(
