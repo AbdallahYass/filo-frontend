@@ -65,7 +65,6 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
           const SizedBox(width: 15),
           Expanded(
             child: TextField(
-              // 💡 يمكن إضافة متحكم بحث هنا إذا لزم الأمر، حاليًا هو placeholder
               decoration: InputDecoration(
                 hintText: localizations.searchHint,
                 hintStyle: const TextStyle(color: Colors.grey),
@@ -87,7 +86,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
     );
   }
 
-  // بناء قائمة الفئات الأفقية للتصفية
+  // بناء قائمة الفئات الأفقية للتصفية (بدون تغيير)
   Widget _buildCategoryList(List<String> categories, String allKey) {
     return SizedBox(
       height: 40,
@@ -99,13 +98,11 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
           final String actualKey = categories[index];
           final String displayLabel = actualKey == 'All' ? allKey : actualKey;
 
-          // التحقق من الاختيار يتم مقابل المفتاح الحقيقي المخزن
           final isSelected = _selectedCategory == actualKey;
 
           return GestureDetector(
             onTap: () {
               setState(() {
-                // 🔥🔥 نحفظ المفتاح الحقيقي (Category Key) 🔥🔥
                 _selectedCategory = actualKey;
               });
             },
@@ -220,8 +217,8 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
         MaterialPageRoute(builder: (context) => ItemDetailScreen(item: item)),
       ),
       child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 15),
+        // تمت إزالة العرض الثابت (width: 160) ليتناسب مع الشبكة
+        // تمت إزالة الهامش الجانبي (margin: const EdgeInsets.only(right: 15))
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -230,12 +227,12 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
               child: Image.network(
                 item.imageUrl,
                 height: 140,
-                width: 160,
+                width: double.infinity, // ليمتد بكامل عرض العمود
                 fit: BoxFit.cover,
                 // 💡 إضافة placeholder عند الخطأ لضمان استمرارية التصميم
                 errorBuilder: (context, error, stackTrace) => Container(
                   height: 140,
-                  width: 160,
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(20),
@@ -281,7 +278,7 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
 
     // 💡 تحديث الفئة المختارة إلى القيمة المترجمة (للاستخدام في الفلترة)
     if (_selectedCategory == 'All') {
-      _selectedCategory = allKey;
+      _selectedCategory = 'All';
     }
 
     final String displayStoreName =
@@ -410,6 +407,12 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                     );
                   }
 
+                  // 🔥🔥🔥 تنفيذ التعديل المطلوب: Grid View بدلاً من القائمة الأفقية 🔥🔥🔥
+                  final featuredItem = filteredItems.first;
+                  final remainingItems = filteredItems.length > 1
+                      ? filteredItems.sublist(1)
+                      : <MenuItem>[];
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -417,16 +420,15 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                       _buildCategoryList(categoryKeys.toList(), allKey),
                       const SizedBox(height: 20),
 
-                      // العنصر المميز (Featured) - هو أول عنصر في القائمة
-                      _buildFeaturedCard(filteredItems.first, localizations),
+                      // 1. العنصر المميز (Featured)
+                      _buildFeaturedCard(featuredItem, localizations),
                       const SizedBox(height: 25),
 
-                      // عنوان "الأكثر شيوعاً" أو الفئة المختارة
+                      // 2. عنوان "الأكثر شيوعاً" أو الفئة المختارة
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: Text(
-                          _selectedCategory ==
-                                  'All' // 🔥 تم التعديل
+                          _selectedCategory == 'All'
                               ? localizations.popularNow
                               : _selectedCategory,
                           style: const TextStyle(
@@ -438,23 +440,33 @@ class _VendorMenuScreenState extends State<VendorMenuScreen> {
                       ),
                       const SizedBox(height: 15),
 
-                      // 🔥🔥 قائمة العناصر الأفقية المتبقية 🔥🔥
-                      SizedBox(
-                        height: 220, // ارتفاع ثابت للقائمة الأفقية
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.only(left: 20),
-                          // إجمالي العناصر ما عدا العنصر الأول
-                          itemCount: filteredItems.length > 1
-                              ? filteredItems.length - 1
-                              : 0,
-                          itemBuilder: (context, index) {
-                            // نبدأ من العنصر الثاني في القائمة (index + 1)
-                            final item = filteredItems[index + 1];
-                            return _buildMenuItemCard(item);
-                          },
-                        ),
-                      ),
+                      // 🔥🔥 3. Grid View للعناصر المتبقية (بدلاً من القائمة الأفقية) 🔥🔥
+                      remainingItems.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: GridView.builder(
+                                shrinkWrap: true,
+                                physics:
+                                    const NeverScrollableScrollPhysics(), // ليعمل داخل SingleChildScrollView
+                                itemCount: remainingItems.length,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2, // عمودين
+                                      crossAxisSpacing: 15,
+                                      mainAxisSpacing: 15,
+                                      childAspectRatio:
+                                          0.7, // ليتناسب مع ارتفاع الكارت (تقريباً)
+                                    ),
+                                itemBuilder: (context, index) {
+                                  return _buildMenuItemCard(
+                                    remainingItems[index],
+                                  );
+                                },
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                       const SizedBox(height: 20),
                     ],
                   );
