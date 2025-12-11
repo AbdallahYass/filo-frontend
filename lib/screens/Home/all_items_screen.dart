@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
-import '../models/menu_item.dart';
+import '../../models/menu_item.dart';
 import 'item_detail_screen.dart';
 
 class AllItemsScreen extends StatefulWidget {

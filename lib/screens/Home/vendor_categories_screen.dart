@@ -11,7 +11,6 @@ import '../models/category_model.dart';
 import '../services/category_service.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
-//import 'settings_screen.dart';
 import 'vendor_list_screen.dart';
 
 // 🔥🔥 تصحيح اسم الكلاس ليتوافق مع الملف 🔥🔥
@@ -32,14 +31,14 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
 
-  // 🔥🔥🔥 مصفوفة الألوان (بيضاء) 🔥🔥🔥
+  // 🔥🔥🔥 مصفوفة الألوان (سوداء، تم تثبيتها من الكود الأخير) 🔥🔥🔥
   final List<Color> _categoryColors = const [
-    Color(0xFFFFFFFF),
-    Color(0xFFFFFFFF),
-    Color(0xFFFFFFFF),
-    Color(0xFFFFFFFF),
-    Color(0xFFFFFFFF),
-    Color(0xFFFFFFFF),
+    Color(0xFF000000), // قد تحتاج لتغييرها إذا كانت الخلفية داكنة
+    Color(0xFF000000),
+    Color(0xFF000000),
+    Color(0xFF000000),
+    Color(0xFF000000),
+    Color(0xFF000000),
   ];
 
   @override
@@ -68,8 +67,8 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
 
   // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
-    // نستخدم rootNavigator: false إذا كنا نريد إبقاء الشريط ثابتاً،
-    // ولكن الطريقة الأكثر نظافة هي الاعتماد على Navigator العادي داخل Shell
+    // التنقل القياسي (Push) سيجعل شريط التنقل السفلي يختفي،
+    // لكنه يتوافق مع Navigator الداخلي للـ Wrapper.
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -138,8 +137,13 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     AppLocalizations localizations,
   ) {
     final String translatedName = _getCategoryDisplayName(category, context);
+
+    // 🔥 هنا تم استخدام اللون الأسود الذي أرسلته لـ _categoryColors
     final Color cardColor = _categoryColors[index % _categoryColors.length];
-    final Color contentColor = Colors.black87;
+
+    // إذا كانت خلفية الكارد سوداء، فيجب أن يكون النص أبيض (لتفادي مشكلة اللون)
+    // وبما أنك استخدمت اللون الأسود في الكود الأخير، سأفترض أنك تريد اللون الأبيض للمحتوى
+    final Color contentColor = Colors.white;
     final Color iconColor = _goldColor;
 
     // 💡 دالة تحويل اسم الأيقونة النصي
@@ -176,7 +180,7 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
-                color: contentColor,
+                color: contentColor, // تم تعديله ليكون أبيض
               ),
             ),
           ],
@@ -231,9 +235,10 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
-    // 🔥🔥 إعادة هيكلة: هذا الكلاس أصبح يمثل محتوى الشاشة (Content Widget) 🔥🔥
+    // 🔥🔥 هذا هو محتوى التبويب الداخلي (Content Widget) 🔥🔥
     return Scaffold(
       backgroundColor: _lightBackground,
+      // الـ AppBar مخصص لهذا المحتوى
       appBar: AppBar(
         backgroundColor: _darkColor,
         elevation: 0,
