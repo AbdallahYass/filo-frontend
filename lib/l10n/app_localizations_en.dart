@@ -439,4 +439,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get confirmUpdateMessage =>
       'Are you sure you want to save these changes?';
+
+  @override
+  String get noResultsFound => 'No results found for your search criteria.';
+
+  @override
+  String get searchVendorHint => 'Search vendors...';
 }

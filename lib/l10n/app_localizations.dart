@@ -913,6 +913,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to save these changes?'**
   String get confirmUpdateMessage;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found for your search criteria.'**
+  String get noResultsFound;
+
+  /// No description provided for @searchVendorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search vendors...'**
+  String get searchVendorHint;
 }
 
 class _AppLocalizationsDelegate

@@ -187,5 +187,10 @@
   "confirmUpdate": "Confirm Profile Update",
     "confirmUpdateMessage": "Are you sure you want to save these changes?",
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "noResultsFound": "No results found for your search criteria.",
+    "searchVendorHint": "Search vendors...",
+ "noResultsFound": "No results found for your search criteria."
+
+    
 }

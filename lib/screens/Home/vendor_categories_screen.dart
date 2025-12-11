@@ -6,14 +6,13 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart';
+import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
 import '../../models/category_model.dart';
 import '../../services/category_service.dart';
 import '../../services/cart_service.dart';
 import '../cart_screen.dart';
 import 'vendor_list_screen.dart';
 
-// 🔥🔥 تصحيح اسم الكلاس ليتوافق مع الملف 🔥🔥
 class VendorCategoriesScreen extends StatefulWidget {
   const VendorCategoriesScreen({super.key});
 
@@ -22,7 +21,9 @@ class VendorCategoriesScreen extends StatefulWidget {
 }
 
 class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
-  // ❌ حذف _currentIndex لأنه يتم إدارته في الـ Wrapper
+  // 🔥🔥 1. إضافة متحكم البحث وحالة الاستعلام 🔥🔥
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   late Future<List<CategoryModel>> _categoriesFuture;
   final CategoryService _categoryService = CategoryService();
@@ -31,9 +32,8 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
   final Color _darkColor = const Color(0xFF1A1A1A);
   final Color _lightBackground = const Color(0xFFF9F9F9);
 
-  // 🔥🔥🔥 مصفوفة الألوان (سوداء، تم تثبيتها من الكود الأخير) 🔥🔥🔥
   final List<Color> _categoryColors = const [
-    Color(0xFF000000), // قد تحتاج لتغييرها إذا كانت الخلفية داكنة
+    Color(0xFF000000),
     Color(0xFF000000),
     Color(0xFF000000),
     Color(0xFF000000),
@@ -46,6 +46,9 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     super.initState();
     _categoriesFuture = _categoryService.fetchCategories();
 
+    // 🔥🔥 ربط المستمع لـ TextField 🔥🔥
+    _searchController.addListener(_onSearchChanged);
+
     if (kIsWeb) {
       final uri = Uri.base;
       if (uri.queryParameters.containsKey('table')) {
@@ -57,7 +60,19 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     }
   }
 
-  // ❌ حذف _onItemTapped لأنه يتم إدارته في الـ Wrapper
+  // 🔥🔥 دالة تحدث حالة البحث 🔥🔥
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _refreshData() async {
     setState(() {
@@ -65,10 +80,7 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     });
   }
 
-  // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
-    // التنقل القياسي (Push) سيجعل شريط التنقل السفلي يختفي،
-    // لكنه يتوافق مع Navigator الداخلي للـ Wrapper.
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -80,9 +92,6 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     );
   }
 
-  // ----------------------------------------------------
-  // 🔥🔥 الدالة الجديدة: تحديد الاسم بناءً على اللغة 🔥🔥
-  // ----------------------------------------------------
   String _getCategoryDisplayName(CategoryModel category, BuildContext context) {
     final currentLocale = AppLocalizations.of(context)!.localeName;
 
@@ -109,6 +118,7 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
           const SizedBox(width: 15),
           Expanded(
             child: TextField(
+              controller: _searchController, // 🔥🔥 ربط المتحكم 🔥🔥
               decoration: InputDecoration(
                 hintText: localizations.searchHint,
                 hintStyle: const TextStyle(color: Colors.grey),
@@ -138,15 +148,10 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
   ) {
     final String translatedName = _getCategoryDisplayName(category, context);
 
-    // 🔥 هنا تم استخدام اللون الأسود الذي أرسلته لـ _categoryColors
     final Color cardColor = _categoryColors[index % _categoryColors.length];
-
-    // إذا كانت خلفية الكارد سوداء، فيجب أن يكون النص أبيض (لتفادي مشكلة اللون)
-    // وبما أنك استخدمت اللون الأسود في الكود الأخير، سأفترض أنك تريد اللون الأبيض للمحتوى
     final Color contentColor = Colors.white;
     final Color iconColor = _goldColor;
 
-    // 💡 دالة تحويل اسم الأيقونة النصي
     IconData getIconData(String key) {
       switch (key) {
         case 'restaurant':
@@ -180,7 +185,7 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
-                color: contentColor, // تم تعديله ليكون أبيض
+                color: contentColor,
               ),
             ),
           ],
@@ -228,6 +233,35 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     );
   }
 
+  // دالة مساعدة لمعالجة حالة الخطأ
+  Widget _handleFutureError(
+    AsyncSnapshot<List<CategoryModel>> snapshot,
+    AppLocalizations localizations,
+  ) {
+    final categories = snapshot.data;
+    if (categories != null && categories.isNotEmpty) {
+      return _buildCategoryGridView(categories, localizations);
+    }
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              localizations.connectionError,
+              style: const TextStyle(color: Colors.red),
+            ),
+            TextButton(
+              onPressed: _refreshData,
+              child: Text(localizations.retry),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ----------------------------------------------------
   // 🔨 دالة البناء الرئيسية (Build) 🔨
   // ----------------------------------------------------
@@ -238,7 +272,6 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     // 🔥🔥 هذا هو محتوى التبويب الداخلي (Content Widget) 🔥🔥
     return Scaffold(
       backgroundColor: _lightBackground,
-      // الـ AppBar مخصص لهذا المحتوى
       appBar: AppBar(
         backgroundColor: _darkColor,
         elevation: 0,
@@ -382,34 +415,44 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
                   } else if (snapshot.hasError ||
                       !snapshot.hasData ||
                       snapshot.data!.isEmpty) {
-                    final categories = snapshot.data;
+                    return _handleFutureError(snapshot, localizations);
+                  }
 
-                    if (categories != null && categories.isNotEmpty) {
-                      return _buildCategoryGridView(categories, localizations);
-                    }
+                  final allCategories = snapshot.data!;
 
+                  // 🔥🔥 2. تطبيق فلترة البحث على القائمة 🔥🔥
+                  final filteredCategories = allCategories.where((category) {
+                    final searchQuery = _searchQuery; // تم تعريفها في الـ State
+
+                    final nameAr = category.nameAr.toLowerCase();
+                    final nameEn = category.nameEn.toLowerCase();
+                    final key = category.key.toLowerCase();
+
+                    // البحث في الاسم العربي أو الإنجليزي أو المفتاح (key)
+                    return nameAr.contains(searchQuery) ||
+                        nameEn.contains(searchQuery) ||
+                        key.contains(searchQuery);
+                  }).toList();
+
+                  if (filteredCategories.isEmpty && _searchQuery.isNotEmpty) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(40.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              localizations.connectionError,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                            TextButton(
-                              onPressed: _refreshData,
-                              child: Text(localizations.retry),
-                            ),
-                          ],
+                        child: Text(
+                          localizations.noResultsFound,
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       ),
                     );
+                  } else if (filteredCategories.isEmpty) {
+                    // في حالة الخطأ، نعود إلى دالة الخطأ
+                    return _handleFutureError(snapshot, localizations);
                   }
 
-                  final categories = snapshot.data!;
-                  return _buildCategoryGridView(categories, localizations);
+                  return _buildCategoryGridView(
+                    filteredCategories,
+                    localizations,
+                  );
                 },
               ),
             ],

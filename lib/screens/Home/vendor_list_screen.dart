@@ -24,19 +24,40 @@ class VendorListScreen extends StatefulWidget {
 }
 
 class _VendorListScreenState extends State<VendorListScreen> {
-  // 🔥🔥🔥 حالة جلب البيانات 🔥🔥🔥
+  // 🔥🔥🔥 حالة البحث والبيانات 🔥🔥🔥
   final VendorService _vendorService = VendorService();
   late Future<List<UserModel>> _vendorsFuture;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFFF9F9F9);
+  final Color _darkColor = const Color(
+    0xFF1A1A1A,
+  ); // لون موحد للخلفية الداكنة في شريط البحث
   final Color _cardColor = Colors.white;
 
   @override
   void initState() {
     super.initState();
-    // 🚀 بدء جلب التجار بناءً على مفتاح الفئة
     _vendorsFuture = _vendorService.fetchVendorsByCategory(widget.categoryKey);
+    // 🚀 ربط المستمع لتفعيل الفلترة عند الكتابة
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  // 🔥🔥 دالة تحدث حالة البحث 🔥🔥
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _refreshData() async {
@@ -50,6 +71,42 @@ class _VendorListScreenState extends State<VendorListScreen> {
   // ----------------------------------------------------
   // 🎨 دوال بناء الواجهة المساعدة 🎨
   // ----------------------------------------------------
+
+  // 🔥 بناء شريط البحث العلوي
+  Widget _buildSearchBar(AppLocalizations localizations) {
+    return Container(
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 15),
+          Expanded(
+            child: TextField(
+              controller: _searchController, // 🔥 ربط المتحكم
+              decoration: InputDecoration(
+                hintText: localizations
+                    .searchVendorHint, // 💡 افترضنا وجود مفتاح ترجمة جديد
+                hintStyle: const TextStyle(color: Colors.grey),
+                border: InputBorder.none,
+              ),
+            ),
+          ),
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: _goldColor,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(Icons.search, color: Colors.black),
+          ),
+        ],
+      ),
+    );
+  }
 
   // بناء كارت التاجر/المتجر
   Widget _buildVendorCard(UserModel vendor, AppLocalizations localizations) {
@@ -87,7 +144,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // صورة التاجر/اللوجو
+              // ... (كود اللوجو والصورة) ...
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.network(
@@ -109,7 +166,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // اسم المتجر
+                    // ... (اسم المتجر ووصفه وحالته) ...
                     Text(
                       storeName,
                       style: const TextStyle(
@@ -120,7 +177,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    // وصف المتجر
                     Text(
                       description,
                       style: TextStyle(color: Colors.grey[600], fontSize: 13),
@@ -128,7 +184,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    // حالة المتجر (مفتوح/مغلق)
                     Row(
                       children: [
                         Icon(
@@ -174,61 +229,124 @@ class _VendorListScreenState extends State<VendorListScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        color: _goldColor,
-        child: FutureBuilder<List<UserModel>>(
-          // 🔥 استخدام FutureBuilder لجلب البيانات ديناميكياً 🔥
-          future: _vendorsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(color: _goldColor),
-              );
-            } else if (snapshot.hasError ||
-                !snapshot.hasData ||
-                snapshot.data == null) {
-              // رسالة خطأ الاتصال
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      localizations.connectionError,
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    TextButton(
-                      onPressed: _refreshData,
-                      child: Text(localizations.retry),
-                    ),
-                  ],
+      // 🔥 الآن يحتوي الـ Body على شريط البحث في الأعلى 🔥
+      body: Column(
+        children: [
+          // شريط البحث المدمج في الجزء العلوي من الـ Body
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(
+              left: 15,
+              right: 15,
+              bottom: 10,
+              top: 10,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white, // خلفية بيضاء لتفريقها عن الـ darkBackground
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                  offset: const Offset(0, 2),
                 ),
-              );
-            } else if (snapshot.data!.isEmpty) {
-              // لا يوجد تجار متاحون في هذه الفئة
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Text(
-                    localizations.noVendorsFound(widget.categoryName),
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              );
-            }
+              ],
+            ),
+            child: _buildSearchBar(localizations),
+          ),
 
-            // ✅ عرض قائمة التجار
-            final vendors = snapshot.data!;
-            return ListView.builder(
-              padding: const EdgeInsets.all(15),
-              itemCount: vendors.length,
-              itemBuilder: (context, index) {
-                return _buildVendorCard(vendors[index], localizations);
-              },
-            );
-          },
-        ),
+          // 🔥 الجزء المتبقي (FutureBuilder & RefreshIndicator) 🔥
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _refreshData,
+              color: _goldColor,
+              child: FutureBuilder<List<UserModel>>(
+                future: _vendorsFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(color: _goldColor),
+                    );
+                  } else if (snapshot.hasError ||
+                      !snapshot.hasData ||
+                      snapshot.data == null) {
+                    // رسالة خطأ الاتصال
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            localizations.connectionError,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          TextButton(
+                            onPressed: _refreshData,
+                            child: Text(localizations.retry),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final allVendors = snapshot.data!;
+
+                  // 🔥🔥 تطبيق فلترة البحث 🔥🔥
+                  final filteredVendors = allVendors.where((vendor) {
+                    final name =
+                        (vendor.storeInfo?.storeName ?? vendor.name ?? '')
+                            .toLowerCase();
+                    final description = (vendor.storeInfo?.description ?? '')
+                        .toLowerCase();
+
+                    return name.contains(_searchQuery) ||
+                        description.contains(_searchQuery);
+                  }).toList();
+
+                  if (filteredVendors.isEmpty && _searchQuery.isNotEmpty) {
+                    // لا يوجد نتائج للبحث الحالي
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          localizations
+                              .noResultsFound, // 💡 يجب إضافة هذا المفتاح لملفات arb
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (filteredVendors.isEmpty) {
+                    // لا يوجد تجار متاحون في هذه الفئة
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Text(
+                          localizations.noVendorsFound(widget.categoryName),
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    );
+                  }
+
+                  // ✅ عرض قائمة التجار المفلترة
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(15),
+                    itemCount: filteredVendors.length,
+                    itemBuilder: (context, index) {
+                      return _buildVendorCard(
+                        filteredVendors[index],
+                        localizations,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

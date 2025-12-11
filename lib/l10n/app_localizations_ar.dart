@@ -434,4 +434,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get confirmUpdateMessage =>
       'هل أنت متأكد من أنك تريد حفظ هذه التغييرات؟';
+
+  @override
+  String get noResultsFound =>
+      'لم يتم العثور على أي نتائج تتطابق مع معايير البحث.';
+
+  @override
+  String get searchVendorHint => 'البحث عن التجار...';
 }
