@@ -3,7 +3,8 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names
 
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
+// نستخدم مسار الحزمة الكامل لضمان عدم وجود مشاكل في Vercel/Cache
+import '/l10n/app_localizations.dart';
 import '../../models/user_model.dart';
 import '../../services/vendor_service.dart';
 import 'vendor_menu_screen.dart';
@@ -30,7 +31,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
   String _searchQuery = '';
 
   String _selectedSortKey = 'default';
-  late final List<Map<String, String>> _sortOptions;
+  // 🔥🔥 تم تعديل هذا من late final إلى late فقط 🔥🔥
+  late List<Map<String, String>> _sortOptions;
 
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(0xFFF9F9F9);
@@ -48,6 +50,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
     setState(() {
       _searchQuery = _searchController.text.toLowerCase();
     });
+    // لا نحتاج لـ _refreshData() هنا، لأن الفلترة تتم على الواجهة (Client-side)
   }
 
   @override
@@ -58,6 +61,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   Future<void> _refreshData() async {
+    // 🔥 هذا سيعيد جلب البيانات من الخادم مع تطبيق خيار الفرز
     setState(() {
       _vendorsFuture = _vendorService.fetchVendorsByCategory(
         widget.categoryKey,
@@ -105,6 +109,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   Widget _buildSortDropdown(AppLocalizations localizations) {
+    // 🔥 تهيئة _sortOptions هنا (آمن الآن لأنها ليست final)
     _sortOptions = [
       {'key': 'default', 'label': localizations.sortByDefault},
       {'key': 'popular', 'label': localizations.sortByPopular},
@@ -138,7 +143,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
               setState(() {
                 _selectedSortKey = newKey;
               });
-              _refreshData();
+              _refreshData(); // 🔥 إعادة جلب البيانات بالفرز الجديد
             }
           },
         ),
