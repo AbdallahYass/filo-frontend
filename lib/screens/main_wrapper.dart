@@ -4,8 +4,8 @@
 
 import 'package:flutter/material.dart';
 //import '/l10n/app_localizations.dart';
-import 'vendor_categories_screen.dart';
-import 'settings_screen.dart';
+import 'Home/vendor_categories_screen.dart';
+import 'settings/settings_screen.dart';
 
 //
 class MainWrapper extends StatefulWidget {
