@@ -7,10 +7,10 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
 import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
-import '../../services/auth_service.dart';
-import 'main_wrapper.dart';
-import 'auth/login_screen.dart';
-import 'settings/location_service.dart';
+import '../../../services/auth_service.dart';
+import '../main_wrapper.dart';
+import 'login_screen.dart';
+import '../settings/location_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

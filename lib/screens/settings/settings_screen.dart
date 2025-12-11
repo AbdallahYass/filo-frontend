@@ -7,11 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import '/l10n/app_localizations.dart';
-import '../l10n/locale_provider.dart';
-import 'auth/login_screen.dart';
+import '../../l10n/locale_provider.dart';
+import '../auth/login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
-import 'address_management/address_list_screen.dart';
+import '../address_management/address_list_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

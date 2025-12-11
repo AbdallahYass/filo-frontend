@@ -4,8 +4,8 @@
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';
-import '../models/user_model.dart';
-import '../services/vendor_service.dart';
+import '../../models/user_model.dart';
+import '../../services/vendor_service.dart';
 import 'vendor_menu_screen.dart';
 
 class VendorListScreen extends StatefulWidget {

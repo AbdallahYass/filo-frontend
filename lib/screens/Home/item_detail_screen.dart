@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
-import '../models/menu_item.dart';
-import '../services/cart_service.dart';
+import '../../models/menu_item.dart';
+import '../../services/cart_service.dart';
 
 class ItemDetailScreen extends StatefulWidget {
   final MenuItem item;

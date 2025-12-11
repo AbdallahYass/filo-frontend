@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
 import '../models/cart_item.dart';
 import '../services/cart_service.dart';
-import 'item_detail_screen.dart';
+import 'Home/item_detail_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});

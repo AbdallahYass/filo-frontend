@@ -4,11 +4,11 @@
 
 import 'package:flutter/material.dart';
 import '/l10n/app_localizations.dart';
-import '../models/user_model.dart';
-import '../models/menu_item.dart';
-import '../services/menu_service.dart';
+import '../../models/user_model.dart';
+import '../../models/menu_item.dart';
+import '../../services/menu_service.dart';
 import 'item_detail_screen.dart';
-import 'cart_screen.dart';
+import '../cart_screen.dart';
 
 class VendorMenuScreen extends StatefulWidget {
   final UserModel vendor; // 🔥 التاجر الذي تم اختياره
