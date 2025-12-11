@@ -246,7 +246,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         const SizedBox(width: 8),
                         // عدد المراجعات
                         Text(
-                          '(${reviews} ${localizations.reviews})', // نص مترجم
+                          '($reviews ${localizations.reviews})', // نص مترجم
                           style: TextStyle(color: Colors.grey, fontSize: 13),
                         ),
                       ],
