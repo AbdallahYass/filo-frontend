@@ -64,7 +64,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     String? token = prefs.getString('token');
     final localizations = AppLocalizations.of(context)!;
 
-    final url = Uri.parse('https://www.filomenu.com/api/user/update-profile');
+    final url = Uri.parse(
+      'https://filo-menu.onrender.com/api/user/update-profile',
+    );
 
     try {
       final response = await http.put(
