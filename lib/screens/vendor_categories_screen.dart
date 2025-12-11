@@ -11,7 +11,7 @@ import '../models/category_model.dart';
 import '../services/category_service.dart';
 import '../services/cart_service.dart';
 import 'cart_screen.dart';
-import 'settings_screen.dart';
+//import 'settings_screen.dart';
 import 'vendor_list_screen.dart';
 
 // 🔥🔥 تصحيح اسم الكلاس ليتوافق مع الملف 🔥🔥
@@ -23,7 +23,7 @@ class VendorCategoriesScreen extends StatefulWidget {
 }
 
 class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
-  int _currentIndex = 0;
+  // ❌ حذف _currentIndex لأنه يتم إدارته في الـ Wrapper
 
   late Future<List<CategoryModel>> _categoriesFuture;
   final CategoryService _categoryService = CategoryService();
@@ -58,11 +58,7 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  // ❌ حذف _onItemTapped لأنه يتم إدارته في الـ Wrapper
 
   Future<void> _refreshData() async {
     setState(() {
@@ -72,6 +68,8 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
 
   // 🔥🔥 الانتقال إلى شاشة قائمة التجار (تم تفعيل الدالة) 🔥🔥
   void _navigateToVendorList(CategoryModel category) {
+    // نستخدم rootNavigator: false إذا كنا نريد إبقاء الشريط ثابتاً،
+    // ولكن الطريقة الأكثر نظافة هي الاعتماد على Navigator العادي داخل Shell
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -89,11 +87,10 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
   String _getCategoryDisplayName(CategoryModel category, BuildContext context) {
     final currentLocale = AppLocalizations.of(context)!.localeName;
 
-    // نختار الاسم المخزن في الموديل (الذي يجب أن يعكس الـ DB)
     if (currentLocale == 'ar') {
       return category.nameAr;
     }
-    return category.nameEn; // الافتراضي هو الإنجليزي
+    return category.nameEn;
   }
 
   // ----------------------------------------------------
@@ -141,10 +138,8 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     AppLocalizations localizations,
   ) {
     final String translatedName = _getCategoryDisplayName(category, context);
-
     final Color cardColor = _categoryColors[index % _categoryColors.length];
     final Color contentColor = Colors.black87;
-    // 🔥 تم تثبيت لون الأيقونة على الذهبي
     final Color iconColor = _goldColor;
 
     // 💡 دالة تحويل اسم الأيقونة النصي
@@ -229,10 +224,14 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
     );
   }
 
-  // 🔥🔥 دالة محتوى الشاشة الرئيسية (الفئات) 🔥🔥
-  Widget _buildCategoriesContentWrapper() {
+  // ----------------------------------------------------
+  // 🔨 دالة البناء الرئيسية (Build) 🔨
+  // ----------------------------------------------------
+  @override
+  Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
 
+    // 🔥🔥 إعادة هيكلة: هذا الكلاس أصبح يمثل محتوى الشاشة (Content Widget) 🔥🔥
     return Scaffold(
       backgroundColor: _lightBackground,
       appBar: AppBar(
@@ -248,7 +247,7 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
           ),
         ),
         actions: [
-          // زر السلة (تم الإبقاء عليه في الأعلى)
+          // زر السلة
           Stack(
             alignment: Alignment.center,
             children: [
@@ -411,44 +410,6 @@ class _VendorCategoriesScreenState extends State<VendorCategoriesScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ----------------------------------------------------
-  // 🔨 دالة البناء الرئيسية (Build) 🔨
-  // ----------------------------------------------------
-  @override
-  Widget build(BuildContext context) {
-    // تهيئة الصفحات (0: Categories, 1: Settings)
-    final List<Widget> pages = [
-      _buildCategoriesContentWrapper(), // Index 0
-      const SettingsScreen(), // Index 1
-    ];
-
-    return Scaffold(
-      backgroundColor: _darkColor,
-      body: IndexedStack(index: _currentIndex, children: pages),
-      // شريط التنقل السفلي المعدل (تبويبين فقط)
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        selectedItemColor: _goldColor,
-        unselectedItemColor: Colors.grey,
-        currentIndex: _currentIndex,
-        onTap: _onItemTapped,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            label: 'Categories',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
       ),
     );
   }
