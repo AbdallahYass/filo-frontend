@@ -386,7 +386,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get saveChanges => 'حفظ التغييرات';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'إلغاء';
 
   @override
   String get confirmation => 'تأكيد';
@@ -427,4 +427,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String noVendorsFound(Object categoryName) {
     return 'لم يتم العثور على متاجر في $categoryName.';
   }
+
+  @override
+  String get confirmUpdate => 'تأكيد تحديث الملف الشخصي';
+
+  @override
+  String get confirmUpdateMessage =>
+      'هل أنت متأكد من أنك تريد حفظ هذه التغييرات؟';
 }

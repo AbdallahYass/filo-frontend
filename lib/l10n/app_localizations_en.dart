@@ -432,4 +432,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String noVendorsFound(Object categoryName) {
     return 'No $categoryName found yet.';
   }
+
+  @override
+  String get confirmUpdate => 'Confirm Profile Update';
+
+  @override
+  String get confirmUpdateMessage =>
+      'Are you sure you want to save these changes?';
 }

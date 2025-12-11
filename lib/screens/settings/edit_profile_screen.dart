@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
-import '/l10n/app_localizations.dart'; // 👈 استيراد اللغات
+import '/l10n/app_localizations.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -56,9 +56,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  Future<void> _updateProfile() async {
-    if (!_formKey.currentState!.validate()) return;
-
+  // ----------------------------------------------------------------------
+  // 🔥🔥 دالة تنفيذ تحديث البروفايل (بعد التأكيد) 🔥🔥
+  // ----------------------------------------------------------------------
+  Future<void> _executeProfileUpdate() async {
     setState(() => _isLoading = true);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
@@ -85,13 +86,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // تحديث البيانات في الذاكرة المحلية
         await prefs.setString('user', jsonEncode(data['user']));
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(localizations.profileUpdatedSuccess), // 👈 نص مترجم
+              content: Text(localizations.profileUpdatedSuccess),
               backgroundColor: Colors.green,
             ),
           );
@@ -122,6 +122,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isLoading = false);
   }
 
+  // ----------------------------------------------------------------------
+  // 🔥🔥 دالة رسالة التأكيد (Dialog) 🔥🔥
+  // ----------------------------------------------------------------------
+  void _updateProfile() {
+    if (!_formKey.currentState!.validate()) return;
+
+    // 🔥 عرض مربع الحوار قبل التنفيذ
+    _showConfirmationDialog();
+  }
+
+  void _showConfirmationDialog() {
+    final localizations = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2C2C2C), // خلفية داكنة
+          title: Text(
+            localizations.confirmUpdate,
+            style: TextStyle(color: _goldColor),
+          ), // نص مترجم
+          content: Text(
+            localizations.confirmUpdateMessage,
+            style: const TextStyle(color: Colors.white70),
+          ), // نص مترجم
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                localizations.cancel,
+                style: const TextStyle(color: Colors.grey),
+              ), // إلغاء
+              onPressed: () {
+                Navigator.of(context).pop(); // إغلاق مربع الحوار
+              },
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: _goldColor),
+              child: Text(
+                localizations.confirm,
+                style: const TextStyle(color: Colors.black),
+              ), // تأكيد
+              onPressed: () {
+                Navigator.of(context).pop(); // إغلاق مربع الحوار
+                _executeProfileUpdate(); // 🔥 تنفيذ التحديث الفعلي
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // 🔥 الوصول لكائن الترجمة 🔥
@@ -130,7 +189,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
-        title: Text(localizations.editProfile), // 👈 نص مترجم
+        title: Text(localizations.editProfile),
         backgroundColor: Colors.transparent,
         foregroundColor: _goldColor,
       ),
@@ -144,11 +203,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: localizations.fullName, // 👈 نص مترجم
+                  labelText: localizations.fullName,
                   labelStyle: const TextStyle(color: Colors.grey),
                   prefixIcon: Icon(Icons.person, color: _goldColor),
                   filled: true,
-                  fillColor: const Color(0xFF2C2C2C),
+                  fillColor: _fieldColor,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
@@ -157,16 +216,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
-                validator: (val) => val!.isEmpty
-                    ? localizations.requiredField
-                    : null, // 👈 نص مترجم
+                validator: (val) =>
+                    val!.isEmpty ? localizations.requiredField : null,
               ),
               const SizedBox(height: 20),
 
               // حقل الهاتف (اختياري للتحديث)
               IntlPhoneField(
                 decoration: InputDecoration(
-                  labelText: localizations.newPhoneNumber, // 👈 نص مترجم
+                  labelText: localizations.newPhoneNumber,
                   labelStyle: const TextStyle(color: Colors.grey),
                   prefixIcon: Icon(Icons.phone, color: _goldColor),
                   filled: true,
@@ -184,17 +242,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 dropdownTextStyle: const TextStyle(color: Colors.white),
                 dropdownIcon: Icon(Icons.arrow_drop_down, color: _goldColor),
                 initialCountryCode: 'JO',
-                languageCode: localizations.localeName, // لغة أسماء الدول
+                languageCode: localizations.localeName,
 
                 onChanged: (phone) {
                   _phone = phone.completeNumber;
                 },
-                // validator: (phone) { // يمكن إضافة تحقق هنا
-                //   if (phone != null && phone.number.isNotEmpty && !phone.isValidNumber()) {
-                //     return localizations.invalidPhone;
-                //   }
-                //   return null;
-                // },
+                // validator: (phone) { ... }
               ),
 
               const Spacer(),
@@ -203,12 +256,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _updateProfile,
+                  onPressed: _isLoading
+                      ? null
+                      : _updateProfile, // 🔥 استدعاء دالة التأكيد
                   style: ElevatedButton.styleFrom(backgroundColor: _goldColor),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.black)
                       : Text(
-                          localizations.saveChanges, // 👈 نص مترجم
+                          localizations.saveChanges,
                           style: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,

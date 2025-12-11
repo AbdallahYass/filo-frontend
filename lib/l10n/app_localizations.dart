@@ -901,6 +901,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No {categoryName} found yet.'**
   String noVendorsFound(Object categoryName);
+
+  /// No description provided for @confirmUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Profile Update'**
+  String get confirmUpdate;
+
+  /// No description provided for @confirmUpdateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to save these changes?'**
+  String get confirmUpdateMessage;
 }
 
 class _AppLocalizationsDelegate

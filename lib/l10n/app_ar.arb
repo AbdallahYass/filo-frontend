@@ -183,6 +183,10 @@
     "placeholders": {
       "categoryName": {}
     }
-  }
+  },
+  "confirmUpdate": "تأكيد تحديث الملف الشخصي",
+    "confirmUpdateMessage": "هل أنت متأكد من أنك تريد حفظ هذه التغييرات؟",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء"
 
 }

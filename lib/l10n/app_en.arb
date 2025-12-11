@@ -183,5 +183,9 @@
     "placeholders": {
       "categoryName": {}
     }
-  }
+  },
+  "confirmUpdate": "Confirm Profile Update",
+    "confirmUpdateMessage": "Are you sure you want to save these changes?",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
 }
