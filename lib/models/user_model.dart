@@ -1,15 +1,19 @@
 // lib/models/user_model.dart
 
 import 'store_info_model.dart';
-import 'address_model.dart'; // نفترض أنك تستخدم موديل العناوين
+import 'address_model.dart';
 
 class UserModel {
   final String id;
   final String email;
   final String? name;
   final String? phone;
-  final String role; // 'customer', 'vendor', 'driver'
+  final String role;
   final bool isVerified;
+
+  // 🔥🔥 حقول التقييم الجديدة 🔥🔥
+  final double averageRating;
+  final int reviewsCount;
 
   // 🏠 قائمة عناوين المستخدم (قد تكون فارغة)
   final List<AddressModel>? savedAddresses;
@@ -24,6 +28,9 @@ class UserModel {
     this.phone,
     required this.role,
     required this.isVerified,
+    // 🔥🔥 إضافة التقييمات إلى الـ Constructor 🔥🔥
+    required this.averageRating,
+    required this.reviewsCount,
     this.savedAddresses,
     this.storeInfo,
   });
@@ -37,7 +44,7 @@ class UserModel {
           .toList();
     }
 
-    // معالجة بيانات المتجر (يجب أن يكون الكائن من نوع Map لتمريره إلى StoreInfoModel)
+    // معالجة بيانات المتجر
     StoreInfoModel? storeInfoData;
     if (json['storeInfo'] is Map<String, dynamic>) {
       storeInfoData = StoreInfoModel.fromJson(
@@ -45,14 +52,23 @@ class UserModel {
       );
     }
 
+    // 🔥🔥 استخلاص التقييمات من الـ JSON 🔥🔥
+    // نستخدم as num)?.toDouble() للتعامل مع الحالات التي يكون فيها التقييم int أو null
+    final double rating = (json['averageRating'] as num?)?.toDouble() ?? 0.0;
+    final int reviews = json['reviewsCount'] as int? ?? 0;
+
     return UserModel(
       id: json['_id'] as String,
       email: json['email'] as String,
-      // نستخدم operator ?? '' لضمان أن الحقول النصية التي قد تكون null في DB يتم التعامل معها بأمان
       name: json['name'] as String?,
       phone: json['phone'] as String?,
       role: json['role'] as String,
       isVerified: json['isVerified'] as bool,
+
+      // 🔥🔥 تمرير التقييمات 🔥🔥
+      averageRating: rating,
+      reviewsCount: reviews,
+
       savedAddresses: addresses,
       storeInfo: storeInfoData,
     );
@@ -66,8 +82,12 @@ class UserModel {
       'phone': phone,
       'role': role,
       'isVerified': isVerified,
+
+      // 🔥🔥 إضافة التقييمات إلى الـ JSON 🔥🔥
+      'averageRating': averageRating,
+      'reviewsCount': reviewsCount,
+
       'savedAddresses': savedAddresses?.map((e) => e.toJson()).toList(),
-      // نستخدم storeInfo?.toJson() لتمرير البيانات فقط إذا كانت موجودة
       'storeInfo': storeInfo?.toJson(),
     };
   }

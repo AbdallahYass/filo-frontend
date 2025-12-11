@@ -190,7 +190,12 @@
     "cancel": "Cancel",
     "noResultsFound": "No results found for your search criteria.",
     "searchVendorHint": "Search vendors...",
- "noResultsFound": "No results found for your search criteria."
+ "noResultsFound": "No results found for your search criteria.",
+ "sortBy": "Sort By",
+    "sortByDefault": "Default",
+    "sortByPopular": "Most Popular",
+    "sortByRating": "Best Rated",
+    "reviews": "reviews"
 
     
 }

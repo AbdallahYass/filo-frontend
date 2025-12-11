@@ -445,4 +445,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchVendorHint => 'Search vendors...';
+
+  @override
+  String get sortBy => 'Sort By';
+
+  @override
+  String get sortByDefault => 'Default';
+
+  @override
+  String get sortByPopular => 'Most Popular';
+
+  @override
+  String get sortByRating => 'Best Rated';
+
+  @override
+  String get reviews => 'reviews';
 }

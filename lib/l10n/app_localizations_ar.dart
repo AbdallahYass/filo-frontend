@@ -441,4 +441,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get searchVendorHint => 'البحث عن التجار...';
+
+  @override
+  String get sortBy => 'فرز حسب';
+
+  @override
+  String get sortByDefault => 'الافتراضي';
+
+  @override
+  String get sortByPopular => 'الأكثر طلباً';
+
+  @override
+  String get sortByRating => 'الأفضل تقييماً';
+
+  @override
+  String get reviews => 'مراجعات';
 }

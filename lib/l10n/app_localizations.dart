@@ -925,6 +925,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search vendors...'**
   String get searchVendorHint;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort By'**
+  String get sortBy;
+
+  /// No description provided for @sortByDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get sortByDefault;
+
+  /// No description provided for @sortByPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Most Popular'**
+  String get sortByPopular;
+
+  /// No description provided for @sortByRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Rated'**
+  String get sortByRating;
+
+  /// No description provided for @reviews.
+  ///
+  /// In en, this message translates to:
+  /// **'reviews'**
+  String get reviews;
 }
 
 class _AppLocalizationsDelegate

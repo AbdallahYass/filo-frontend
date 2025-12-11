@@ -5,15 +5,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
-// 🔥 يجب التأكد من وجود هذه الموديلات في مجلد lib/models
-//import '../models/store_info_model.dart';
-//import '../models/address_model.dart';
 
 class VendorService {
-  // 🔥🔥🔥 الإعدادات محددة هنا (بدلاً من BaseService) 🔥🔥🔥
   final String _apiBaseUrl = kDebugMode
-      ? 'http://10.0.2.2:3000/api' // عنوان محلي لمحاكيات الأندرويد
-      : 'https://filo-menu.onrender.com/api'; // عنوان الإنتاج
+      ? 'http://10.0.2.2:3000/api'
+      : 'https://filo-menu.onrender.com/api';
   final String _apiKey = 'FiloSecretKey202512341234';
 
   Future<String?> _getToken() async {
@@ -23,22 +19,30 @@ class VendorService {
   // ----------------------------------------------------------------
 
   // ==================================================
-  // 1. جلب قائمة التجار بناءً على مفتاح الفئة (مع منطق الـ Fallback)
+  // 1. جلب قائمة التجار بناءً على مفتاح الفئة (مع sortBy)
   // ==================================================
-  Future<List<UserModel>> fetchVendorsByCategory(String categoryKey) async {
+  // 🔥🔥 تم إضافة معامل sortBy (إجباري لحل المشكلة) 🔥🔥
+  Future<List<UserModel>> fetchVendorsByCategory(
+    String categoryKey, {
+    String sortBy = 'default',
+  }) async {
     // 1. محاولة جلب البيانات من الخادم أولاً
     try {
       if (kDebugMode) {
         print(
-          "Attempting to fetch vendors for category: $categoryKey from API...",
+          "Attempting to fetch vendors for category: $categoryKey, sorted by: $sortBy from API...",
         );
       }
 
-      final token =
-          await _getToken(); // نحتاج التوكن إذا كانت نقطة النهاية محمية
-      final uri = Uri.parse('$_apiBaseUrl/vendors?category=$categoryKey');
+      final token = await _getToken();
+      // 🔥🔥 بناء الـ URI مع معامل sortBy 🔥🔥
+      final uri = Uri.parse('$_apiBaseUrl/vendors').replace(
+        queryParameters: {
+          'category': categoryKey,
+          'sortBy': sortBy, // تمرير خيار الفرز
+        },
+      );
 
-      // ⚠️ ملاحظة: يجب أن تقوم ببناء مسار '/vendors' في ملف server.js
       final response = await http.get(
         uri,
         headers: {
@@ -53,13 +57,11 @@ class VendorService {
         final List<dynamic> jsonList = jsonDecode(response.body);
 
         if (jsonList.isNotEmpty) {
-          // ✅ نجح الجلب والبيانات موجودة
           if (kDebugMode) {
             print("Successfully fetched ${jsonList.length} vendors from API.");
           }
           return jsonList.map((json) => UserModel.fromJson(json)).toList();
         } else {
-          // ⚠️ نجح الجلب لكن القائمة فارغة
           if (kDebugMode) {
             print(
               "API returned an empty list (200 OK). Falling back to mock data.",
@@ -67,7 +69,6 @@ class VendorService {
           }
         }
       } else {
-        // ❌ فشل الاستجابة (مثل 404, 500)
         if (kDebugMode) {
           print(
             "API request failed with status code: ${response.statusCode}. Falling back to mock data.",
@@ -75,35 +76,44 @@ class VendorService {
         }
       }
     } catch (e) {
-      // ❌ فشل الاتصال أو حدث خطأ برمجي
       if (kDebugMode) {
         print("API connection error occurred: $e. Falling back to mock data.");
       }
     }
 
     // 3. تنفيذ الـ Fallback (الجلب الاحتياطي) في حال الفشل أو القائمة الفارغة
-    return _fetchMockVendors(categoryKey);
+    // 🔥🔥 تمرير sortBy إلى دالة الـ Mock 🔥🔥
+    return _fetchMockVendors(categoryKey, sortBy);
   }
 
   // ==================================================
   // 2. دالة جلب البيانات الوهمية (Mock Data)
   // ==================================================
-  Future<List<UserModel>> _fetchMockVendors(String categoryKey) async {
+  // 🔥🔥 تم إضافة معامل sortBy للدالة الوهمية 🔥🔥
+  Future<List<UserModel>> _fetchMockVendors(
+    String categoryKey,
+    String sortBy,
+  ) async {
     if (kDebugMode) {
-      print("-> Using Mock Vendor Data for category: $categoryKey");
+      print(
+        "-> Using Mock Vendor Data for category: $categoryKey, sorted by: $sortBy",
+      );
     }
 
-    await Future.delayed(const Duration(milliseconds: 700)); // محاكاة التأخير
+    await Future.delayed(const Duration(milliseconds: 700));
 
-    // قائمة التجار الوهمية (تستخدم نفس الهيكل الذي يتوقعه UserModel)
-    final mockVendors = [
+    // قائمة التجار الوهمية (مع حقول وهمية للتقييم والطلبات)
+    final List<Map<String, dynamic>> mockVendorsData = [
       {
         '_id': 'v1',
         'email': 'vendor1@example.com',
-        'name': 'الشيف الذهبي',
+        'name': 'مطعم الشيف الذهبي',
         'role': 'vendor',
         'isVerified': true,
         'phone': '0590000001',
+        // 🔥 إضافة بيانات وهمية للفرز 🔥
+        'averageRating': 4.7,
+        'ordersCount': 120,
         'storeInfo': {
           'storeName': 'مطعم الشيف الذهبي',
           'description':
@@ -119,6 +129,9 @@ class VendorService {
         'role': 'vendor',
         'isVerified': true,
         'phone': '0590000002',
+        // 🔥 إضافة بيانات وهمية للفرز 🔥
+        'averageRating': 4.2,
+        'ordersCount': 75,
         'storeInfo': {
           'storeName': 'مخبز الكعك الطازج',
           'description': 'مخبوزات طازجة يومياً وقهوة ممتازة.',
@@ -129,10 +142,13 @@ class VendorService {
       {
         '_id': 'v3',
         'email': 'vendor3@example.com',
-        'name': 'سوبر ماركت',
+        'name': 'سوبر ماركت فيلو',
         'role': 'vendor',
         'isVerified': true,
         'phone': '0590000003',
+        // 🔥 إضافة بيانات وهمية للفرز 🔥
+        'averageRating': 4.9,
+        'ordersCount': 250,
         'storeInfo': {
           'storeName': 'سوبر ماركت فيلو',
           'description': 'كل ما تحتاجه من مواد تموينية وبقالة في مكان واحد.',
@@ -142,19 +158,30 @@ class VendorService {
       },
     ];
 
-    // 🔥 فلترة البيانات الوهمية بناءً على مفتاح الفئة
-    List<Map<String, dynamic>> filteredList = [];
+    // 1. فلترة البيانات الوهمية بناءً على مفتاح الفئة
+    List<Map<String, dynamic>> filteredList;
 
     if (categoryKey == 'restaurant') {
-      filteredList = [mockVendors[0]];
+      filteredList = [mockVendorsData[0]];
     } else if (categoryKey == 'bakery' || categoryKey == 'cafe') {
-      filteredList = [mockVendors[1]];
+      filteredList = [mockVendorsData[1]];
     } else if (categoryKey == 'market') {
-      filteredList = [mockVendors[2]];
+      filteredList = [mockVendorsData[2]];
     } else {
-      // نرجع قائمة فارغة للفئات الأخرى
       filteredList = [];
     }
+
+    // 2. 🔥 تطبيق الفرز على القائمة المفلترة (Client-side Sorting) 🔥
+    if (sortBy == 'rating') {
+      filteredList.sort(
+        (a, b) => b['averageRating']!.compareTo(a['averageRating']!),
+      );
+    } else if (sortBy == 'popular') {
+      filteredList.sort(
+        (a, b) => b['ordersCount']!.compareTo(a['ordersCount']!),
+      );
+    }
+    // 'default' (الافتراضي) هو حسب ترتيب التعريف في القائمة
 
     return filteredList.map((json) => UserModel.fromJson(json)).toList();
   }
