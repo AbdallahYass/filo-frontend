@@ -17,6 +17,10 @@ class VendorService {
     return prefs.getString('token');
   }
 
+  // ==================================================
+  // 1. جلب قائمة التجار
+  // ==================================================
+
   Future<List<UserModel>> fetchVendorsByCategory(
     String categoryKey, {
     String sortBy = 'default',
@@ -68,5 +72,60 @@ class VendorService {
       }
       throw Exception("Connection Error: Failed to reach the server.");
     }
+  }
+
+  // ==================================================
+  // 2. 🔥 إدارة المفضلة (Favorites) 🔥
+  // ==================================================
+
+  Future<void> toggleFavorite(String vendorId, bool isAdding) async {
+    final token = await _getToken();
+    if (token == null) {
+      if (kDebugMode) {
+        print("ERROR: Cannot toggle favorite. User is not logged in.");
+      }
+      throw Exception("UNAUTHORIZED_ACCESS");
+    }
+
+    final String endpoint = '$_apiBaseUrl/user/favorites/$vendorId';
+
+    http.Response response;
+
+    // تحديد نوع الطلب: POST للإضافة، DELETE للحذف
+    if (isAdding) {
+      if (kDebugMode) print("Attempting to ADD favorite: $vendorId");
+      response = await http.post(
+        Uri.parse(endpoint),
+        headers: {'Authorization': 'Bearer $token', 'x-api-key': _apiKey},
+      );
+    } else {
+      if (kDebugMode) print("Attempting to REMOVE favorite: $vendorId");
+      response = await http.delete(
+        Uri.parse(endpoint),
+        headers: {'Authorization': 'Bearer $token', 'x-api-key': _apiKey},
+      );
+    }
+
+    // الخادم يرجع 200 OK للإضافة والحذف الناجحين
+    if (response.statusCode == 200) {
+      if (kDebugMode) print("Favorite status updated successfully.");
+      return;
+    } else if (response.statusCode == 409 || response.statusCode == 404) {
+      // 409: موجود بالفعل (عند الإضافة)
+      // 404: غير موجود (عند الحذف)
+      if (kDebugMode) {
+        print(
+          "Favorite status already set or resource not found (Status ${response.statusCode})",
+        );
+      }
+      return;
+    }
+
+    // رفع خطأ في أي حالة فشل أخرى
+    final errorBody = jsonDecode(response.body);
+    throw Exception(
+      errorBody['message'] ??
+          'Failed to update favorites: Status ${response.statusCode}',
+    );
   }
 }

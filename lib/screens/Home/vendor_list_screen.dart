@@ -34,7 +34,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
   String _searchQuery = '';
 
   String _selectedSortKey = 'default';
-  late List<Map<String, String>> _sortOptions; // خيارات الفرز
+  late List<Map<String, String>> _sortOptions;
 
   // 🔥🔥 متغير الحالة لتبديل طريقة العرض 🔥🔥
   bool _isGridView = false; // False = List view (افتراضي), True = Grid view
@@ -71,7 +71,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
     super.dispose();
   }
 
+  // 🔥🔥 دالة لتحديث البيانات من الخادم (يجب استخدامها بعد تفضيل متجر) 🔥🔥
   Future<void> _refreshData() async {
+    // يجب أن تتضمن هذه الدالة تحديثاً لحالة المستخدم (خاصة قائمة المفضلة)
+    // لكن بما أننا لا نملك خدمة `fetchCurrentUser`, سنكتفي بتحديث قائمة التجار بالكامل
+    // (لنفترض أن الخادم يرجع حالة المستخدم ضمن الاستجابة العامة إذا كان مسجل دخول).
     setState(() {
       _vendorsFuture = _vendorService.fetchVendorsByCategory(
         widget.categoryKey,
@@ -121,8 +125,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
         if (!isOpen) {
           final timeUntilOpen = openTime.difference(now);
-          if (timeUntilOpen.isNegative == false &&
-              timeUntilOpen < openSoonThreshold) {
+          if (!timeUntilOpen.isNegative && timeUntilOpen < openSoonThreshold) {
             return {
               'text': localizations.storeOpeningSoon,
               'color': _goldColor,
@@ -161,13 +164,12 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   // ----------------------------------------------------
-  // 🔥🔥 دالة جديدة لتطبيق الحركة (Animation) 🔥🔥
+  // 🔥🔥 دالة تطبيق الحركة (Animation) 🔥🔥
   // ----------------------------------------------------
 
   Widget _buildAnimatedCard(int index, Widget child) {
     const duration = Duration(milliseconds: 400);
 
-    // TweenAnimationBuilder هو حل ممتاز لتشغيل الحركة لمرة واحدة عند البناء
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
       duration: duration,
@@ -176,11 +178,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
         final offset = Offset(0.0, (1 - value) * 0.2);
 
         return Opacity(
-          opacity: value, // التلاشي (FadeIn)
-          child: Transform.translate(
-            offset: offset, // التحريك (Slide)
-            child: childWidget,
-          ),
+          opacity: value,
+          child: Transform.translate(offset: offset, child: childWidget),
         );
       },
       child: child,
@@ -191,7 +190,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
   // 🎨 دوال بناء الواجهة المساعدة 🎨
   // ----------------------------------------------------
 
-  // 🔥 بناء شريط البحث (مدمج في البانر الداكن)
   Widget _buildSearchBar(AppLocalizations localizations) {
     return Container(
       height: 50,
@@ -226,7 +224,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
-  // 🔥 بناء زر تبديل طريقة العرض (Grid/List)
   Widget _buildViewToggleButton() {
     return GestureDetector(
       onTap: () {
@@ -241,7 +238,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
-          // التبديل بين الأيقونات
           _isGridView ? Icons.view_list : Icons.grid_view,
           color: _goldColor,
         ),
@@ -249,7 +245,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
-  // بناء القائمة المنسدلة للفرز
   Widget _buildSortDropdown(AppLocalizations localizations) {
     _sortOptions = [
       {'key': 'default', 'label': localizations.sortByDefault},
@@ -305,6 +300,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
     final double rating = vendor.averageRating;
     final int reviews = vendor.reviewsCount;
+
+    // 🔥🔥 التحقق من حالة المفضلة: يعتمد على أن قائمة savedVendors موجودة في UserModel
+    final bool isFavorite = vendor.savedVendors?.contains(vendor.id) ?? false;
 
     final smartStatus = _getSmartStatus(vendor, localizations);
     final Color statusColor = smartStatus['color'];
@@ -407,7 +405,47 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+
+              // 🔥🔥 أيقونة المفضلة (القلب) وزر التفاعل 🔥🔥
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.grey[400],
+                    ),
+                    onPressed: () async {
+                      try {
+                        await _vendorService.toggleFavorite(
+                          vendor.id,
+                          !isFavorite,
+                        );
+
+                        // يتم تحديث القائمة بالكامل لإظهار حالة القلب الجديدة
+                        await _refreshData();
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.toString().replaceFirst('Exception: ', ''),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey[400],
+                  ),
+                ],
+              ),
+              // 🔥🔥 نهاية أيقونة المفضلة 🔥🔥
             ],
           ),
         ),
@@ -430,6 +468,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
     final double rating = vendor.averageRating;
     final int reviews = vendor.reviewsCount;
 
+    // 🔥🔥 التحقق من حالة المفضلة 🔥🔥
+    final bool isFavorite = vendor.savedVendors?.contains(vendor.id) ?? false;
+
     final smartStatus = _getSmartStatus(vendor, localizations);
     final Color statusColor = smartStatus['color'];
     final String statusText = smartStatus['text'];
@@ -451,23 +492,66 @@ class _VendorListScreenState extends State<VendorListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // صورة/لوجو التاجر (في الأعلى)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(15),
-              ),
-              child: AspectRatio(
-                aspectRatio: 1.5, // 3:2 Aspect Ratio for the image
-                child: Image.network(
-                  vendor.storeInfo?.logoUrl ??
-                      'https://placehold.co/300x200/888888/FFFFFF?text=Logo',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[300],
-                    child: Icon(Icons.store, color: Colors.grey[600], size: 40),
+            // 🔥🔥 تغليف الصورة بـ Stack لإضافة زر المفضلة 🔥🔥
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(15),
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 1.5, // 3:2 Aspect Ratio for the image
+                    child: Image.network(
+                      vendor.storeInfo?.logoUrl ??
+                          'https://placehold.co/300x200/888888/FFFFFF?text=Logo',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.grey[300],
+                        child: Icon(
+                          Icons.store,
+                          color: Colors.grey[600],
+                          size: 40,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                // 🔥🔥 زر المفضلة في أعلى اليمين 🔥🔥
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: IconButton(
+                    style: IconButton.styleFrom(
+                      backgroundColor:
+                          Colors.white70, // خلفية بيضاء شفافة لتحسين الرؤية
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(35, 35),
+                    ),
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.grey[600],
+                      size: 20,
+                    ),
+                    onPressed: () async {
+                      try {
+                        await _vendorService.toggleFavorite(
+                          vendor.id,
+                          !isFavorite,
+                        );
+                        await _refreshData();
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.toString().replaceFirst('Exception: ', ''),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
 
             Padding(

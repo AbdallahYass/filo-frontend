@@ -11,6 +11,7 @@ class UserModel {
   final String? phone;
   final String role;
   final bool isVerified;
+  final List<String>? savedVendors;
 
   // 🔥🔥 حقول التقييم الجديدة 🔥🔥
   final double averageRating;
@@ -30,6 +31,7 @@ class UserModel {
     required this.reviewsCount,
     this.savedAddresses,
     this.storeInfo,
+    this.savedVendors,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -39,7 +41,12 @@ class UserModel {
           .map((item) => AddressModel.fromJson(item as Map<String, dynamic>))
           .toList();
     }
-
+    List<String>? favorites;
+    if (json['savedVendors'] is List) {
+      favorites = (json['savedVendors'] as List)
+          .map((item) => item.toString()) // الـ IDs هي String
+          .toList();
+    }
     StoreInfoModel? storeInfoData;
     // التأكد من أن 'storeInfo' هو كائن وليس null أو غير موجود
     if (json['storeInfo'] != null &&
@@ -73,6 +80,7 @@ class UserModel {
       reviewsCount: reviews,
       savedAddresses: addresses,
       storeInfo: storeInfoData,
+      savedVendors: favorites,
     );
   }
 
@@ -87,6 +95,7 @@ class UserModel {
       'isVerified': isVerified,
       'averageRating': averageRating,
       'reviewsCount': reviewsCount,
+      'savedVendors': savedVendors,
       'savedAddresses': savedAddresses?.map((e) => e.toJson()).toList(),
       'storeInfo': storeInfo?.toJson(),
     };
