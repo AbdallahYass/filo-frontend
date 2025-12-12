@@ -43,17 +43,13 @@ class VendorService {
         },
       );
 
-      // 🔥🔥 طباعة الـ URI التي سيتم استخدامها للتشخيص 🔥🔥
-      if (kDebugMode) {
-        print('Vendor API URI: $uri');
-        print('Vendor API Token is null? ${token == null}');
-      }
-      // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+      debugPrint('Vendor API URI: $uri');
+      debugPrint('Vendor API Token is null? ${token == null}');
 
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': 'Bearer $token',
+          //   'Authorization': 'Bearer $token',
           'x-api-key': _apiKey,
           'Content-Type': 'application/json',
         },

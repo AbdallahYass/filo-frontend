@@ -47,11 +47,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
   @override
   void initState() {
     super.initState();
-    // 🔥🔥 تغيير الطباعة لكي لا تعتمد على kDebugMode 🔥🔥
-    debugPrint(
-      'VENDOR LIST SCREEN: Starting data fetch for category: ${widget.categoryKey}',
-    );
-    // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
     _vendorsFuture = _vendorService.fetchVendorsByCategory(widget.categoryKey);
     _searchController.addListener(_onSearchChanged);
   }
