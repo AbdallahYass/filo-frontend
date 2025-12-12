@@ -195,7 +195,11 @@
     "sortByDefault": "Default",
     "sortByPopular": "Most Popular",
     "sortByRating": "Best Rated",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "vendorDefaultName": "Unnamed Store",
+  "vendorDefaultDescription": "We offer the best products/services.",
+  "storeOpeningSoon": "Opening Soon",
+  "storeClosingSoon": "Closing Soon"
 
     
 }

@@ -412,16 +412,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get vendorDefaultName => 'اسم المتجر';
+  String get vendorDefaultName => 'متجر غير مسمى';
 
   @override
-  String get vendorDefaultDescription => 'متخصص في هذه الفئة';
+  String get vendorDefaultDescription => 'نحن نقدم أفضل المنتجات/الخدمات.';
 
   @override
-  String get storeOpen => 'مفتوح حالياً';
+  String get openTime => 'مفتوح حالياً';
 
   @override
-  String get storeClosed => 'مغلق';
+  String get closeTime => 'مغلق';
 
   @override
   String noVendorsFound(Object categoryName) {
@@ -456,4 +456,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reviews => 'مراجعات';
+
+  @override
+  String get storeOpen => 'مفتوح';
+
+  @override
+  String get storeClosed => 'مغلق';
+
+  @override
+  String get storeOpeningSoon => 'يفتح قريباً';
+
+  @override
+  String get storeClosingSoon => 'يغلق قريباً';
 }

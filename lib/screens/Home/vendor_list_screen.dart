@@ -1,6 +1,6 @@
 // lib/screens/vendor_list_screen.dart
 
-// 🚀 هذا الملف يعرض قائمة التجار (Vendors) التابعين لفئة معينة، مع دعم البحث والفرز.
+// 🚀 هذا الملف يعرض قائمة التجار (Vendors) التابعين لفئة معينة، مع دعم البحث والفرز والحالة الذكية.
 
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names
 
@@ -9,6 +9,7 @@ import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
 import '../../models/user_model.dart';
 import '../../services/vendor_service.dart';
 import 'vendor_menu_screen.dart';
+// import '../store_info_model.dart'; // ❌ تم إزالة هذا الاستيراد لأنه غير ضروري/خاطئ المسار هنا
 
 class VendorListScreen extends StatefulWidget {
   final String categoryKey;
@@ -73,6 +74,99 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   // ----------------------------------------------------
+  // 🎨 منطق حالة المتجر الذكي (جديد) 🎨
+  // ----------------------------------------------------
+
+  /// يحسب حالة المتجر (مفتوح، مغلق، يفتح قريباً، يغلق قريباً) بناءً على الوقت
+  Map<String, dynamic> _getSmartStatus(
+    UserModel vendor,
+    AppLocalizations localizations,
+  ) {
+    final bool isOpen = vendor.storeInfo?.isOpen == true;
+
+    final String? openTimeStr = vendor.storeInfo?.openTime;
+    final String? closeTimeStr = vendor.storeInfo?.closeTime;
+
+    if (openTimeStr != null && closeTimeStr != null) {
+      try {
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        // تحليل وقت الفتح
+        final openParts = openTimeStr.split(':');
+        final openHour = int.parse(openParts[0]);
+        final openMinute = int.parse(openParts[1]);
+        final openTime = today.add(
+          Duration(hours: openHour, minutes: openMinute),
+        );
+
+        // تحليل وقت الإغلاق
+        final closeParts = closeTimeStr.split(':');
+        final closeHour = int.parse(closeParts[0]);
+        final closeMinute = int.parse(closeParts[1]);
+        DateTime closeTime = today.add(
+          Duration(hours: closeHour, minutes: closeMinute),
+        );
+
+        // معالجة الإغلاق بعد منتصف الليل
+        if (closeTime.isBefore(openTime)) {
+          closeTime = closeTime.add(const Duration(days: 1));
+        }
+
+        const openSoonThreshold = Duration(
+          minutes: 30,
+        ); // يفتح قريباً خلال 30 دقيقة
+        const closeSoonThreshold = Duration(
+          minutes: 60,
+        ); // يغلق قريباً خلال 60 دقيقة
+
+        // 1. حالة "يفتح قريباً" (إذا كان مغلقاً)
+        if (!isOpen) {
+          final timeUntilOpen = openTime.difference(now);
+          if (timeUntilOpen.isNegative == false &&
+              timeUntilOpen < openSoonThreshold) {
+            return {
+              'text': localizations.storeOpeningSoon, // "يفتح قريباً"
+              'color': _goldColor,
+              'icon': Icons.schedule,
+            };
+          }
+        }
+
+        // 2. حالة "يغلق قريباً" (إذا كان مفتوحاً)
+        if (isOpen) {
+          // للتأكد فقط، نتحقق من أن المتجر فعلاً مفتوح حالياً (بين وقت الفتح والإغلاق)
+          if (now.isAfter(openTime) && now.isBefore(closeTime)) {
+            final timeUntilClose = closeTime.difference(now);
+            if (timeUntilClose < closeSoonThreshold) {
+              return {
+                'text': localizations.storeClosingSoon, // "يغلق قريباً"
+                'color': Colors.orange.shade700,
+                'icon': Icons.timer_outlined,
+              };
+            }
+          }
+        }
+      } catch (e) {
+        // إذا فشل تحليل الوقت (لا توجد ساعات عمل سليمة)، نعتمد على حالة الباك إند
+        // يمكن وضع منطق تسجيل الخطأ هنا (Logging)
+      }
+    }
+
+    // 3. المنطق الافتراضي (إذا لم يتم تفعيل حالات "قريباً")
+    final Color statusColor = isOpen ? Colors.green : Colors.red;
+    final String statusText = isOpen
+        ? localizations.storeOpen
+        : localizations.storeClosed;
+
+    return {
+      'text': statusText,
+      'color': statusColor,
+      'icon': isOpen ? Icons.check_circle : Icons.access_time,
+    };
+  }
+
+  // ----------------------------------------------------
   // 🎨 دوال بناء الواجهة المساعدة 🎨
   // ----------------------------------------------------
 
@@ -119,7 +213,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
       {'key': 'rating', 'label': localizations.sortByRating},
     ];
 
-    // 🔥 تعديل تصميم الـ Dropdown ليكون أبيض بخلفية داكنة (كما في شاشة الفئات)
+    // 🔥 تعديل تصميم الـ Dropdown ليكون أبيض
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -156,7 +250,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
-  // 🔥 بناء بطاقة التاجر/المتجر (يبقى التصميم الداخلي كما هو)
+  // 🔥 بناء بطاقة التاجر/المتجر
   Widget _buildVendorCard(UserModel vendor, AppLocalizations localizations) {
     final String storeName =
         vendor.storeInfo?.storeName ??
@@ -164,15 +258,16 @@ class _VendorListScreenState extends State<VendorListScreen> {
         localizations.vendorDefaultName;
     final String description =
         vendor.storeInfo?.description ?? localizations.vendorDefaultDescription;
-    final bool isOpen = vendor.storeInfo?.isOpen == true;
 
     final double rating = vendor.averageRating;
     final int reviews = vendor.reviewsCount;
 
-    final Color statusColor = isOpen ? Colors.green : Colors.red;
-    final String statusText = isOpen
-        ? (localizations.storeOpen)
-        : (localizations.storeClosed);
+    // 🔥🔥 استخدام دالة الحالة الذكية الجديدة 🔥🔥
+    final smartStatus = _getSmartStatus(vendor, localizations);
+    final Color statusColor = smartStatus['color'];
+    final String statusText = smartStatus['text'];
+    final IconData statusIcon = smartStatus['icon'];
+    // 🔥🔥 نهاية التعديل الذكي 🔥🔥
 
     return GestureDetector(
       onTap: () {
@@ -252,17 +347,17 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    // حالة المتجر
+                    // حالة المتجر (يستخدم الحالة الذكية)
                     Row(
                       children: [
                         Icon(
-                          isOpen ? Icons.check_circle : Icons.access_time,
+                          statusIcon, // استخدام الأيقونة من الحالة الذكية
                           color: statusColor,
                           size: 16,
                         ),
                         const SizedBox(width: 5),
                         Text(
-                          statusText,
+                          statusText, // استخدام النص من الحالة الذكية
                           style: TextStyle(
                             color: statusColor,
                             fontSize: 12,
@@ -293,16 +388,15 @@ class _VendorListScreenState extends State<VendorListScreen> {
       backgroundColor: _darkBackground,
       appBar: AppBar(
         title: Text(widget.categoryName),
-        // 🔥 توحيد التصميم: جعل الـ AppBar داكناً ليتوافق مع النمط الرئيسي
+        // 🔥 توحيد التصميم: جعل الـ AppBar داكناً
         backgroundColor: _darkColor,
         foregroundColor: Colors.white, // جعل النص أبيض
         elevation: 0,
       ),
-
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔥🔥 1. دمج شريط البحث وشريط الفرز في بانر واحد (مثل شاشة الفئات) 🔥🔥
+          // 🔥🔥 1. دمج شريط البحث وشريط الفرز في بانر واحد 🔥🔥
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(
@@ -314,7 +408,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
             decoration: BoxDecoration(
               color: _darkColor, // خلفية داكنة للبانر
               borderRadius: const BorderRadius.only(
-                // زوايا سفلية مستديرة (مثل شاشة الفئات)
+                // زوايا سفلية مستديرة
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
@@ -339,9 +433,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    _buildSortDropdown(
-                      localizations,
-                    ), // الـ Dropdown سيظل أبيض (عناصر الـ Dark Mode)
+                    _buildSortDropdown(localizations), // الـ Dropdown سيظل أبيض
                   ],
                 ),
               ],
@@ -356,13 +448,15 @@ class _VendorListScreenState extends State<VendorListScreen> {
               child: FutureBuilder<List<UserModel>>(
                 future: _vendorsFuture,
                 builder: (context, snapshot) {
-                  // ... (معالجة حالات التحميل، الخطأ، والقائمة الفارغة) ...
+                  // ... (معالجة حالات التحميل والخطأ) ...
 
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(color: _goldColor),
                     );
-                  } else if (!snapshot.hasData || snapshot.data == null) {
+                  } else if (snapshot.hasError ||
+                      !snapshot.hasData ||
+                      snapshot.data == null) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -391,6 +485,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         description.contains(_searchQuery);
                   }).toList();
 
+                  // معالجة حالة عدم العثور على نتائج للبحث
                   if (filteredVendors.isEmpty && _searchQuery.isNotEmpty) {
                     return Center(
                       child: Text(
@@ -404,6 +499,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     );
                   }
 
+                  // معالجة حالة القائمة الفارغة للفئة
                   if (filteredVendors.isEmpty) {
                     return Center(
                       child: Text(

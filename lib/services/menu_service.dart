@@ -21,11 +21,16 @@ class MenuService {
   // ==================================================
   // 1. جلب قائمة الطعام (مع دعم لـ vendorId)
   // ==================================================
+  /// يجلب قائمة الطعام من الـ API الحقيقي.
   Future<List<MenuItem>> fetchMenu({String? vendorId}) async {
     try {
       final String endpoint = vendorId != null
           ? '$_apiBaseUrl/menu?vendorId=$vendorId'
           : '$_apiBaseUrl/menu';
+
+      if (kDebugMode && vendorId != null) {
+        print("Attempting to fetch menu for vendor: $vendorId from API...");
+      }
 
       final response = await http.get(
         Uri.parse(endpoint),
@@ -35,81 +40,36 @@ class MenuService {
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
 
-        // 🔥🔥 إضافة طباعة للمراجعة (Debugging) 🔥🔥
         if (kDebugMode && body.isNotEmpty) {
           print(
             "API MENU RESPONSE (First Item): ${body[0]['title']} (${body.length} items)",
           );
         }
-        // 🔥🔥
 
-        if (body.isEmpty) return _getMockMenuItems(vendorId);
+        // 1. إذا كانت القائمة فارغة، نرجع قائمة فارغة (نجاح).
+        if (body.isEmpty) return [];
+
+        // 2. تحليل البيانات الحقيقية
         return body.map((json) => MenuItem.fromJson(json)).toList();
       }
+      // 3. رفع خطأ في حالة فشل الاستجابة (غير 200)
+      else {
+        final errorBody = jsonDecode(response.body);
+        if (kDebugMode) {
+          print(
+            "API request failed with status code: ${response.statusCode}. Error: ${errorBody['error'] ?? 'Unknown'}",
+          );
+        }
+        throw Exception(
+          "Failed to load menu: ${errorBody['error'] ?? response.statusCode}",
+        );
+      }
     } catch (e) {
+      // 4. رفع خطأ في حالة فشل الاتصال بالشبكة
       if (kDebugMode) print("MenuService Network/Parsing Error: $e");
+      throw Exception(
+        "Connection Error: Failed to reach the server or parse data.",
+      );
     }
-    return _getMockMenuItems(vendorId);
-  }
-
-  // ==================================================
-  // 2. دالة Mock Data (المعدلة)
-  // ==================================================
-  List<MenuItem> _getMockMenuItems(String? vendorId) {
-    if (kDebugMode) {
-      print("-> Using Mock Menu Data for vendor: $vendorId");
-    }
-
-    if (vendorId == 'v1' || vendorId == 'v2') {
-      // بيانات مخصصة للتاجر الأول (مطعم)
-      final mockData = [
-        {
-          "_id": "i101",
-          "title": "طبق الشيف المميز",
-          "description": "وجبة لحم فاخرة مع الخضروات الموسمية.",
-          "price": 18.50,
-          "category": "Main Dishes",
-          "imageUrl":
-              "https://placehold.co/400x300/C5A028/FFFFFF?text=Featured%20Dish",
-          "isAvailable": true,
-          "vendorId": "v1", // 🔥🔥 تمت الإضافة 🔥🔥
-        },
-        {
-          "_id": "i102",
-          "title": "سلطة السيزر",
-          "description": "سلطة خفيفة مع دجاج مشوي.",
-          "price": 7.00,
-          "category": "Salads",
-          "imageUrl": "https://placehold.co/400x300/C5A028/FFFFFF?text=Salad",
-          "isAvailable": true,
-          "vendorId": "v1", // 🔥🔥 تمت الإضافة 🔥🔥
-        },
-        {
-          "_id": "i103",
-          "title": "عصير ليمون بالنعناع",
-          "description": "منعش ومثالي للصيف.",
-          "price": 3.50,
-          "category": "Drinks",
-          "imageUrl": "https://placehold.co/400x300/C5A028/FFFFFF?text=Drink",
-          "isAvailable": true,
-          "vendorId": "v2", // 🔥🔥 تمت الإضافة 🔥🔥
-        },
-      ];
-      return mockData
-          .map(
-            (json) => MenuItem.fromJson({
-              'id': json['_id'],
-              'title': json['title'],
-              'description': json['description'],
-              'price': json['price'],
-              'category': json['category'],
-              'imageUrl': json['imageUrl'],
-              'isAvailable': json['isAvailable'],
-              'vendorId': json['vendorId'], // 🔥🔥 تمت الإضافة 🔥🔥
-            }),
-          )
-          .toList();
-    }
-    return [];
   }
 }

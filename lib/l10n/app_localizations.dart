@@ -875,26 +875,26 @@ abstract class AppLocalizations {
   /// No description provided for @vendorDefaultName.
   ///
   /// In en, this message translates to:
-  /// **'Store Name'**
+  /// **'Unnamed Store'**
   String get vendorDefaultName;
 
   /// No description provided for @vendorDefaultDescription.
   ///
   /// In en, this message translates to:
-  /// **'Specializing in this category'**
+  /// **'We offer the best products/services.'**
   String get vendorDefaultDescription;
 
-  /// No description provided for @storeOpen.
+  /// No description provided for @openTime.
   ///
   /// In en, this message translates to:
   /// **'Open Now'**
-  String get storeOpen;
+  String get openTime;
 
-  /// No description provided for @storeClosed.
+  /// No description provided for @closeTime.
   ///
   /// In en, this message translates to:
   /// **'Closed'**
-  String get storeClosed;
+  String get closeTime;
 
   /// No description provided for @noVendorsFound.
   ///
@@ -955,6 +955,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'reviews'**
   String get reviews;
+
+  /// No description provided for @storeOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get storeOpen;
+
+  /// No description provided for @storeClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get storeClosed;
+
+  /// No description provided for @storeOpeningSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Soon'**
+  String get storeOpeningSoon;
+
+  /// No description provided for @storeClosingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing Soon'**
+  String get storeClosingSoon;
 }
 
 class _AppLocalizationsDelegate

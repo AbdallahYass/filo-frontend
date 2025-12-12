@@ -195,6 +195,10 @@
     "sortByDefault": "الافتراضي",
     "sortByPopular": "الأكثر طلباً",
     "sortByRating": "الأفضل تقييماً",
-    "reviews": "مراجعات"
+    "reviews": "مراجعات",
+ "storeOpeningSoon": "يفتح قريباً",
+  "storeClosingSoon": "يغلق قريباً",
+  "vendorDefaultName": "متجر غير مسمى",
+  "vendorDefaultDescription": "نحن نقدم أفضل المنتجات/الخدمات."
 
 }

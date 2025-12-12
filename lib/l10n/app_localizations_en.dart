@@ -417,16 +417,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get vendorDefaultName => 'Store Name';
+  String get vendorDefaultName => 'Unnamed Store';
 
   @override
-  String get vendorDefaultDescription => 'Specializing in this category';
+  String get vendorDefaultDescription => 'We offer the best products/services.';
 
   @override
-  String get storeOpen => 'Open Now';
+  String get openTime => 'Open Now';
 
   @override
-  String get storeClosed => 'Closed';
+  String get closeTime => 'Closed';
 
   @override
   String noVendorsFound(Object categoryName) {
@@ -460,4 +460,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reviews => 'reviews';
+
+  @override
+  String get storeOpen => 'Open';
+
+  @override
+  String get storeClosed => 'Closed';
+
+  @override
+  String get storeOpeningSoon => 'Opening Soon';
+
+  @override
+  String get storeClosingSoon => 'Closing Soon';
 }
