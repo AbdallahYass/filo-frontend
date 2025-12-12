@@ -1,11 +1,11 @@
 // lib/screens/vendor_list_screen.dart
 
-// 🚀 هذا الملف يعرض قائمة التجار (Vendors) التابعين لفئة معينة، مع دعم البحث والفرز والحالة الذكية.
+// 🚀 هذا الملف يعرض قائمة التجار (Vendors) التابعين لفئة معينة، مع دعم البحث والفرز والحالة الذكية، ونمط العرض المتعدد.
 
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // لاستخدام debugPrint و kDebugMode
+import 'package:flutter/foundation.dart';
 import '/l10n/app_localizations.dart';
 import '../../models/user_model.dart';
 import '../../services/vendor_service.dart';
@@ -36,6 +36,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
   String _selectedSortKey = 'default';
   late List<Map<String, String>> _sortOptions; // خيارات الفرز
 
+  // 🔥🔥 متغير الحالة لتبديل طريقة العرض 🔥🔥
+  bool _isGridView = false; // False = List view (افتراضي), True = Grid view
+
   // 🎨 تعريف الألوان والثوابت 🎨
   final Color _goldColor = const Color(0xFFC5A028);
   final Color _darkBackground = const Color(
@@ -47,7 +50,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
   @override
   void initState() {
     super.initState();
-    // 🔥🔥 استخدام debugPrint لضمان ظهور رسالة التشخيص 🔥🔥
     debugPrint(
       'VENDOR LIST SCREEN: Starting data fetch for category: ${widget.categoryKey}',
     );
@@ -79,10 +81,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   // ----------------------------------------------------
-  // 🎨 منطق حالة المتجر الذكي (جديد) 🎨
+  // 🎨 منطق حالة المتجر الذكي (للاستخدام في كلا نمطي العرض) 🎨
   // ----------------------------------------------------
 
-  /// يحسب حالة المتجر (مفتوح، مغلق، يفتح قريباً، يغلق قريباً) بناءً على الوقت
   Map<String, dynamic> _getSmartStatus(
     UserModel vendor,
     AppLocalizations localizations,
@@ -92,13 +93,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
     final String? openTimeStr = vendor.storeInfo?.openTime;
     final String? closeTimeStr = vendor.storeInfo?.closeTime;
 
-    // التحقق من وجود ساعات العمل
     if (openTimeStr != null && closeTimeStr != null) {
       try {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
 
-        // تحليل وقت الفتح
         final openParts = openTimeStr.split(':');
         final openHour = int.parse(openParts[0]);
         final openMinute = int.parse(openParts[1]);
@@ -106,7 +105,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
           Duration(hours: openHour, minutes: openMinute),
         );
 
-        // تحليل وقت الإغلاق
         final closeParts = closeTimeStr.split(':');
         final closeHour = int.parse(closeParts[0]);
         final closeMinute = int.parse(closeParts[1]);
@@ -114,39 +112,31 @@ class _VendorListScreenState extends State<VendorListScreen> {
           Duration(hours: closeHour, minutes: closeMinute),
         );
 
-        // معالجة الإغلاق بعد منتصف الليل (إذا كان وقت الإغلاق قبل وقت الفتح لنفس اليوم)
         if (closeTime.isBefore(openTime)) {
           closeTime = closeTime.add(const Duration(days: 1));
         }
 
-        const openSoonThreshold = Duration(
-          minutes: 30,
-        ); // يفتح قريباً خلال 30 دقيقة
-        const closeSoonThreshold = Duration(
-          minutes: 60,
-        ); // يغلق قريباً خلال 60 دقيقة
+        const openSoonThreshold = Duration(minutes: 30);
+        const closeSoonThreshold = Duration(minutes: 60);
 
-        // 1. حالة "يفتح قريباً" (إذا كان مغلقاً)
         if (!isOpen) {
           final timeUntilOpen = openTime.difference(now);
           if (timeUntilOpen.isNegative == false &&
               timeUntilOpen < openSoonThreshold) {
             return {
-              'text': localizations.storeOpeningSoon, // "يفتح قريباً"
+              'text': localizations.storeOpeningSoon,
               'color': _goldColor,
               'icon': Icons.schedule,
             };
           }
         }
 
-        // 2. حالة "يغلق قريباً" (إذا كان مفتوحاً)
         if (isOpen) {
-          // للتأكد فقط، نتحقق من أن المتجر فعلاً مفتوح حالياً (بين وقت الفتح والإغلاق)
           if (now.isAfter(openTime) && now.isBefore(closeTime)) {
             final timeUntilClose = closeTime.difference(now);
             if (timeUntilClose < closeSoonThreshold) {
               return {
-                'text': localizations.storeClosingSoon, // "يغلق قريباً"
+                'text': localizations.storeClosingSoon,
                 'color': Colors.orange.shade700,
                 'icon': Icons.timer_outlined,
               };
@@ -155,11 +145,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
         }
       } catch (e) {
         if (kDebugMode) debugPrint('Error parsing store time: $e');
-        // إذا فشل تحليل الوقت، سنعتمد على حالة الباك إند الافتراضية
       }
     }
 
-    // 3. المنطق الافتراضي (إذا لم يتم تفعيل حالات "قريباً")
     final Color statusColor = isOpen ? Colors.green : Colors.red;
     final String statusText = isOpen
         ? localizations.storeOpen
@@ -170,6 +158,33 @@ class _VendorListScreenState extends State<VendorListScreen> {
       'color': statusColor,
       'icon': isOpen ? Icons.check_circle : Icons.access_time,
     };
+  }
+
+  // ----------------------------------------------------
+  // 🔥🔥 دالة جديدة لتطبيق الحركة (Animation) 🔥🔥
+  // ----------------------------------------------------
+
+  Widget _buildAnimatedCard(int index, Widget child) {
+    const duration = Duration(milliseconds: 400);
+
+    // TweenAnimationBuilder هو حل ممتاز لتشغيل الحركة لمرة واحدة عند البناء
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: duration,
+      curve: Curves.easeOut,
+      builder: (context, value, childWidget) {
+        final offset = Offset(0.0, (1 - value) * 0.2);
+
+        return Opacity(
+          opacity: value, // التلاشي (FadeIn)
+          child: Transform.translate(
+            offset: offset, // التحريك (Slide)
+            child: childWidget,
+          ),
+        );
+      },
+      child: child,
+    );
   }
 
   // ----------------------------------------------------
@@ -211,6 +226,29 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
+  // 🔥 بناء زر تبديل طريقة العرض (Grid/List)
+  Widget _buildViewToggleButton() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isGridView = !_isGridView;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          // التبديل بين الأيقونات
+          _isGridView ? Icons.view_list : Icons.grid_view,
+          color: _goldColor,
+        ),
+      ),
+    );
+  }
+
   // بناء القائمة المنسدلة للفرز
   Widget _buildSortDropdown(AppLocalizations localizations) {
     _sortOptions = [
@@ -219,11 +257,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
       {'key': 'rating', 'label': localizations.sortByRating},
     ];
 
-    // 🔥 تعديل تصميم الـ Dropdown ليكون أبيض
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white, // لون خلفية الـ Dropdown أبيض
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade300),
       ),
@@ -231,7 +268,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
         child: DropdownButton<String>(
           value: _selectedSortKey,
           icon: Icon(Icons.sort, color: _goldColor),
-          // نصوص القائمة ستكون باللون الداكن ليظهر فوق الخلفية البيضاء
           style: TextStyle(color: _darkColor, fontSize: 14),
           dropdownColor: Colors.white,
           items: _sortOptions.map((option) {
@@ -256,7 +292,9 @@ class _VendorListScreenState extends State<VendorListScreen> {
     );
   }
 
-  // 🔥 بناء بطاقة التاجر/المتجر
+  // ----------------------------------------------------
+  // 🔥 بناء بطاقة التاجر/المتجر لنمط القائمة (List Card)
+  // ----------------------------------------------------
   Widget _buildVendorCard(UserModel vendor, AppLocalizations localizations) {
     final String storeName =
         vendor.storeInfo?.storeName ??
@@ -268,12 +306,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
     final double rating = vendor.averageRating;
     final int reviews = vendor.reviewsCount;
 
-    // 🔥🔥 استخدام دالة الحالة الذكية الجديدة 🔥🔥
     final smartStatus = _getSmartStatus(vendor, localizations);
     final Color statusColor = smartStatus['color'];
     final String statusText = smartStatus['text'];
     final IconData statusIcon = smartStatus['icon'];
-    // 🔥🔥 نهاية التعديل الذكي 🔥🔥
 
     return GestureDetector(
       onTap: () {
@@ -294,7 +330,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ... (صورة/لوجو التاجر) ...
+              // صورة/لوجو التاجر
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.network(
@@ -356,14 +392,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     // حالة المتجر (يستخدم الحالة الذكية)
                     Row(
                       children: [
-                        Icon(
-                          statusIcon, // استخدام الأيقونة من الحالة الذكية
-                          color: statusColor,
-                          size: 16,
-                        ),
+                        Icon(statusIcon, color: statusColor, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          statusText, // استخدام النص من الحالة الذكية
+                          statusText,
                           style: TextStyle(
                             color: statusColor,
                             fontSize: 12,
@@ -384,6 +416,124 @@ class _VendorListScreenState extends State<VendorListScreen> {
   }
 
   // ----------------------------------------------------
+  // 🔥 بناء بطاقة التاجر/المتجر لنمط الشبكة (Grid Card)
+  // ----------------------------------------------------
+  Widget _buildGridVendorCard(
+    UserModel vendor,
+    AppLocalizations localizations,
+  ) {
+    final String storeName =
+        vendor.storeInfo?.storeName ??
+        vendor.name ??
+        localizations.vendorDefaultName;
+
+    final double rating = vendor.averageRating;
+    final int reviews = vendor.reviewsCount;
+
+    final smartStatus = _getSmartStatus(vendor, localizations);
+    final Color statusColor = smartStatus['color'];
+    final String statusText = smartStatus['text'];
+    final IconData statusIcon = smartStatus['icon'];
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VendorMenuScreen(vendor: vendor),
+          ),
+        );
+      },
+      child: Card(
+        color: _cardColor,
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // صورة/لوجو التاجر (في الأعلى)
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+              child: AspectRatio(
+                aspectRatio: 1.5, // 3:2 Aspect Ratio for the image
+                child: Image.network(
+                  vendor.storeInfo?.logoUrl ??
+                      'https://placehold.co/300x200/888888/FFFFFF?text=Logo',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: Icon(Icons.store, color: Colors.grey[600], size: 40),
+                  ),
+                ),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // اسم المتجر
+                  Text(
+                    storeName,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+
+                  // شريط التقييم وحالة المتجر
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: _goldColor, size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Spacer(),
+                      // حالة المتجر (الحالة الذكية)
+                      Row(
+                        children: [
+                          Icon(statusIcon, color: statusColor, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // عدد المراجعات
+                  Text(
+                    '(${reviews} ${localizations.reviews})',
+                    style: TextStyle(color: Colors.grey, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ----------------------------------------------------
   // 🔨 دالة البناء الرئيسية (Build) 🔨
   // ----------------------------------------------------
   @override
@@ -394,9 +544,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
       backgroundColor: _darkBackground,
       appBar: AppBar(
         title: Text(widget.categoryName),
-        // 🔥 توحيد التصميم: جعل الـ AppBar داكناً
         backgroundColor: _darkColor,
-        foregroundColor: Colors.white, // جعل النص أبيض
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Column(
@@ -412,9 +561,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
               top: 10,
             ),
             decoration: BoxDecoration(
-              color: _darkColor, // خلفية داكنة للبانر
+              color: _darkColor,
               borderRadius: const BorderRadius.only(
-                // زوايا سفلية مستديرة
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
@@ -426,20 +574,28 @@ class _VendorListScreenState extends State<VendorListScreen> {
                 _buildSearchBar(localizations),
                 const SizedBox(height: 15),
 
-                // شريط الفرز داخل البانر الداكن
+                // 🔥🔥 شريط الفرز وزر التبديل 🔥🔥
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      localizations.sortBy,
-                      // النص أصبح أبيض (أو رمادي فاتح) ليظهر على الخلفية الداكنة
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                    // زر تبديل العرض (Grid / List)
+                    _buildViewToggleButton(),
+
+                    // شريط الفرز
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          localizations.sortBy,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _buildSortDropdown(localizations),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    _buildSortDropdown(localizations), // الـ Dropdown سيظل أبيض
                   ],
                 ),
               ],
@@ -463,7 +619,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   } else if (snapshot.hasError ||
                       !snapshot.hasData ||
                       snapshot.data == null) {
-                    // 🔥 عند فشل الاتصال، يتم عرض رسالة الخطأ 🔥
                     final errorMessage = snapshot.error.toString().replaceFirst(
                       'Exception: ',
                       '',
@@ -504,25 +659,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
                         description.contains(_searchQuery);
                   }).toList();
 
-                  // معالجة حالة عدم العثور على نتائج للبحث
-                  if (filteredVendors.isEmpty && _searchQuery.isNotEmpty) {
-                    return Center(
-                      child: Text(
-                        localizations.noResultsFound,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  }
-
-                  // معالجة حالة القائمة الفارغة للفئة
+                  // معالجة حالات القائمة الفارغة/البحث
                   if (filteredVendors.isEmpty) {
+                    final text = _searchQuery.isNotEmpty
+                        ? localizations.noResultsFound
+                        : localizations.noVendorsFound(widget.categoryName);
                     return Center(
                       child: Text(
-                        localizations.noVendorsFound(widget.categoryName),
+                        text,
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
@@ -532,17 +676,46 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     );
                   }
 
-                  // ✅ عرض قائمة التجار المفلترة
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(15),
-                    itemCount: filteredVendors.length,
-                    itemBuilder: (context, index) {
-                      return _buildVendorCard(
-                        filteredVendors[index],
-                        localizations,
-                      );
-                    },
-                  );
+                  // ✅ عرض قائمة التجار المفلترة (منطق التبديل هنا)
+                  if (_isGridView) {
+                    // --- GRID VIEW ---
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(15),
+                      itemCount: filteredVendors.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio:
+                                0.75, // نسبة العرض إلى الارتفاع للبطاقة
+                            crossAxisSpacing: 15,
+                            mainAxisSpacing: 15,
+                          ),
+                      itemBuilder: (context, index) {
+                        return _buildAnimatedCard(
+                          index,
+                          _buildGridVendorCard(
+                            filteredVendors[index],
+                            localizations,
+                          ),
+                        );
+                      },
+                    );
+                  } else {
+                    // --- LIST VIEW ---
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(15),
+                      itemCount: filteredVendors.length,
+                      itemBuilder: (context, index) {
+                        return _buildAnimatedCard(
+                          index,
+                          _buildVendorCard(
+                            filteredVendors[index],
+                            localizations,
+                          ),
+                        );
+                      },
+                    );
+                  }
                 },
               ),
             ),
