@@ -1,3 +1,5 @@
+// lib/services/vendor_service.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -5,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
 class VendorService {
+  // الرابط المحلي للاختبار (محاكي الأندرويد) ورابط الإنتاج (Render)
   final String _apiBaseUrl = kDebugMode
       ? 'http://10.0.2.2:3000/api'
       : 'https://filo-menu.onrender.com/api';
@@ -26,7 +29,8 @@ class VendorService {
         );
       }
 
-      final token = await _getToken();
+      // لا حاجة لتوكن لهذا المسار لأنه عام في الخادم
+      // final token = await _getToken();
 
       final uri = Uri.parse(
         '$_apiBaseUrl/vendors',
@@ -35,7 +39,10 @@ class VendorService {
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': 'Bearer $token',
+          // 🛑🛑 تم إزالة رأس Authorization لحل مشكلة 401 في المسار العام 🛑🛑
+          // 'Authorization': 'Bearer $token',
+
+          // نبقي على API Key ورأس المحتوى
           'x-api-key': _apiKey,
           'Content-Type': 'application/json',
         },
@@ -48,11 +55,17 @@ class VendorService {
         return jsonList.map((json) => UserModel.fromJson(json)).toList();
       } else {
         final errorBody = jsonDecode(response.body);
+
+        // عرض رسالة خطأ الخادم في حالة الـ 401 أو غيرها
         throw Exception(
           "Failed to load vendors: ${errorBody['error'] ?? response.statusCode}",
         );
       }
     } catch (e) {
+      // إظهار خطأ الاتصال بالشبكة
+      if (kDebugMode) {
+        print("CRITICAL CONNECTION ERROR: $e");
+      }
       throw Exception("Connection Error: Failed to reach the server.");
     }
   }
