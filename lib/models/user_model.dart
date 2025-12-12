@@ -2,6 +2,7 @@
 
 import 'store_info_model.dart';
 import 'address_model.dart';
+import 'package:flutter/foundation.dart'; // لإضافة kDebugMode
 
 class UserModel {
   final String id;
@@ -15,10 +16,7 @@ class UserModel {
   final double averageRating;
   final int reviewsCount;
 
-  // 🏠 قائمة عناوين المستخدم (قد تكون فارغة)
   final List<AddressModel>? savedAddresses;
-
-  // 🏪 معلومات المتجر (فقط إذا كان role = 'vendor')
   final StoreInfoModel? storeInfo;
 
   UserModel({
@@ -28,7 +26,6 @@ class UserModel {
     this.phone,
     required this.role,
     required this.isVerified,
-    // 🔥🔥 إضافة التقييمات إلى الـ Constructor 🔥🔥
     required this.averageRating,
     required this.reviewsCount,
     this.savedAddresses,
@@ -36,7 +33,6 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // معالجة قائمة العناوين
     List<AddressModel>? addresses;
     if (json['savedAddresses'] is List) {
       addresses = (json['savedAddresses'] as List)
@@ -44,18 +40,27 @@ class UserModel {
           .toList();
     }
 
-    // معالجة بيانات المتجر
     StoreInfoModel? storeInfoData;
-    if (json['storeInfo'] is Map<String, dynamic>) {
+    // التأكد من أن 'storeInfo' هو كائن وليس null أو غير موجود
+    if (json['storeInfo'] != null &&
+        json['storeInfo'] is Map<String, dynamic>) {
       storeInfoData = StoreInfoModel.fromJson(
-        json['storeInfo'] as Map<String, dynamic>,
+        // نمرر الـ User ID كـ storeId مؤقتاً للتوافق مع الموديل إذا لم يكن موجوداً
+        {...json['storeInfo'] as Map<String, dynamic>, '_id': json['_id']},
       );
     }
 
     // 🔥🔥 استخلاص التقييمات من الـ JSON 🔥🔥
-    // نستخدم as num)?.toDouble() للتعامل مع الحالات التي يكون فيها التقييم int أو null
     final double rating = (json['averageRating'] as num?)?.toDouble() ?? 0.0;
+    // يجب إضافة التحقق من reviewsCount في الـ Seeder
     final int reviews = json['reviewsCount'] as int? ?? 0;
+
+    if (kDebugMode) {
+      // طباعة للتحقق من وصول البيانات
+      print(
+        'UserModel Parsed: ${json['name']} | Rating: $rating | Store Open: ${storeInfoData?.isOpen}',
+      );
+    }
 
     return UserModel(
       id: json['_id'] as String,
@@ -64,17 +69,15 @@ class UserModel {
       phone: json['phone'] as String?,
       role: json['role'] as String,
       isVerified: json['isVerified'] as bool,
-
-      // 🔥🔥 تمرير التقييمات 🔥🔥
       averageRating: rating,
       reviewsCount: reviews,
-
       savedAddresses: addresses,
       storeInfo: storeInfoData,
     );
   }
 
   Map<String, dynamic> toJson() {
+    // ... (To Json code) ...
     return {
       '_id': id,
       'email': email,
@@ -82,11 +85,8 @@ class UserModel {
       'phone': phone,
       'role': role,
       'isVerified': isVerified,
-
-      // 🔥🔥 إضافة التقييمات إلى الـ JSON 🔥🔥
       'averageRating': averageRating,
       'reviewsCount': reviewsCount,
-
       'savedAddresses': savedAddresses?.map((e) => e.toJson()).toList(),
       'storeInfo': storeInfo?.toJson(),
     };

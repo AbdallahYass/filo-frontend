@@ -1,18 +1,19 @@
 // lib/models/store_info_model.dart
 
 class StoreInfoModel {
-  final String storeId;
+  // يمكن أن يكون الـ ID اختياريًا هنا إذا كان يمرر من الـ UserModel
+  final String? storeId;
   final String storeName;
   final String? logoUrl;
   final String? description;
   final bool? isOpen;
 
-  // 🔥🔥 الحقول الجديدة التي سببت الخطأ 🔥🔥
-  final String? openTime; // يجب تعريفها هنا
-  final String? closeTime; // يجب تعريفها هنا
+  // 🔥🔥 حقول التوقيت الجديدة 🔥🔥
+  final String? openTime; // وقت الفتح (مثال: "09:00")
+  final String? closeTime; // وقت الإغلاق (مثال: "22:00")
 
   StoreInfoModel({
-    required this.storeId,
+    this.storeId,
     required this.storeName,
     this.logoUrl,
     this.description,
@@ -24,13 +25,14 @@ class StoreInfoModel {
 
   factory StoreInfoModel.fromJson(Map<String, dynamic> json) {
     return StoreInfoModel(
-      storeId: json['storeId'] as String,
+      // يمكن استخدام حقل _id إذا كان موجودًا في الـ storeInfo نفسه
+      storeId: json['_id'] as String?,
       storeName: json['storeName'] as String,
       logoUrl: json['logoUrl'] as String?,
       description: json['description'] as String?,
       isOpen: json['isOpen'] as bool?,
 
-      // 🔥🔥 استخلاص الحقول من JSON 🔥🔥
+      // 🔥🔥 استخلاص حقول التوقيت من JSON 🔥🔥
       openTime: json['openTime'] as String?,
       closeTime: json['closeTime'] as String?,
     );
@@ -38,12 +40,11 @@ class StoreInfoModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'storeId': storeId,
+      '_id': storeId,
       'storeName': storeName,
       'logoUrl': logoUrl,
       'description': description,
       'isOpen': isOpen,
-
       // 🔥🔥 إضافة الحقول للـ JSON (للتطبيق) 🔥🔥
       'openTime': openTime,
       'closeTime': closeTime,

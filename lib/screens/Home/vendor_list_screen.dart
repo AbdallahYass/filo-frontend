@@ -2,14 +2,14 @@
 
 // 🚀 هذا الملف يعرض قائمة التجار (Vendors) التابعين لفئة معينة، مع دعم البحث والفرز والحالة الذكية.
 
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, file_names, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import '/l10n/app_localizations.dart'; // مسار الترجمة الصحيح
+import 'package:flutter/foundation.dart'; // لاستخدام debugPrint و kDebugMode
+import '/l10n/app_localizations.dart';
 import '../../models/user_model.dart';
 import '../../services/vendor_service.dart';
 import 'vendor_menu_screen.dart';
-// import '../store_info_model.dart'; // ❌ تم إزالة هذا الاستيراد لأنه غير ضروري/خاطئ المسار هنا
 
 class VendorListScreen extends StatefulWidget {
   final String categoryKey;
@@ -22,7 +22,7 @@ class VendorListScreen extends StatefulWidget {
   });
 
   @override
-  State<VendorListScreen> createState() => _VendorListScreenState();
+  _VendorListScreenState createState() => _VendorListScreenState();
 }
 
 class _VendorListScreenState extends State<VendorListScreen> {
@@ -47,6 +47,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
   @override
   void initState() {
     super.initState();
+    // 🔥🔥 استخدام debugPrint لضمان ظهور رسالة التشخيص 🔥🔥
+    debugPrint(
+      'VENDOR LIST SCREEN: Starting data fetch for category: ${widget.categoryKey}',
+    );
+
     _vendorsFuture = _vendorService.fetchVendorsByCategory(widget.categoryKey);
     _searchController.addListener(_onSearchChanged);
   }
@@ -87,6 +92,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
     final String? openTimeStr = vendor.storeInfo?.openTime;
     final String? closeTimeStr = vendor.storeInfo?.closeTime;
 
+    // التحقق من وجود ساعات العمل
     if (openTimeStr != null && closeTimeStr != null) {
       try {
         final now = DateTime.now();
@@ -108,7 +114,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
           Duration(hours: closeHour, minutes: closeMinute),
         );
 
-        // معالجة الإغلاق بعد منتصف الليل
+        // معالجة الإغلاق بعد منتصف الليل (إذا كان وقت الإغلاق قبل وقت الفتح لنفس اليوم)
         if (closeTime.isBefore(openTime)) {
           closeTime = closeTime.add(const Duration(days: 1));
         }
@@ -148,8 +154,8 @@ class _VendorListScreenState extends State<VendorListScreen> {
           }
         }
       } catch (e) {
-        // إذا فشل تحليل الوقت (لا توجد ساعات عمل سليمة)، نعتمد على حالة الباك إند
-        // يمكن وضع منطق تسجيل الخطأ هنا (Logging)
+        if (kDebugMode) debugPrint('Error parsing store time: $e');
+        // إذا فشل تحليل الوقت، سنعتمد على حالة الباك إند الافتراضية
       }
     }
 
@@ -457,6 +463,11 @@ class _VendorListScreenState extends State<VendorListScreen> {
                   } else if (snapshot.hasError ||
                       !snapshot.hasData ||
                       snapshot.data == null) {
+                    // 🔥 عند فشل الاتصال، يتم عرض رسالة الخطأ 🔥
+                    final errorMessage = snapshot.error.toString().replaceFirst(
+                      'Exception: ',
+                      '',
+                    );
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -464,6 +475,14 @@ class _VendorListScreenState extends State<VendorListScreen> {
                           Text(
                             localizations.connectionError,
                             style: const TextStyle(color: Colors.red),
+                          ),
+                          Text(
+                            errorMessage,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
                           ),
                           TextButton(
                             onPressed: _refreshData,
