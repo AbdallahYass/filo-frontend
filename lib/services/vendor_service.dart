@@ -43,6 +43,8 @@ class VendorService {
         },
       );
 
+      // ... (الكود السابق لجلب البيانات) ...
+
       final response = await http.get(
         uri,
         headers: {
@@ -52,8 +54,18 @@ class VendorService {
         },
       );
 
+      // 🔥🔥🔥 الكود الجديد لتشخيص مشكلة عدم ظهور البيانات 🔥🔥🔥
+      if (kDebugMode) {
+        print('Vendor API Status Code: ${response.statusCode}');
+        if (response.statusCode != 200) {
+          print('Vendor API Error Body: ${response.body}');
+        }
+      }
+      // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+
       // 2. التحقق من نجاح الاستجابة
       if (response.statusCode == 200) {
+        // ... (بقية منطق الدالة)
         final List<dynamic> jsonList = jsonDecode(response.body);
 
         if (jsonList.isNotEmpty) {
