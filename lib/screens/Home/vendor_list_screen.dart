@@ -73,9 +73,6 @@ class _VendorListScreenState extends State<VendorListScreen> {
 
   // 🔥🔥 دالة لتحديث البيانات من الخادم (يجب استخدامها بعد تفضيل متجر) 🔥🔥
   Future<void> _refreshData() async {
-    // يجب أن تتضمن هذه الدالة تحديثاً لحالة المستخدم (خاصة قائمة المفضلة)
-    // لكن بما أننا لا نملك خدمة `fetchCurrentUser`, سنكتفي بتحديث قائمة التجار بالكامل
-    // (لنفترض أن الخادم يرجع حالة المستخدم ضمن الاستجابة العامة إذا كان مسجل دخول).
     setState(() {
       _vendorsFuture = _vendorService.fetchVendorsByCategory(
         widget.categoryKey,
@@ -301,7 +298,7 @@ class _VendorListScreenState extends State<VendorListScreen> {
     final double rating = vendor.averageRating;
     final int reviews = vendor.reviewsCount;
 
-    // 🔥🔥 التحقق من حالة المفضلة: يعتمد على أن قائمة savedVendors موجودة في UserModel
+    // 🔥🔥 التحقق من حالة المفضلة: القلب أحمر إذا كان مفضلاً 🔥🔥
     final bool isFavorite = vendor.savedVendors?.contains(vendor.id) ?? false;
 
     final smartStatus = _getSmartStatus(vendor, localizations);
@@ -415,7 +412,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     constraints: const BoxConstraints(),
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey[400],
+                      // 🛑🛑 اللون الأحمر للمفضلة 🛑🛑
+                      color: isFavorite
+                          ? Colors.red.shade700
+                          : Colors.grey[400],
                     ),
                     onPressed: () async {
                       try {
@@ -529,7 +529,10 @@ class _VendorListScreenState extends State<VendorListScreen> {
                     ),
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey[600],
+                      // 🛑🛑 اللون الأحمر للمفضلة 🛑🛑
+                      color: isFavorite
+                          ? Colors.red.shade700
+                          : Colors.grey[600],
                       size: 20,
                     ),
                     onPressed: () async {
